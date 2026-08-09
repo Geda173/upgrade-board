@@ -222,18 +222,29 @@
             <option value="{{id}}" {{#if isSelected}}selected{{/if}}>{{label}}</option>
             {{/each}}
           </select>
+          {{else if hasChoices}}
+          {{! advantage is one of two answers, not an amount }}
+          <select name="rowValue" class="upg-roll-choice">
+            {{#each choices}}
+            <option value="{{id}}" {{#if isSelected}}selected{{/if}}>{{label}}</option>
+            {{/each}}
+          </select>
+          {{else if isToggle}}
+          {{! the preset is the whole statement; the field exists only so #syncDraft has something
+              to read back, and so an empty row is still distinguishable from a filled one }}
+          <input type="hidden" name="rowValue" value="1">
           {{else}}
           <input type="text" name="rowValue" value="{{value}}" placeholder="{{placeholder}}" class="upg-value">
           {{/if}}
 
-          {{#if isPf2e}}{{#unless isIwr}}
+          {{#if isPf2e}}{{#unless isIwr}}{{#unless isToggle}}{{#unless hasChoices}}{{#unless isSense}}
           {{! a resistance is not a modifier, so it has no bonus type and no stacking rule }}
           <select name="rowBonusType" class="upg-bonus-type" title="{{localize "UPGRADES.UpgradeEditor.BonusTypeTitle"}}">
             {{#each bonusTypes}}
             <option value="{{id}}" {{#if isSelected}}selected{{/if}}>{{label}}</option>
             {{/each}}
           </select>
-          {{/unless}}{{/if}}
+          {{/unless}}{{/unless}}{{/unless}}{{/unless}}{{/if}}
 
           {{#if isDamage}}
           <select name="rowDamageType" class="upg-damage-type">

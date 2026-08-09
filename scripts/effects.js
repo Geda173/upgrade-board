@@ -18,6 +18,31 @@ export const EFFECT_MODE = {
 
 const MODES = CONST.ACTIVE_EFFECT_MODES;
 
+const ABILITIES = ["str", "dex", "con", "int", "wis", "cha"];
+
+/**
+ * Rows whose value is one of two fixed answers rather than an amount.
+ *
+ * `value` is what reaches the payload, and the two systems disagree about what that is: dnd5e
+ * counts +1 and -1 into an AdvantageModeField, PF2e names which of two rolls to keep. The stored
+ * row keeps the symbolic id, so a catalogue stays readable and neither number leaks into world data.
+ */
+const ADVANTAGE_CHOICES = [{ id: "advantage", value: 1 }, { id: "disadvantage", value: -1 }];
+const FORTUNE_CHOICES = [{ id: "fortune", value: "higher" }, { id: "misfortune", value: "lower" }];
+
+/**
+ * dnd5e's own special traits, from CONFIG.DND5E.characterFlags (release-5.3.3).
+ *
+ * These are the boolean ones: the flag exists or it does not, so the row has no amount and the
+ * preset is the whole statement. OVERRIDE rather than ADD because the flag is genuinely absent
+ * until something sets it, and Foundry's ADD on an undefined boolean is not a defined operation.
+ */
+const DND5E_TRAIT_FLAGS = [
+  "diamondSoul", "elvenAccuracy", "enhancedDualWielding", "halflingLucky", "halflingNimbleness",
+  "initiativeAlert", "jackOfAllTrades", "observantFeat", "powerfulBuild", "reliableTalent",
+  "remarkableAthlete", "tavernBrawlerFeat", "toolExpertise"
+];
+
 /**
  * Preset bonuses, grouped for the editor's dropdown.
  * Paths verified against the dnd5e 5.3.3 actor data models (release-5.3.3).
@@ -53,6 +78,15 @@ const RAW_DND5E = [
   { group: "Spellcasting", id: "spell.damage", damage: true, placeholder: "+1d4",
     keys: ["system.bonuses.msak.damage", "system.bonuses.rsak.damage"] },
 
+  // Concentration is a real statistic in dnd5e 5.3, not a house rule: `limit` is how many spells
+  // may be concentrated on at once (NumberField, initial 1, so ADD 1 buys the second) and
+  // `bonuses.save` is an ordinary FormulaField. Verified against
+  // module/data/actor/templates/attributes.mjs at release-5.3.3. PF2e has no equivalent concept.
+  { group: "Spellcasting", id: "concentration.limit", placeholder: "1", type: "number",
+    keys: ["system.attributes.concentration.limit"] },
+  { group: "Spellcasting", id: "concentration.save", placeholder: "+2",
+    keys: ["system.attributes.concentration.bonuses.save"] },
+
   { group: "Defence", id: "ac", placeholder: "+1",
     keys: ["system.attributes.ac.bonus"] },
   { group: "Defence", id: "hp.max", placeholder: "+10",
@@ -74,11 +108,22 @@ const RAW_DND5E = [
   // dnd5e could only ever say "all saves". Verified against actor/templates/common.mjs
   // (release-5.3.3): each ability carries bonuses.{check,save}, both FormulaFields — so they are
   // signed like every other formula target, not treated as numbers.
-  ...["str", "dex", "con", "int", "wis", "cha"]
-    .map(key => ({
-      group: "Defence", id: `save.${key}`, placeholder: "+1",
-      keys: [`system.abilities.${key}.bonuses.save`]
-    })),
+  ...ABILITIES.map(key => ({
+    group: "Defence", id: `save.${key}`, placeholder: "+1",
+    keys: [`system.abilities.${key}.bonuses.save`]
+  })),
+
+  // Condition immunity is the same shape as the damage traits above — a SetField that the change
+  // adds a member to, with no amount — but it is stocked from CONFIG.DND5E.conditionTypes rather
+  // than the damage list. Verified against traits.mjs (`ci: new SimpleTraitField`) at release-5.3.3.
+  { group: "Defence", id: "condition.immunity", iwr: true, conditions: true,
+    valueIsType: true, type: "set", keys: ["system.traits.ci.value"] },
+
+  // hp.bonuses.level is per level and multiplied by it; hp.bonuses.overall is the flat one above.
+  { group: "Defence", id: "hp.level", placeholder: "+1",
+    keys: ["system.attributes.hp.bonuses.level"] },
+  { group: "Defence", id: "death.save", placeholder: "+1",
+    keys: ["system.attributes.death.bonuses.save"] },
 
   { group: "Checks", id: "check.all", placeholder: "+1",
     keys: ["system.bonuses.abilities.check"] },
@@ -111,15 +156,60 @@ const RAW_DND5E = [
       keys: [`system.skills.${key}.bonuses.check`]
     })),
 
-  { group: "MovementSenses", id: "speed.walk", placeholder: "+10",
+  /**
+   * Advantage, as data.
+   *
+   * Every dnd5e RollConfigField carries an AdvantageModeField at `<statistic>.roll.mode`, whose
+   * ADD handler counts sources of advantage (+1) and disadvantage (-1) and then resolves them by
+   * the game's own rule — any number of each cancels to a straight roll. So this is genuinely a
+   * grant of advantage and not a +5 pretending to be one. Verified against
+   * module/data/fields/advantage-mode-field.mjs and its consumers in documents/actor/actor.mjs
+   * (release-5.3.3). There is deliberately no attack-roll entry: dnd5e stores no roll mode for
+   * attacks, so offering one would write a path that silently does nothing.
+   */
+  { group: "Rolls", id: "adv.check", choices: ADVANTAGE_CHOICES, type: "number",
+    keys: ABILITIES.map(a => `system.abilities.${a}.check.roll.mode`) },
+  { group: "Rolls", id: "adv.save", choices: ADVANTAGE_CHOICES, type: "number",
+    keys: ABILITIES.map(a => `system.abilities.${a}.save.roll.mode`) },
+  { group: "Rolls", id: "adv.init", choices: ADVANTAGE_CHOICES, type: "number",
+    keys: ["system.attributes.init.roll.mode"] },
+  { group: "Rolls", id: "adv.concentration", choices: ADVANTAGE_CHOICES, type: "number",
+    keys: ["system.attributes.concentration.roll.mode"] },
+  { group: "Rolls", id: "adv.death", choices: ADVANTAGE_CHOICES, type: "number",
+    keys: ["system.attributes.death.roll.mode"] },
+
+  { group: "Movement", id: "speed.walk", placeholder: "+10",
     keys: ["system.attributes.movement.walk"] },
   // Also a FormulaField — on a creature with no fly speed, "+30" simply yields 30.
-  { group: "MovementSenses", id: "speed.fly", placeholder: "+30",
+  { group: "Movement", id: "speed.fly", placeholder: "+30",
     keys: ["system.attributes.movement.fly"] },
-  // Moved under `ranges` in dnd5e 5.3; the old senses.darkvision is a deprecated getter.
-  { group: "MovementSenses", id: "darkvision", placeholder: "60",
-    type: "number", mode: MODES.UPGRADE,
-    keys: ["system.attributes.senses.ranges.darkvision"] },
+
+  // Moved under `ranges` in dnd5e 5.3; the old senses.darkvision is a deprecated getter. The
+  // four keys are SensesField's own defaults, and the field is a MappingField with
+  // `initialKeysOnly`, so nothing outside that set would be accepted.
+  ...["darkvision", "blindsight", "tremorsense", "truesight"].map(key => ({
+    group: "Senses", id: key, placeholder: "60", type: "number", mode: MODES.UPGRADE,
+    keys: [`system.attributes.senses.ranges.${key}`]
+  })),
+
+  /**
+   * The system's own special traits. These are the switches dnd5e reads out of `flags.dnd5e`
+   * for rules that are not a number anywhere — Reliable Talent, Halfling Luck, crit on a 19.
+   * Ids come from CONFIG.DND5E.characterFlags at release-5.3.3.
+   */
+  ...DND5E_TRAIT_FLAGS.map(id => ({
+    group: "SpecialTraits", id: `flag.${id}`, toggle: true, type: "number",
+    mode: MODES.OVERRIDE, keys: [`flags.dnd5e.${id}`]
+  })),
+  // The three numeric ones. Both crit thresholds read `?? Infinity` when the flag is absent
+  // (weapon.mjs:279, spell.mjs:242), so there is no existing number for DOWNGRADE to take the
+  // minimum against — OVERRIDE is the only mode that behaves on an unset flag.
+  { group: "SpecialTraits", id: "flag.weaponCriticalThreshold", placeholder: "19",
+    type: "number", mode: MODES.OVERRIDE, keys: ["flags.dnd5e.weaponCriticalThreshold"] },
+  { group: "SpecialTraits", id: "flag.spellCriticalThreshold", placeholder: "19",
+    type: "number", mode: MODES.OVERRIDE, keys: ["flags.dnd5e.spellCriticalThreshold"] },
+  { group: "SpecialTraits", id: "flag.meleeCriticalDamageDice", placeholder: "1",
+    type: "number", keys: ["flags.dnd5e.meleeCriticalDamageDice"] },
 
   { group: "Advanced", id: "custom", placeholder: "+1", custom: true, keys: [] }
 ];
@@ -159,6 +249,10 @@ const RAW_PF2E = [
     ruleKey: "Weakness", placeholder: "5" },
   { group: "Defence", id: "immunity", iwr: true,
     valueIsType: true, ruleKey: "Immunity" },
+  // Immunity's dictionary covers conditions as well as damage, so condition immunity is the same
+  // rule element pointed at a different list. dnd5e keeps the two in separate trait sets.
+  { group: "Defence", id: "condition.immunity", iwr: true, conditions: true,
+    valueIsType: true, ruleKey: "Immunity" },
 
   { group: "Checks", id: "perception", selectors: ["perception"], placeholder: "1" },
   { group: "Checks", id: "skill.all", selectors: ["skill-check"], placeholder: "1" },
@@ -178,11 +272,43 @@ const RAW_PF2E = [
   { group: "Defence", id: "hp.max", selectors: ["hp"], placeholder: "10" },
   { group: "Checks", id: "init", selectors: ["initiative"], placeholder: "2" },
 
+  /**
+   * PF2e has no advantage; it has fortune and misfortune, and the RollTwice rule element is how
+   * they are granted — `keep: "higher"` is a fortune effect, `"lower"` a misfortune one. Verified
+   * against src/module/rules/rule-element/roll-twice.ts at pf2e-8.3.0. The selectors are ordinary
+   * check domains, which is why attack rolls can be offered here and cannot on the dnd5e side.
+   */
+  { group: "Rolls", id: "roll.attack", rollTwice: true, selectors: ["attack"], choices: FORTUNE_CHOICES },
+  { group: "Rolls", id: "roll.save", rollTwice: true, selectors: ["saving-throw"], choices: FORTUNE_CHOICES },
+  { group: "Rolls", id: "roll.skill", rollTwice: true, selectors: ["skill-check"], choices: FORTUNE_CHOICES },
+  { group: "Rolls", id: "roll.perception", rollTwice: true, selectors: ["perception"], choices: FORTUNE_CHOICES },
+  { group: "Rolls", id: "roll.init", rollTwice: true, selectors: ["initiative"], choices: FORTUNE_CHOICES },
+
   { group: "Movement", id: "speed", selectors: ["all-speeds"], placeholder: "5" },
   // Speeds are filtered on ["all-speeds", `${type}-speed`], so a per-type selector is the type's
   // own name with -speed appended.
   { group: "Movement", id: "speed.walk", selectors: ["land-speed"], placeholder: "5" },
   { group: "Movement", id: "speed.fly", selectors: ["fly-speed"], placeholder: "5" },
+
+  /**
+   * Senses, the one thing dnd5e had and PF2e did not.
+   *
+   * A sense is not a modifier: it is the Sense rule element, whose `selector` is a member of
+   * SENSE_TYPES and which carries an acuity and a range instead of a value and a bonus type.
+   * The four in SENSES_WITH_UNLIMITED_RANGE take no range at all — the element resolves it to
+   * Infinity — so those rows ask for nothing and the preset is the whole statement. Acuity is
+   * omitted where SENSES_WITH_MANDATORY_ACUITIES already fixes it, since the rule element
+   * overrides anything given there anyway. Verified against sense.ts and
+   * src/module/actor/creature/values.ts at pf2e-8.3.0.
+   */
+  ...["darkvision", "greater-darkvision", "low-light-vision", "see-invisibility"].map(sense => ({
+    group: "Senses", id: `sense.${sense}`, sense, toggle: true
+  })),
+  { group: "Senses", id: "sense.truesight", sense: "truesight", placeholder: "60" },
+  { group: "Senses", id: "sense.echolocation", sense: "echolocation", placeholder: "40" },
+  { group: "Senses", id: "sense.tremorsense", sense: "tremorsense", acuity: "imprecise", placeholder: "30" },
+  { group: "Senses", id: "sense.scent", sense: "scent", acuity: "imprecise", placeholder: "30" },
+  { group: "Senses", id: "sense.lifesense", sense: "lifesense", acuity: "imprecise", placeholder: "30" },
 
   { group: "Advanced", id: "custom", placeholder: "1", custom: true, selectors: [] }
 ];
@@ -220,13 +346,35 @@ const RAW_BONUS_TYPES = [
 const presetFields = catalogue => ({
   group: p => `UPGRADES.PresetGroup.${p.group}`,
   label: p => `UPGRADES.Preset.${catalogue}.${p.id.replaceAll(".", "_")}`,
-  noun: p => (p.iwr ? `UPGRADES.PresetNoun.${p.id}` : null),
-  short: p => (p.mode === MODES.UPGRADE ? `UPGRADES.PresetShort.${p.id.replaceAll(".", "_")}` : null)
+  // Choice rows need one too: "Advantage on saving throws" is a sentence, and building it out of
+  // the picker's label would be composing English grammar out of a fragment again.
+  noun: p => ((p.iwr || p.choices) ? `UPGRADES.PresetNoun.${p.id.replaceAll(".", "_")}` : null),
+  // Anything that replaces a value rather than adding to it needs a short form too: the picker's
+  // label carries a parenthetical telling the GM what to type, which reads badly on a card. A
+  // toggle is exempt — it prints its own label and never has an amount appended.
+  short: p => ((!p.toggle && (p.mode === MODES.UPGRADE || p.mode === MODES.OVERRIDE))
+    ? `UPGRADES.PresetShort.${p.id.replaceAll(".", "_")}` : null)
 });
 
 const PRESETS_DND5E = localizeFields(RAW_DND5E, presetFields("Dnd5e"));
 const PRESETS_PF2E = localizeFields(RAW_PF2E, presetFields("Pf2e"));
 const PRESETS_GENERIC = localizeFields(RAW_GENERIC, presetFields("Generic"));
+
+/** The two answers a choice row can hold, wording resolved on read like everything else. */
+const ROLL_CHOICES = localizeFields([...ADVANTAGE_CHOICES, ...FORTUNE_CHOICES],
+  { label: c => `UPGRADES.RollChoice.${c.id}` });
+
+/** The choices for one preset, or an empty list when the row asks for an amount instead. */
+export function getRowChoices(preset) {
+  if (!preset?.choices) return [];
+  const ids = new Set(preset.choices.map(c => c.id));
+  return ROLL_CHOICES.filter(c => ids.has(c.id));
+}
+
+/** What a choice id actually writes into the payload. */
+function choiceValue(preset, id) {
+  return preset?.choices?.find(c => c.id === id)?.value ?? null;
+}
 
 export const PF2E_BONUS_TYPES = localizeFields(RAW_BONUS_TYPES, {
   label: b => `UPGRADES.BonusType.${b.id}`,
@@ -258,11 +406,40 @@ export function buildRules(rows = [], { label = "Upgrade" } = {}) {
   const rules = [];
   for (const row of rows) {
     const raw = String(row.value ?? "").trim();
-    if (!raw) continue;
 
     const preset = getPreset(row.preset);
     if (!preset) {
       console.warn(`${MODULE_ID} | Unknown effect preset "${row.preset}" — row skipped.`);
+      continue;
+    }
+    // A sense with no range, like darkvision, is the whole statement on its own.
+    if (!raw && !preset.toggle) continue;
+
+    // Not a modifier either: a sense carries an acuity and a range where a bonus would carry a
+    // value and a stacking type, so it never reaches the selector machinery below.
+    if (preset.sense) {
+      const range = preset.toggle ? null : Number(raw);
+      if (range !== null && !Number.isFinite(range)) {
+        console.warn(`${MODULE_ID} | Sense "${preset.sense}" needs a range in feet — row skipped.`);
+        continue;
+      }
+      rules.push({
+        key: "Sense", selector: preset.sense,
+        ...(preset.acuity ? { acuity: preset.acuity } : {}),
+        ...(range === null ? {} : { range })
+      });
+      continue;
+    }
+
+    // Fortune and misfortune are a rule element of their own — there is no modifier that makes
+    // you roll twice — so this also bypasses the selector/bonus-type machinery.
+    if (preset.rollTwice) {
+      const keep = choiceValue(preset, raw);
+      if (!keep) {
+        console.warn(`${MODULE_ID} | "${raw}" is not a choice ${row.preset} offers — row skipped.`);
+        continue;
+      }
+      rules.push({ key: "RollTwice", selector: preset.selectors, keep });
       continue;
     }
 
@@ -375,6 +552,39 @@ export function getResistanceTypes() {
   return getDamageTypes();
 }
 
+/**
+ * What a condition immunity can be *to*.
+ *
+ * Read live for the same reason the damage list is: a system update must not leave it stale, and
+ * a world that adds a condition should be able to grant immunity to it. The frozen fallbacks are
+ * checked against CONFIG.DND5E.conditionTypes (release-5.3.3) and CONFIG.PF2E.conditionTypes
+ * (pf2e-8.3.0). dnd5e's config carries `pseudo` entries — bleeding, burning and friends are
+ * status markers the system draws rather than conditions a creature can be immune to — so those
+ * are dropped; PF2e has no such flag and needs no equivalent filter.
+ */
+export function getConditionTypes() {
+  if (isPf2e()) {
+    const live = CONFIG?.PF2E?.conditionTypes;
+    if (live && Object.keys(live).length) {
+      return sortByLabel(Object.entries(live).map(([id, v]) => ({ id, label: labelOf(v, id) })));
+    }
+    return ["blinded","clumsy","confused","controlled","dazzled","deafened","doomed","drained",
+            "dying","encumbered","enfeebled","fascinated","fatigued","fleeing","frightened",
+            "grabbed","immobilized","paralyzed","petrified","prone","quickened","restrained",
+            "sickened","slowed","stunned","stupefied","unconscious","wounded"]
+      .map(id => ({ id, label: titleCase(id) }));
+  }
+  const live = CONFIG?.DND5E?.conditionTypes;
+  if (live && Object.keys(live).length) {
+    return sortByLabel(Object.entries(live)
+      .filter(([, v]) => !v?.pseudo)
+      .map(([id, v]) => ({ id, label: v?.name ? t(v.name) : titleCase(id) })));
+  }
+  return ["blinded","charmed","deafened","exhaustion","frightened","grappled","incapacitated",
+          "invisible","paralyzed","petrified","poisoned","prone","restrained","stunned","unconscious"]
+    .map(id => ({ id, label: titleCase(id) }));
+}
+
 /** PF2e config values are localisation keys; dnd5e's are objects carrying a label. */
 function labelOf(value, id) {
   if (typeof value === "string") return titleCase(id);
@@ -439,9 +649,9 @@ export function buildChanges(rows = []) {
   const changes = [];
   for (const row of rows) {
     const raw = String(row.value ?? "").trim();
-    if (!raw) continue;
 
     if (row.preset === "custom") {
+      if (!raw) continue;
       const key = String(row.key ?? "").trim();
       if (!key) continue;
       // Custom rows keep the GM's value verbatim — they chose the path and the mode themselves.
@@ -454,9 +664,22 @@ export function buildChanges(rows = []) {
       console.warn(`${MODULE_ID} | Unknown effect preset "${row.preset}" — row skipped.`);
       continue;
     }
+    // A toggle preset is the whole statement, so there is no amount and nothing to leave blank.
+    if (!raw && !preset.toggle) continue;
+
     const mode = preset.mode ?? MODES.ADD;
     let value;
-    if (preset.valueIsType) {
+    if (preset.toggle) {
+      value = 1;
+    } else if (preset.choices) {
+      // Advantage is counted, not added to: the field's ADD handler treats +1 and -1 as sources
+      // and cancels them off against each other, which is the rule rather than arithmetic.
+      value = choiceValue(preset, raw);
+      if (value === null) {
+        console.warn(`${MODULE_ID} | "${raw}" is not a choice ${row.preset} offers — row skipped.`);
+        continue;
+      }
+    } else if (preset.valueIsType) {
       // `system.traits.dr.value` is a SetField, and ADD on a set adds the member. The value is
       // the damage type verbatim — signing it would write "+fire" into the set.
       value = raw;
@@ -484,9 +707,9 @@ export function describeRows(rows = []) {
   const out = [];
   for (const row of rows) {
     const raw = String(row.value ?? "").trim();
-    if (!raw) continue;
 
     if (row.preset === "custom") {
+      if (!raw) continue;
       const key = String(row.key ?? "").trim();
       if (key) out.push(`${key} ${raw}`);
       continue;
@@ -494,6 +717,28 @@ export function describeRows(rows = []) {
 
     const preset = getPreset(row.preset);
     if (!preset) continue;
+    if (!raw && !preset.toggle) continue;
+
+    // A toggle names itself. There is nothing to append and nothing to sign, so the label is the
+    // whole line: "Reliable Talent", "Darkvision".
+    if (preset.toggle) {
+      out.push(preset.label);
+      continue;
+    }
+
+    // "Advantage on saving throws" — assembled from a noun the preset carries rather than from
+    // the picker's label, which is written to read in a dropdown and not mid-sentence.
+    if (preset.choices) {
+      const choice = getRowChoices(preset).find(c => c.id === raw);
+      if (!choice) continue;
+      out.push(t("UPGRADES.Describe.RollMode", { choice: choice.label, noun: preset.noun }));
+      continue;
+    }
+
+    if (preset.sense) {
+      out.push(t("UPGRADES.Describe.SenseRange", { label: preset.label, amount: raw }));
+      continue;
+    }
 
     // Resistance and its relatives read as a statement, not as a bonus to something. The noun is
     // its own key rather than the label with " to a damage type" chopped off the end, because
@@ -521,9 +766,14 @@ export function describeRows(rows = []) {
     const amount = preset.damage ? parsed.amount : raw;
     const type = preset.damage ? (row.damageType ?? parsed.damageType ?? "").trim() : "";
 
-    if ((preset.mode ?? MODES.ADD) === MODES.UPGRADE) {
+    const rowMode = preset.mode ?? MODES.ADD;
+    if (rowMode === MODES.UPGRADE) {
       // "Darkvision (raise to, in feet)" reads badly on a card, so these carry a short label.
       out.push(t("UPGRADES.Describe.RaisedTo", { label: preset.short ?? preset.label, amount }));
+    } else if (rowMode === MODES.OVERRIDE) {
+      // A threshold replaces the number rather than adding to it, so signing it would say the
+      // opposite of what it does: "crit on a 19" is not "crit nineteen better than before".
+      out.push(t("UPGRADES.Describe.SetTo", { label: preset.short ?? preset.label, amount }));
     } else {
       const signed = /^[+-]/.test(amount) ? amount : `+${amount}`;
       out.push(t("UPGRADES.Describe.BonusTyped", { label: preset.label, amount: signed, type })
@@ -552,9 +802,25 @@ export function describeBuild(rows = []) {
   const parts = [];
   for (const row of rows) {
     const raw = String(row.value ?? "").trim();
-    if (!raw) continue;
     const preset = getPreset(row.preset);
+    if (!raw && !preset?.toggle) continue;
     const label = row.preset === "custom" ? (row.key || "custom") : (preset?.label ?? row.preset);
+    if (preset?.toggle) {
+      parts.push(label);
+      continue;
+    }
+    if (preset?.choices) {
+      const choice = getRowChoices(preset).find(c => c.id === raw);
+      if (!choice) continue;
+      // Deliberately not lowercased the way the bonus summary below does it: German capitalises
+      // its nouns, and this line is a whole sentence rather than a label being slotted into one.
+      parts.push(t("UPGRADES.Describe.RollMode", { choice: choice.label, noun: preset.noun }));
+      continue;
+    }
+    if (preset?.sense) {
+      parts.push(t("UPGRADES.Describe.SenseRange", { label, amount: raw }));
+      continue;
+    }
     if (preset?.iwr) {
       const kind = preset.valueIsType ? raw : (row.damageType || "");
       const noun = String(preset.noun).toLowerCase();

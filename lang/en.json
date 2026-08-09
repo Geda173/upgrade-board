@@ -184,9 +184,11 @@
       "Checks": "Checks",
       "AbilityScores": "Ability scores",
       "Skills": "Skills",
-      "MovementSenses": "Movement & senses",
       "Movement": "Movement",
-      "Advanced": "Advanced"
+      "Advanced": "Advanced",
+      "Rolls": "Rolls",
+      "Senses": "Senses",
+      "SpecialTraits": "Special traits"
     },
     "Preset": {
       "Dnd5e": {
@@ -241,7 +243,36 @@
         "speed_walk": "Walking speed",
         "speed_fly": "Flying speed",
         "darkvision": "Darkvision (raise to, in feet)",
-        "custom": "Custom data path…"
+        "custom": "Custom data path…",
+        "condition_immunity": "Immunity to a condition",
+        "hp_level": "Hit points per level",
+        "death_save": "Death saving throws",
+        "concentration_limit": "Extra concentration spells",
+        "concentration_save": "Concentration saving throws",
+        "adv_check": "Ability checks",
+        "adv_save": "Saving throws",
+        "adv_init": "Initiative",
+        "adv_concentration": "Concentration saving throws",
+        "adv_death": "Death saving throws",
+        "blindsight": "Blindsight (raise to, in feet)",
+        "tremorsense": "Tremorsense (raise to, in feet)",
+        "truesight": "Truesight (raise to, in feet)",
+        "flag_diamondSoul": "Diamond Soul",
+        "flag_elvenAccuracy": "Elven Accuracy",
+        "flag_enhancedDualWielding": "Enhanced Dual Wielding",
+        "flag_halflingLucky": "Halfling Lucky",
+        "flag_halflingNimbleness": "Halfling Nimbleness",
+        "flag_initiativeAlert": "Alert Feat",
+        "flag_jackOfAllTrades": "Jack of All Trades",
+        "flag_observantFeat": "Observant Feat",
+        "flag_powerfulBuild": "Powerful Build",
+        "flag_reliableTalent": "Reliable Talent",
+        "flag_remarkableAthlete": "Remarkable Athlete",
+        "flag_tavernBrawlerFeat": "Tavern Brawler Feat",
+        "flag_toolExpertise": "Tool Expertise",
+        "flag_weaponCriticalThreshold": "Weapon critical hit on (roll)",
+        "flag_spellCriticalThreshold": "Spell critical hit on (roll)",
+        "flag_meleeCriticalDamageDice": "Melee critical damage dice"
       },
       "Pf2e": {
         "attack": "Attack rolls",
@@ -282,7 +313,22 @@
         "speed": "All speeds",
         "speed_walk": "Walking speed",
         "speed_fly": "Flying speed",
-        "custom": "Custom selector…"
+        "custom": "Custom selector…",
+        "condition_immunity": "Immunity to a condition",
+        "roll_attack": "Attack rolls",
+        "roll_save": "Saving throws",
+        "roll_skill": "Skill checks",
+        "roll_perception": "Perception",
+        "roll_init": "Initiative",
+        "sense_darkvision": "Darkvision",
+        "sense_greater-darkvision": "Greater darkvision",
+        "sense_low-light-vision": "Low-light vision",
+        "sense_see-invisibility": "See invisibility",
+        "sense_truesight": "Truesight (range in feet)",
+        "sense_echolocation": "Echolocation (range in feet)",
+        "sense_tremorsense": "Tremorsense (range in feet)",
+        "sense_scent": "Scent (range in feet)",
+        "sense_lifesense": "Lifesense (range in feet)"
       },
       "Generic": {
         "custom": "Custom data path…"
@@ -292,10 +338,26 @@
       "resistance": "Resistance",
       "weakness": "Weakness",
       "immunity": "Immunity",
-      "vulnerability": "Vulnerability"
+      "vulnerability": "Vulnerability",
+      "adv_check": "ability checks",
+      "adv_save": "saving throws",
+      "adv_init": "initiative",
+      "adv_concentration": "concentration saving throws",
+      "adv_death": "death saving throws",
+      "roll_attack": "attack rolls",
+      "roll_save": "saving throws",
+      "roll_skill": "skill checks",
+      "roll_perception": "Perception checks",
+      "roll_init": "initiative",
+      "condition_immunity": "Immunity"
     },
     "PresetShort": {
-      "darkvision": "Darkvision"
+      "darkvision": "Darkvision",
+      "blindsight": "Blindsight",
+      "tremorsense": "Tremorsense",
+      "truesight": "Truesight",
+      "flag_weaponCriticalThreshold": "Weapon critical hit on",
+      "flag_spellCriticalThreshold": "Spell critical hit on"
     },
     "BonusType": {
       "circumstance": "Circumstance — from where you are or what you did",
@@ -317,7 +379,10 @@
       "BonusTyped": "{label} {amount} {type}",
       "BonusPf2e": "{label} {amount} {type} {kind}",
       "RaisedTo": "{label} raised to {amount}",
-      "Summary": "{amount} {label}"
+      "Summary": "{amount} {label}",
+      "RollMode": "{choice} on {noun}",
+      "SenseRange": "{label}, {amount} feet",
+      "SetTo": "{label} {amount}"
     },
     "ThemeGroup": {
       "Fantasy": "Fantasy",
@@ -614,6 +679,12 @@
       "People": "People",
       "Places": "Places",
       "Signs": "Signs"
+    },
+    "RollChoice": {
+      "advantage": "Advantage",
+      "disadvantage": "Disadvantage",
+      "fortune": "Fortune (roll twice, keep the higher)",
+      "misfortune": "Misfortune (roll twice, keep the lower)"
     }
   }
 }

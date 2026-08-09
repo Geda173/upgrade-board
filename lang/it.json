@@ -184,9 +184,11 @@
       "Checks": "Prove",
       "AbilityScores": "Valori di caratteristica",
       "Skills": "Abilità",
-      "MovementSenses": "Movimento e sensi",
       "Movement": "Movimento",
-      "Advanced": "Avanzate"
+      "Advanced": "Avanzate",
+      "Rolls": "Tiri",
+      "Senses": "Sensi",
+      "SpecialTraits": "Tratti speciali"
     },
     "Preset": {
       "Dnd5e": {
@@ -241,7 +243,36 @@
         "speed_walk": "Velocità di movimento",
         "speed_fly": "Velocità di volo",
         "darkvision": "Scurovisione (portare a, in piedi)",
-        "custom": "Percorso dati personalizzato…"
+        "custom": "Percorso dati personalizzato…",
+        "condition_immunity": "Immunità a una condizione",
+        "hp_level": "Punti ferita per livello",
+        "death_save": "Tiri salvezza contro la morte",
+        "concentration_limit": "Incantesimi di concentrazione aggiuntivi",
+        "concentration_save": "Tiri salvezza di concentrazione",
+        "adv_check": "Prove di caratteristica",
+        "adv_save": "Tiri salvezza",
+        "adv_init": "Iniziativa",
+        "adv_concentration": "Tiri salvezza di concentrazione",
+        "adv_death": "Tiri salvezza contro la morte",
+        "blindsight": "Vista cieca (portare a, in piedi)",
+        "tremorsense": "Percezione tellurica (portare a, in piedi)",
+        "truesight": "Vista pura (portare a, in piedi)",
+        "flag_diamondSoul": "Anima di diamante",
+        "flag_elvenAccuracy": "Precisione elfica",
+        "flag_enhancedDualWielding": "Combattimento a due armi migliorato",
+        "flag_halflingLucky": "Fortuna degli halfling",
+        "flag_halflingNimbleness": "Agilità degli halfling",
+        "flag_initiativeAlert": "Talento Vigile",
+        "flag_jackOfAllTrades": "Tuttofare",
+        "flag_observantFeat": "Talento Osservatore",
+        "flag_powerfulBuild": "Corporatura possente",
+        "flag_reliableTalent": "Talento affidabile",
+        "flag_remarkableAthlete": "Atleta straordinario",
+        "flag_tavernBrawlerFeat": "Talento Attaccabrighe",
+        "flag_toolExpertise": "Competenza negli arnesi",
+        "flag_weaponCriticalThreshold": "Colpo critico con arma su (tiro)",
+        "flag_spellCriticalThreshold": "Colpo critico con incantesimo su (tiro)",
+        "flag_meleeCriticalDamageDice": "Dadi di danno critico in mischia"
       },
       "Pf2e": {
         "attack": "Tiri per colpire",
@@ -282,7 +313,22 @@
         "speed": "Tutte le velocità",
         "speed_walk": "Velocità di movimento",
         "speed_fly": "Velocità di volo",
-        "custom": "Selettore personalizzato…"
+        "custom": "Selettore personalizzato…",
+        "condition_immunity": "Immunità a una condizione",
+        "roll_attack": "Tiri per colpire",
+        "roll_save": "Tiri salvezza",
+        "roll_skill": "Prove di abilità",
+        "roll_perception": "Percezione",
+        "roll_init": "Iniziativa",
+        "sense_darkvision": "Scurovisione",
+        "sense_greater-darkvision": "Scurovisione superiore",
+        "sense_low-light-vision": "Visione crepuscolare",
+        "sense_see-invisibility": "Vedere invisibilità",
+        "sense_truesight": "Vista pura (gittata in piedi)",
+        "sense_echolocation": "Ecolocalizzazione (gittata in piedi)",
+        "sense_tremorsense": "Percezione tellurica (gittata in piedi)",
+        "sense_scent": "Olfatto (gittata in piedi)",
+        "sense_lifesense": "Percezione vitale (gittata in piedi)"
       },
       "Generic": {
         "custom": "Percorso dati personalizzato…"
@@ -292,10 +338,26 @@
       "resistance": "Resistenza",
       "weakness": "Debolezza",
       "immunity": "Immunità",
-      "vulnerability": "Vulnerabilità"
+      "vulnerability": "Vulnerabilità",
+      "adv_check": "prove di caratteristica",
+      "adv_save": "tiri salvezza",
+      "adv_init": "iniziativa",
+      "adv_concentration": "tiri salvezza di concentrazione",
+      "adv_death": "tiri salvezza contro la morte",
+      "roll_attack": "tiri per colpire",
+      "roll_save": "tiri salvezza",
+      "roll_skill": "prove di abilità",
+      "roll_perception": "prove di Percezione",
+      "roll_init": "iniziativa",
+      "condition_immunity": "Immunità"
     },
     "PresetShort": {
-      "darkvision": "Scurovisione"
+      "darkvision": "Scurovisione",
+      "blindsight": "Vista cieca",
+      "tremorsense": "Percezione tellurica",
+      "truesight": "Vista pura",
+      "flag_weaponCriticalThreshold": "Colpo critico con arma su",
+      "flag_spellCriticalThreshold": "Colpo critico con incantesimo su"
     },
     "BonusType": {
       "circumstance": "Circostanza — da dove ti trovi o da cosa hai fatto",
@@ -317,7 +379,10 @@
       "BonusTyped": "{label} {amount} {type}",
       "BonusPf2e": "{label} {amount} {type} {kind}",
       "RaisedTo": "{label} portata a {amount}",
-      "Summary": "{amount} {label}"
+      "Summary": "{amount} {label}",
+      "RollMode": "{choice}: {noun}",
+      "SenseRange": "{label}, {amount} piedi",
+      "SetTo": "{label} {amount}"
     },
     "ThemeGroup": {
       "Fantasy": "Fantasy",
@@ -614,6 +679,12 @@
       "People": "Persone",
       "Places": "Luoghi",
       "Signs": "Simboli"
+    },
+    "RollChoice": {
+      "advantage": "Vantaggio",
+      "disadvantage": "Svantaggio",
+      "fortune": "Fortuna (tira due volte, tieni il migliore)",
+      "misfortune": "Sfortuna (tira due volte, tieni il peggiore)"
     }
   }
 }

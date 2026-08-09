@@ -184,9 +184,11 @@
       "Checks": "Proben",
       "AbilityScores": "Attributswerte",
       "Skills": "Fertigkeiten",
-      "MovementSenses": "Bewegung & Sinne",
       "Movement": "Bewegung",
-      "Advanced": "Erweitert"
+      "Advanced": "Erweitert",
+      "Rolls": "Würfe",
+      "Senses": "Sinne",
+      "SpecialTraits": "Besondere Eigenschaften"
     },
     "Preset": {
       "Dnd5e": {
@@ -241,7 +243,36 @@
         "speed_walk": "Gehgeschwindigkeit",
         "speed_fly": "Fluggeschwindigkeit",
         "darkvision": "Dunkelsicht (erhöhen auf, in Fuß)",
-        "custom": "Eigener Datenpfad …"
+        "custom": "Eigener Datenpfad …",
+        "condition_immunity": "Immunität gegen einen Zustand",
+        "hp_level": "Trefferpunkte pro Stufe",
+        "death_save": "Todesrettungswürfe",
+        "concentration_limit": "Zusätzliche Konzentrationszauber",
+        "concentration_save": "Konzentrations-Rettungswürfe",
+        "adv_check": "Attributswürfe",
+        "adv_save": "Rettungswürfe",
+        "adv_init": "Initiative",
+        "adv_concentration": "Konzentrations-Rettungswürfe",
+        "adv_death": "Todesrettungswürfe",
+        "blindsight": "Blindsicht (erhöhen auf, in Fuß)",
+        "tremorsense": "Erschütterungssinn (erhöhen auf, in Fuß)",
+        "truesight": "Wahrer Blick (erhöhen auf, in Fuß)",
+        "flag_diamondSoul": "Diamantseele",
+        "flag_elvenAccuracy": "Elfische Treffsicherheit",
+        "flag_enhancedDualWielding": "Verbesserter Beidhändiger Kampf",
+        "flag_halflingLucky": "Halblings-Glück",
+        "flag_halflingNimbleness": "Halblings-Gewandtheit",
+        "flag_initiativeAlert": "Talent: Wachsam",
+        "flag_jackOfAllTrades": "Alleskönner",
+        "flag_observantFeat": "Talent: Aufmerksam",
+        "flag_powerfulBuild": "Kräftiger Körperbau",
+        "flag_reliableTalent": "Verlässliches Talent",
+        "flag_remarkableAthlete": "Bemerkenswerter Athlet",
+        "flag_tavernBrawlerFeat": "Talent: Kneipenschläger",
+        "flag_toolExpertise": "Werkzeug-Expertise",
+        "flag_weaponCriticalThreshold": "Kritischer Waffentreffer ab (Wurf)",
+        "flag_spellCriticalThreshold": "Kritischer Zaubertreffer ab (Wurf)",
+        "flag_meleeCriticalDamageDice": "Extra-Schadenswürfel bei kritischem Nahkampftreffer"
       },
       "Pf2e": {
         "attack": "Angriffswürfe",
@@ -282,7 +313,22 @@
         "speed": "Alle Geschwindigkeiten",
         "speed_walk": "Gehgeschwindigkeit",
         "speed_fly": "Fluggeschwindigkeit",
-        "custom": "Eigener Selektor …"
+        "custom": "Eigener Selektor …",
+        "condition_immunity": "Immunität gegen einen Zustand",
+        "roll_attack": "Angriffswürfe",
+        "roll_save": "Rettungswürfe",
+        "roll_skill": "Fertigkeitsproben",
+        "roll_perception": "Wahrnehmung",
+        "roll_init": "Initiative",
+        "sense_darkvision": "Dunkelsicht",
+        "sense_greater-darkvision": "Größere Dunkelsicht",
+        "sense_low-light-vision": "Dämmersicht",
+        "sense_see-invisibility": "Unsichtbares sehen",
+        "sense_truesight": "Wahrer Blick (Reichweite in Fuß)",
+        "sense_echolocation": "Echoortung (Reichweite in Fuß)",
+        "sense_tremorsense": "Erschütterungssinn (Reichweite in Fuß)",
+        "sense_scent": "Geruchssinn (Reichweite in Fuß)",
+        "sense_lifesense": "Lebenssinn (Reichweite in Fuß)"
       },
       "Generic": {
         "custom": "Eigener Datenpfad …"
@@ -292,10 +338,26 @@
       "resistance": "Resistenz",
       "weakness": "Schwäche",
       "immunity": "Immunität",
-      "vulnerability": "Verwundbarkeit"
+      "vulnerability": "Verwundbarkeit",
+      "adv_check": "Attributswürfe",
+      "adv_save": "Rettungswürfe",
+      "adv_init": "Initiative",
+      "adv_concentration": "Konzentrations-Rettungswürfe",
+      "adv_death": "Todesrettungswürfe",
+      "roll_attack": "Angriffswürfe",
+      "roll_save": "Rettungswürfe",
+      "roll_skill": "Fertigkeitsproben",
+      "roll_perception": "Wahrnehmungsproben",
+      "roll_init": "Initiative",
+      "condition_immunity": "Immunität"
     },
     "PresetShort": {
-      "darkvision": "Dunkelsicht"
+      "darkvision": "Dunkelsicht",
+      "blindsight": "Blindsicht",
+      "tremorsense": "Erschütterungssinn",
+      "truesight": "Wahrer Blick",
+      "flag_weaponCriticalThreshold": "Kritischer Waffentreffer ab",
+      "flag_spellCriticalThreshold": "Kritischer Zaubertreffer ab"
     },
     "BonusType": {
       "circumstance": "Umstand — aus der Lage oder dem eigenen Handeln",
@@ -317,7 +379,10 @@
       "BonusTyped": "{label} {amount} {type}",
       "BonusPf2e": "{label} {amount} {type} {kind}",
       "RaisedTo": "{label} erhöht auf {amount}",
-      "Summary": "{amount} {label}"
+      "Summary": "{amount} {label}",
+      "RollMode": "{choice} auf {noun}",
+      "SenseRange": "{label}, {amount} Fuß",
+      "SetTo": "{label} {amount}"
     },
     "ThemeGroup": {
       "Fantasy": "Fantasy",
@@ -614,6 +679,12 @@
       "People": "Personen",
       "Places": "Orte",
       "Signs": "Zeichen"
+    },
+    "RollChoice": {
+      "advantage": "Vorteil",
+      "disadvantage": "Nachteil",
+      "fortune": "Glück (zweimal würfeln, höheres Ergebnis)",
+      "misfortune": "Pech (zweimal würfeln, niedrigeres Ergebnis)"
     }
   }
 }

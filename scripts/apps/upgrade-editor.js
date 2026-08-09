@@ -9,7 +9,8 @@ import { TARGET, eligibleExclusions, eligiblePrerequisites, exclusiveSiblings, g
 import { getCosts, getCurrencies } from "../economy.js";
 import { MODULE_ID, SETTINGS, getVocabulary, isImagePath } from "../settings.js";
 import { EFFECT_MODE, getPresetGroups, getPreset, systemSupportsBuilder,
-         getDamageTypes, getResistanceTypes, splitDamageValue, isPf2e, PF2E_BONUS_TYPES } from "../effects.js";
+         getDamageTypes, getResistanceTypes, getConditionTypes, getRowChoices,
+         splitDamageValue, isPf2e, PF2E_BONUS_TYPES } from "../effects.js";
 import { getPartyActors } from "../systems/adapter.js";
 import { UpgradesWindow, wireDropZone } from "./ui.js";
 import { t } from "../i18n.js";
@@ -233,7 +234,15 @@ export class UpgradeEditor extends UpgradesWindow(HandlebarsApplicationMixin(App
     // trait — those are sets of damage types with no number to give).
     const isIwr = !!preset?.iwr;
     const valueIsType = !!preset?.valueIsType;
-    const kinds = isIwr ? getResistanceTypes() : getDamageTypes();
+    // A condition immunity is the same shape as a damage one, asked about a different vocabulary.
+    const kinds = preset?.conditions ? getConditionTypes()
+      : isIwr ? getResistanceTypes() : getDamageTypes();
+    // Rows that answer with one of two words, or with nothing at all, have no amount to type.
+    const choices = getRowChoices(preset);
+    const isToggle = !!preset?.toggle;
+    // Switching a row's target carries the old value across, so a choice row can arrive holding
+    // "+1". Fall back to the first choice rather than render a select whose selection is a lie.
+    const chosen = choices.some(c => c.id === row.value) ? row.value : choices[0]?.id;
 
     return {
       index,
@@ -242,6 +251,10 @@ export class UpgradeEditor extends UpgradesWindow(HandlebarsApplicationMixin(App
       isDamage: !!preset?.damage,
       isIwr,
       valueIsType,
+      isToggle,
+      isSense: !!preset?.sense,
+      hasChoices: choices.length > 0,
+      choices: choices.map(c => ({ ...c, isSelected: c.id === chosen })),
       // When the type *is* the value it rides in rowValue, so the row keeps one field either way.
       kinds: kinds.map(t => ({ ...t, isSelected: t.id === (valueIsType ? (row.value ?? "") : damageType) })),
       damageTypes: getDamageTypes().map(t => ({ ...t, isSelected: t.id === damageType })),

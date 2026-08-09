@@ -184,9 +184,11 @@
       "Checks": "Tests",
       "AbilityScores": "Valeurs de caractéristique",
       "Skills": "Compétences",
-      "MovementSenses": "Déplacement et sens",
       "Movement": "Déplacement",
-      "Advanced": "Avancé"
+      "Advanced": "Avancé",
+      "Rolls": "Jets",
+      "Senses": "Sens",
+      "SpecialTraits": "Traits spéciaux"
     },
     "Preset": {
       "Dnd5e": {
@@ -241,7 +243,36 @@
         "speed_walk": "Vitesse de marche",
         "speed_fly": "Vitesse de vol",
         "darkvision": "Vision dans le noir (porter à, en pieds)",
-        "custom": "Chemin de données personnalisé…"
+        "custom": "Chemin de données personnalisé…",
+        "condition_immunity": "Immunité à un état",
+        "hp_level": "Points de vie par niveau",
+        "death_save": "Jets de sauvegarde contre la mort",
+        "concentration_limit": "Sorts de concentration supplémentaires",
+        "concentration_save": "Jets de sauvegarde de concentration",
+        "adv_check": "Jets de caractéristique",
+        "adv_save": "Jets de sauvegarde",
+        "adv_init": "Initiative",
+        "adv_concentration": "Jets de sauvegarde de concentration",
+        "adv_death": "Jets de sauvegarde contre la mort",
+        "blindsight": "Vision aveugle (porter à, en pieds)",
+        "tremorsense": "Perception des vibrations (porter à, en pieds)",
+        "truesight": "Vision véritable (porter à, en pieds)",
+        "flag_diamondSoul": "Âme de diamant",
+        "flag_elvenAccuracy": "Précision elfique",
+        "flag_enhancedDualWielding": "Combat à deux armes amélioré",
+        "flag_halflingLucky": "Chance halfeline",
+        "flag_halflingNimbleness": "Agilité halfeline",
+        "flag_initiativeAlert": "Don Vigilant",
+        "flag_jackOfAllTrades": "Touche-à-tout",
+        "flag_observantFeat": "Don Observateur",
+        "flag_powerfulBuild": "Constitution puissante",
+        "flag_reliableTalent": "Talent fiable",
+        "flag_remarkableAthlete": "Athlète remarquable",
+        "flag_tavernBrawlerFeat": "Don Bagarreur de taverne",
+        "flag_toolExpertise": "Expertise d'outil",
+        "flag_weaponCriticalThreshold": "Coup critique d'arme sur (jet)",
+        "flag_spellCriticalThreshold": "Coup critique de sort sur (jet)",
+        "flag_meleeCriticalDamageDice": "Dés de dégâts critiques au corps à corps"
       },
       "Pf2e": {
         "attack": "Jets d'attaque",
@@ -282,7 +313,22 @@
         "speed": "Toutes les vitesses",
         "speed_walk": "Vitesse de marche",
         "speed_fly": "Vitesse de vol",
-        "custom": "Sélecteur personnalisé…"
+        "custom": "Sélecteur personnalisé…",
+        "condition_immunity": "Immunité à un état",
+        "roll_attack": "Jets d'attaque",
+        "roll_save": "Jets de sauvegarde",
+        "roll_skill": "Tests de compétence",
+        "roll_perception": "Perception",
+        "roll_init": "Initiative",
+        "sense_darkvision": "Vision dans le noir",
+        "sense_greater-darkvision": "Vision dans le noir supérieure",
+        "sense_low-light-vision": "Vision nocturne",
+        "sense_see-invisibility": "Détection de l'invisibilité",
+        "sense_truesight": "Vision véritable (portée en pieds)",
+        "sense_echolocation": "Écholocation (portée en pieds)",
+        "sense_tremorsense": "Perception des vibrations (portée en pieds)",
+        "sense_scent": "Odorat (portée en pieds)",
+        "sense_lifesense": "Perception de la vie (portée en pieds)"
       },
       "Generic": {
         "custom": "Chemin de données personnalisé…"
@@ -292,10 +338,26 @@
       "resistance": "Résistance",
       "weakness": "Faiblesse",
       "immunity": "Immunité",
-      "vulnerability": "Vulnérabilité"
+      "vulnerability": "Vulnérabilité",
+      "adv_check": "jets de caractéristique",
+      "adv_save": "jets de sauvegarde",
+      "adv_init": "l'initiative",
+      "adv_concentration": "jets de sauvegarde de concentration",
+      "adv_death": "jets de sauvegarde contre la mort",
+      "roll_attack": "jets d'attaque",
+      "roll_save": "jets de sauvegarde",
+      "roll_skill": "tests de compétence",
+      "roll_perception": "tests de Perception",
+      "roll_init": "l'initiative",
+      "condition_immunity": "Immunité"
     },
     "PresetShort": {
-      "darkvision": "Vision dans le noir"
+      "darkvision": "Vision dans le noir",
+      "blindsight": "Vision aveugle",
+      "tremorsense": "Perception des vibrations",
+      "truesight": "Vision véritable",
+      "flag_weaponCriticalThreshold": "Coup critique d'arme sur",
+      "flag_spellCriticalThreshold": "Coup critique de sort sur"
     },
     "BonusType": {
       "circumstance": "Circonstance — liée au lieu ou à ce que vous avez fait",
@@ -317,7 +379,10 @@
       "BonusTyped": "{label} {amount} {type}",
       "BonusPf2e": "{label} {amount} {type} {kind}",
       "RaisedTo": "{label} porté à {amount}",
-      "Summary": "{amount} {label}"
+      "Summary": "{amount} {label}",
+      "RollMode": "{choice} : {noun}",
+      "SenseRange": "{label}, {amount} pieds",
+      "SetTo": "{label} {amount}"
     },
     "ThemeGroup": {
       "Fantasy": "Fantasy",
@@ -614,6 +679,12 @@
       "People": "Personnages",
       "Places": "Lieux",
       "Signs": "Symboles"
+    },
+    "RollChoice": {
+      "advantage": "Avantage",
+      "disadvantage": "Désavantage",
+      "fortune": "Fortune (lancer deux fois, garder le meilleur)",
+      "misfortune": "Infortune (lancer deux fois, garder le pire)"
     }
   }
 }

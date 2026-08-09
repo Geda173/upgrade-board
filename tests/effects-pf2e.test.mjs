@@ -18,15 +18,61 @@ const all = E.getPresetGroups().flatMap(g=>g.presets);
 t('pf2e catalogue is populated', all.length > 25);
 // Resistance and its relatives are rule elements in their own right and carry no selector at all,
 // so they are held to a different contract — a ruleKey — rather than skipped quietly.
-const selectorPresets = all.filter(p => p.id !== "custom" && !p.iwr);
+// A sense is the same kind of exception: Sense's `selector` is a sense type, not a check domain,
+// so holding it to the domain list would reject the very thing it is supposed to say.
+const selectorPresets = all.filter(p => p.id !== "custom" && !p.iwr && !p.sense);
 const unknown = selectorPresets.flatMap(p=>p.selectors).filter(sel=>!VALID.has(sel));
 t('every selector exists in pf2e 8.3.0'+(unknown.length?` (unknown: ${unknown.join(", ")})`:''), unknown.length===0);
 t('every non-IWR preset actually has a selector',
   selectorPresets.every(p => Array.isArray(p.selectors) && p.selectors.length > 0));
 const iwrPresets = all.filter(p => p.iwr);
 t('the IWR presets name a real rule element',
-  iwrPresets.length === 3 && iwrPresets.every(p => ["Resistance","Weakness","Immunity"].includes(p.ruleKey)));
+  iwrPresets.length === 4 && iwrPresets.every(p => ["Resistance","Weakness","Immunity"].includes(p.ruleKey)));
 t('no IWR preset also claims a selector', iwrPresets.every(p => !p.selectors));
+
+/* --- senses: the Sense rule element, not a modifier ---
+   selector is a member of SENSE_TYPES; the four in SENSES_WITH_UNLIMITED_RANGE take no range,
+   and the element resolves it to Infinity. src/module/actor/creature/values.ts at pf2e-8.3.0. */
+const SENSE_TYPES = new Set(["bloodsense","darkvision","echolocation","electromagnetic-sense",
+  "greater-darkvision","infrared-vision","lifesense","low-light-vision","magicsense","motion-sense",
+  "scent","see-invisibility","spiritsense","thoughtsense","tremorsense","truesight","wavesense"]);
+const UNLIMITED = new Set(["darkvision","greater-darkvision","low-light-vision","see-invisibility"]);
+const sensePresets = all.filter(p => p.sense);
+t('the catalogue offers senses at all', sensePresets.length >= 8);
+t('every sense is a real SENSE_TYPE', sensePresets.every(p => SENSE_TYPES.has(p.sense)));
+t('exactly the unlimited-range senses ask for no range',
+  sensePresets.every(p => !!p.toggle === UNLIMITED.has(p.sense)));
+t('no sense claims a bonus type or selector',
+  sensePresets.every(p => !p.selectors && !p.bonusType));
+const dark = E.buildRules([{ preset: "sense.darkvision", value: "" }]);
+t('an unlimited sense builds without a value', dark.length === 1 && dark[0].key === "Sense");
+t('an unlimited sense names the sense as its selector', dark[0].selector === "darkvision");
+t('an unlimited sense sends no range', !("range" in dark[0]));
+const tremor = E.buildRules([{ preset: "sense.tremorsense", value: "30" }]);
+t('a ranged sense carries a numeric range', tremor[0].range === 30);
+t('a ranged sense carries its acuity', tremor[0].acuity === "imprecise");
+t('acuity is omitted where the rule element mandates it',
+  !("acuity" in E.buildRules([{ preset: "sense.truesight", value: "60" }])[0]));
+t('a ranged sense with a non-number is skipped',
+  E.buildRules([{ preset: "sense.tremorsense", value: "lots" }]).length === 0);
+
+/* --- fortune and misfortune: RollTwice, keeping the higher or lower roll --- */
+const fortune = E.buildRules([{ preset: "roll.save", value: "fortune" }]);
+t('fortune is a RollTwice rule', fortune[0].key === "RollTwice");
+t('fortune keeps the higher roll', fortune[0].keep === "higher");
+t('fortune targets the saving-throw domain',
+  JSON.stringify(fortune[0].selector) === '["saving-throw"]');
+t('misfortune keeps the lower roll',
+  E.buildRules([{ preset: "roll.save", value: "misfortune" }])[0].keep === "lower");
+t('a roll row never carries a bonus type', !("type" in fortune[0]));
+t('advantage is not a word pf2e accepts here',
+  E.buildRules([{ preset: "roll.save", value: "advantage" }]).length === 0);
+
+/* --- condition immunity is Immunity pointed at a different vocabulary --- */
+const condImm = E.buildRules([{ preset: "condition.immunity", value: "frightened" }]);
+t('condition immunity is an Immunity rule', condImm[0].key === "Immunity");
+t('condition immunity types are an array', JSON.stringify(condImm[0].type) === '["frightened"]');
+t('condition immunity carries no amount', !("value" in condImm[0]));
 t('builder is supported on pf2e', E.systemSupportsBuilder());
 
 // the lighthouse: +1 circumstance to hit

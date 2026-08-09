@@ -657,6 +657,9 @@
 .upg-row .upg-damage-type { flex: 0 0 104px; }
 /* PF2e's resistance list is long and its entries wordy ("weapons shedding bright light") */
 .upg-row .upg-resist-type { flex: 1 1 150px; min-width: 0; }
+/* Advantage or disadvantage. Wider than an amount field because PF2e spells out what fortune
+   does ("roll twice, keep the higher") rather than assuming the reader knows the term. */
+.upg-row .upg-roll-choice { flex: 1 1 190px; min-width: 0; }
 
 /* what an upgrade grants — shown before purchase, not after */
 .upg-effects { list-style: none; margin: 6px 0 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }

@@ -188,6 +188,19 @@ const upgradeEditor = Handlebars.compile(tpl('upgrade-editor.hbs'))({
            isDamage: false, isIwr: true, valueIsType: false, isPf2e: true, placeholder: '5',
            kinds: [{ id: 'physical', label: 'Physical', isSelected: true }],
            damageTypes: [], bonusTypes: [{ id: 'circumstance', label: 'Circumstance', isSelected: true }],
+           presetGroups: [], modeChoices: [] },
+         // one of two answers rather than an amount: advantage, or PF2e's fortune
+         { index: 3, preset: 'adv.save', value: 'advantage', key: '', mode: 2, isCustom: false,
+           isDamage: false, isIwr: false, valueIsType: false, isPf2e: true, placeholder: '',
+           hasChoices: true, choices: [{ id: 'advantage', label: 'Advantage', isSelected: true },
+                                       { id: 'disadvantage', label: 'Disadvantage', isSelected: false }],
+           kinds: [], damageTypes: [], bonusTypes: [{ id: 'circumstance', label: 'Circumstance', isSelected: true }],
+           presetGroups: [], modeChoices: [] },
+         // the preset is the whole statement — a special trait, or a sense with no range
+         { index: 4, preset: 'flag.reliableTalent', value: '', key: '', mode: 5, isCustom: false,
+           isDamage: false, isIwr: false, valueIsType: false, isPf2e: true, isToggle: true,
+           placeholder: '', kinds: [], damageTypes: [],
+           bonusTypes: [{ id: 'circumstance', label: 'Circumstance', isSelected: true }],
            presetGroups: [], modeChoices: [] }],
   linkedName: null, linkedImg: null, linkedType: null, linkMissing: false,
   showsGrantNote: true, grantNote: 'Granted as a feature.'
@@ -325,6 +338,23 @@ t('upgrade-editor: damage type dropdown appears', upgradeEditor.includes('rowDam
   // A resistance is not a modifier, so PF2e's stacking type would be meaningless on it.
   t('upgrade-editor: a PF2e resistance row offers no bonus type',
     !!amountRow && !amountRow.includes('rowBonusType'));
+
+  // Two row shapes that render no text field. If either branch failed to render its control the
+  // row would still look plausible in the editor and simply never write anything.
+  const choiceRow = rows.find(r => r.includes('data-index="3"'));
+  const toggleRow = rows.find(r => r.includes('data-index="4"'));
+  t('upgrade-editor: a choice row offers its two answers, not an amount field',
+    !!choiceRow && /<select name="rowValue" class="upg-roll-choice"/.test(choiceRow)
+      && !/<input type="text" name="rowValue"/.test(choiceRow));
+  t('upgrade-editor: the chosen answer is selected',
+    !!choiceRow && /value="advantage" selected/.test(choiceRow));
+  t('upgrade-editor: a choice row carries no bonus type — it is not a modifier',
+    !!choiceRow && !choiceRow.includes('rowBonusType'));
+  t('upgrade-editor: a toggle row still submits a value',
+    !!toggleRow && /<input type="hidden" name="rowValue" value="1">/.test(toggleRow));
+  t('upgrade-editor: a toggle row asks for nothing else',
+    !!toggleRow && !/<input type="text" name="rowValue"/.test(toggleRow)
+      && !toggleRow.includes('rowBonusType'));
 })();
 t('upgrade-editor: dnd5e does NOT get the pf2e bonus-type dropdown',
   !upgradeEditor.includes('rowBonusType'));

@@ -99,6 +99,27 @@ system takes one. PF2e gets real Resistance, Weakness and Immunity rule elements
 type to `system.traits.dr` and its siblings. Neither one is a bonus, so neither asks you for a
 stacking type.
 
+Condition immunity works the same way, from each system's own condition list.
+
+Some rewards are not a number at all, and those are offered as themselves rather than left to the
+custom row. You can grant advantage or disadvantage on ability checks, saving throws, initiative,
+concentration and death saves, and the module writes it the way each system understands it: dnd5e
+counts a source of advantage into the roll mode, so two sources do not stack into something absurd
+and a matching disadvantage cancels it, and PF2e gets a real fortune or misfortune effect that
+rolls twice. You can grant a sense in either system, and in dnd5e you can switch on any of the
+system's own special traits, including a lower critical hit threshold.
+
+Concentration is a dnd5e only section, because PF2e has no such thing. The limit is a real field
+the system enforces, so "you can concentrate on two spells at once" is one number rather than a
+note in the description.
+
+Two things the builder deliberately does not try to do. It will not make your damage ignore a
+target's resistance, because neither system stores that on the attacker: it is a choice made in
+the damage application window when the damage lands. And it does not do triggered abilities, the
+"once per turn" and "when you drop to 0 hit points" kind. Those are items with use counters, which
+is what link mode is for: build the feature once, drag it onto the upgrade, and buying it hands
+over a copy.
+
 Any other system gets the custom target row and link mode.
 
 ## Where it sits in your world
