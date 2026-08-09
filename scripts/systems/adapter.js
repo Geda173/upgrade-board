@@ -223,12 +223,19 @@ async function createFromPayload(actor, payload, upgrade, purchaseId = null, cho
  * Checked under both ids. Anything granted before v0.22.0 carries `flags.upgrades`, and the
  * flag is the only reason a refund can find what it created — miss it and the effect stays on
  * the sheet forever with nothing able to remove it. Grants made from now on carry the new one.
+ *
+ * The legacy namespace is read off `doc.flags` directly and NOT through `getFlag`. `getFlag`
+ * validates the scope against the currently active packages and *throws* — "Flag scope
+ * "upgrades" is not valid or not currently active" — for anything else. After the rename that
+ * module is by definition gone, so the legacy read threw on the first document it touched, and
+ * because `hasUpgrade` runs this over every item the actor owns, it threw before a purchase
+ * could apply anything. That is the whole bug: a world that migrated could not buy at all.
  */
 function flagged(doc, upgradeId, purchaseId) {
   const field = purchaseId ? "purchaseId" : "upgradeId";
   const wanted = purchaseId ?? upgradeId;
   return doc.getFlag(MODULE_ID, field) === wanted
-      || doc.getFlag(LEGACY_MODULE_ID, field) === wanted;
+      || doc.flags?.[LEGACY_MODULE_ID]?.[field] === wanted;
 }
 
 function hasUpgrade(actor, upgradeId, purchaseId = null) {

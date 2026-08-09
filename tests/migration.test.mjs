@@ -133,12 +133,60 @@ result = await migrateFromLegacy();
 t('a player never triggers the copy', result.ran === false && result.reason === 'not-gm');
 globalThis.game.user.isGM = true;
 
-/* ---------- 3. grants made under the old id stay removable ---------- */
+/* ---------- 3. grants made under the old id stay removable ----------
+ *
+ * This block used to assert that the source contained `getFlag(LEGACY_MODULE_ID, field)`, which
+ * scanned for exactly the call that was broken and so froze the bug in place. `Document#getFlag`
+ * validates its scope against the currently active packages and THROWS for anything else — and
+ * after the rename, `upgrades` is by definition no longer active. Because the already-granted
+ * check runs the predicate over every item the actor owns, it threw before a purchase could
+ * apply anything: a migrated world could not buy at all. So this is exercised, not grepped. */
 const adapterSrc = read('scripts/systems/adapter.js');
-t('effects flagged by the old module are still recognised',
-  /getFlag\(LEGACY_MODULE_ID, field\)/.test(adapterSrc));
+t('the legacy flag is not read through getFlag, which would throw on an inactive scope',
+  !/getFlag\(LEGACY_MODULE_ID/.test(adapterSrc));
 t('both the refund and the already-granted check go through the same predicate',
   (adapterSrc.match(/flagged\(doc, upgradeId, purchaseId\)/g) ?? []).length >= 2);
+
+await (async () => {
+  // A document that behaves the way Foundry's does: getFlag is fine for an active package and
+  // raises for anything else. Nothing in the suite modelled that, which is why nothing caught it.
+  const ACTIVE = 'upgrade-board';
+  const doc = (id, flags) => ({
+    id, flags,
+    getFlag(scope, key) {
+      if (scope !== ACTIVE) throw new Error(`Flag scope "${scope}" is not valid or not currently active`);
+      return flags?.[scope]?.[key];
+    }
+  });
+
+  const deleted = [];
+  const actor = {
+    name: 'Galadon Stormwhisper',
+    items: [
+      doc('plain', {}),                                   // an ordinary item, no flags at all
+      doc('old', { upgrades: { upgradeId: 'rooted-mind' } }),      // granted before the rename
+      doc('new', { 'upgrade-board': { upgradeId: 'rooted-mind' } }) // granted after it
+    ],
+    effects: [],
+    async deleteEmbeddedDocuments(type, ids) { deleted.push(...ids); }
+  };
+
+  globalThis.game.actors = [actor];
+  globalThis.foundry = { utils: { deepClone: o => structuredClone(o) } };
+  const { removeUpgradeEffect } = await import('../scripts/systems/adapter.js');
+
+  let threw = null;
+  let result = null;
+  try { result = await removeUpgradeEffect('rooted-mind'); }
+  catch (err) { threw = err; }
+
+  t(`inspecting an actor's items never throws on the retired scope${threw ? ` — ${threw.message}` : ''}`,
+    threw === null);
+  t('a grant made before the rename is still found', deleted.includes('old'));
+  t('a grant made after the rename is still found', deleted.includes('new'));
+  t('an unrelated item is left alone', !deleted.includes('plain'));
+  t('both are reported as removed', result?.count === 2);
+})();
 
 /* ---------- 4. the rename reached everything that names the module ---------- */
 t('the manifest declares the new id',
