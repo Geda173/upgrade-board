@@ -122,9 +122,9 @@ Hooks.on("getSceneControlButtons", (controls) => {
     // Reuse the currency icon when it's a Font Awesome class; an image path can't go here.
     icon: vocab.currencyIconIsImg ? "fa-solid fa-gem" : (vocab.currencyIcon || "fa-solid fa-gem"),
     button: true,
-    // Stated rather than left to a default. A live v14.365 client showed this tool present in
-    // `ui.controls.controls.tokens.tools` and still absent from the toolbar, and every other tool
-    // sitting beside it — core's and other modules' alike — declares its own visibility.
+    // Explicit because it costs nothing, and for no other reason. This tool was long suspected of
+    // not rendering on v14; it renders fine, icon and all, and always did. Core's own
+    // select/target/ruler also leave `visible` undefined, so the default was never the problem.
     visible: true,
     // onChange only — supplying the old onClick alongside it makes v13+ log a deprecation warning.
     onChange: () => ShopApp.show()
