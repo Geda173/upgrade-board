@@ -96,7 +96,10 @@ const SCHEMA_5_3_3 = new Set([
       'slt','ste','sur'].map(s => `system.skills.${s}.bonuses.check`),
   ...['str','dex','con','int','wis','cha'].map(a => `system.abilities.${a}.value`)
 ]);
-const allKeys = getPresetGroups().flatMap(g => g.presets).flatMap(p => p.keys);
+// The module's own flags are not system paths and are not held to the system schema — they are
+// read back by this module's own code, not by dnd5e. Everything else must exist in 5.3.3.
+const allKeys = getPresetGroups().flatMap(g => g.presets)
+  .filter(p => !p.moduleFlag).flatMap(p => p.keys);
 const unknown = [...new Set(allKeys)].filter(k => !SCHEMA_5_3_3.has(k));
 t('every preset path exists in dnd5e 5.3.3' + (unknown.length ? ` (unknown: ${unknown.join(', ')})` : ''),
   unknown.length === 0);

@@ -272,7 +272,8 @@
         "flag_toolExpertise": "Competenza negli arnesi",
         "flag_weaponCriticalThreshold": "Colpo critico con arma su (tiro)",
         "flag_spellCriticalThreshold": "Colpo critico con incantesimo su (tiro)",
-        "flag_meleeCriticalDamageDice": "Dadi di danno critico in mischia"
+        "flag_meleeCriticalDamageDice": "Dadi di danno critico in mischia",
+        "spell_damage_all": "Tutti i danni da incantesimo (inclusi quelli con tiro salvezza)"
       },
       "Pf2e": {
         "attack": "Tiri per colpire",
@@ -328,7 +329,8 @@
         "sense_echolocation": "Ecolocalizzazione (gittata in piedi)",
         "sense_tremorsense": "Percezione tellurica (gittata in piedi)",
         "sense_scent": "Olfatto (gittata in piedi)",
-        "sense_lifesense": "Percezione vitale (gittata in piedi)"
+        "sense_lifesense": "Percezione vitale (gittata in piedi)",
+        "spell_damage_all": "Tutti i danni da incantesimo"
       },
       "Generic": {
         "custom": "Percorso dati personalizzato…"

@@ -92,6 +92,13 @@ const RAW_DND5E = [
   { group: "Spellcasting", id: "spell.damage", damage: true, placeholder: "+1d4",
     keys: ["system.bonuses.msak.damage", "system.bonuses.rsak.damage"] },
 
+  // Every spell, including the ones resolved by a saving throw — which is to say the ones the
+  // preset above cannot reach. There is no system field for it, so this writes to the module's
+  // own flag and `systems/dnd5e-damage.js` appends it to the roll. Read the comment at the top
+  // of that file before touching either half; they are one feature.
+  { group: "Spellcasting", id: "spell.damage.all", damage: true, placeholder: "+1d6",
+    moduleFlag: true, keys: [`flags.${MODULE_ID}.spellDamage`] },
+
   // Concentration is a real statistic in dnd5e 5.3, not a house rule: `limit` is how many spells
   // may be concentrated on at once (NumberField, initial 1, so ADD 1 buys the second) and
   // `bonuses.save` is an ordinary FormulaField. Verified against
@@ -278,6 +285,12 @@ const RAW_PF2E = [
 
   { group: "Spellcasting", id: "spell.attack", selectors: ["spell-attack"], placeholder: "1" },
   { group: "Spellcasting", id: "spell.dc", selectors: ["spell-dc"], placeholder: "1" },
+  // PF2e needs no help here: a spell's damage domains include `damage` and `spell-damage`
+  // whether it is an attack or a save, so this is an ordinary DamageDice rule element. The
+  // dnd5e side of the same concept has to be granted through a roll hook, because that system
+  // has no equivalent field. Verified against SpellPF2e#getDamageContext at pf2e-8.3.0.
+  { group: "Spellcasting", id: "spell.damage.all", selectors: ["spell-damage"],
+    damage: true, placeholder: "1d6" },
   { group: "Spellcasting", id: "class.dc", selectors: ["class-dc"], placeholder: "1" },
 
   // Max HP is a real modifier domain here, extracted in the *character* document rather than the

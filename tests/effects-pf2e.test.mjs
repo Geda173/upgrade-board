@@ -12,6 +12,10 @@ const VALID = new Set(["attack","damage","melee-damage","ranged-damage","ac","sa
   // initiative: domains: ["initiative"] in actor/initiative.ts
   // land-speed / fly-speed: speeds filter on ["all-speeds", `${type}-speed`] in actor/creature/document.ts
   "hp","initiative","land-speed","fly-speed",
+  // spell-damage: SpellPF2e#getDamageContext builds domains from damageKinds as
+  // [kind, `spell-${kind}`, `${id}-${kind}`, ...], so "spell-damage" is present for every spell
+  // whether it is an attack or a save. That is why pf2e needs no roll hook for this and dnd5e does.
+  "spell-damage",
   "acrobatics","arcana","athletics","crafting","deception","diplomacy","intimidation","medicine",
   "nature","occultism","performance","religion","society","stealth","survival","thievery"]);
 const all = E.getPresetGroups().flatMap(g=>g.presets);

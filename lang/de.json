@@ -272,7 +272,8 @@
         "flag_toolExpertise": "Werkzeug-Expertise",
         "flag_weaponCriticalThreshold": "Kritischer Waffentreffer ab (Wurf)",
         "flag_spellCriticalThreshold": "Kritischer Zaubertreffer ab (Wurf)",
-        "flag_meleeCriticalDamageDice": "Extra-Schadenswürfel bei kritischem Nahkampftreffer"
+        "flag_meleeCriticalDamageDice": "Extra-Schadenswürfel bei kritischem Nahkampftreffer",
+        "spell_damage_all": "Gesamter Zauberschaden (inkl. Rettungswurf-Zauber)"
       },
       "Pf2e": {
         "attack": "Angriffswürfe",
@@ -328,7 +329,8 @@
         "sense_echolocation": "Echoortung (Reichweite in Fuß)",
         "sense_tremorsense": "Erschütterungssinn (Reichweite in Fuß)",
         "sense_scent": "Geruchssinn (Reichweite in Fuß)",
-        "sense_lifesense": "Lebenssinn (Reichweite in Fuß)"
+        "sense_lifesense": "Lebenssinn (Reichweite in Fuß)",
+        "spell_damage_all": "Gesamter Zauberschaden"
       },
       "Generic": {
         "custom": "Eigener Datenpfad …"

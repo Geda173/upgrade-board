@@ -272,7 +272,8 @@
         "flag_toolExpertise": "Tool Expertise",
         "flag_weaponCriticalThreshold": "Weapon critical hit on (roll)",
         "flag_spellCriticalThreshold": "Spell critical hit on (roll)",
-        "flag_meleeCriticalDamageDice": "Melee critical damage dice"
+        "flag_meleeCriticalDamageDice": "Melee critical damage dice",
+        "spell_damage_all": "All spell damage (incl. saving throw spells)"
       },
       "Pf2e": {
         "attack": "Attack rolls",
@@ -328,7 +329,8 @@
         "sense_echolocation": "Echolocation (range in feet)",
         "sense_tremorsense": "Tremorsense (range in feet)",
         "sense_scent": "Scent (range in feet)",
-        "sense_lifesense": "Lifesense (range in feet)"
+        "sense_lifesense": "Lifesense (range in feet)",
+        "spell_damage_all": "All spell damage"
       },
       "Generic": {
         "custom": "Custom data path…"

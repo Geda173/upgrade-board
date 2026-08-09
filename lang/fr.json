@@ -272,7 +272,8 @@
         "flag_toolExpertise": "Expertise d'outil",
         "flag_weaponCriticalThreshold": "Coup critique d'arme sur (jet)",
         "flag_spellCriticalThreshold": "Coup critique de sort sur (jet)",
-        "flag_meleeCriticalDamageDice": "Dés de dégâts critiques au corps à corps"
+        "flag_meleeCriticalDamageDice": "Dés de dégâts critiques au corps à corps",
+        "spell_damage_all": "Tous les dégâts de sort (y compris les sorts à jet de sauvegarde)"
       },
       "Pf2e": {
         "attack": "Jets d'attaque",
@@ -328,7 +329,8 @@
         "sense_echolocation": "Écholocation (portée en pieds)",
         "sense_tremorsense": "Perception des vibrations (portée en pieds)",
         "sense_scent": "Odorat (portée en pieds)",
-        "sense_lifesense": "Perception de la vie (portée en pieds)"
+        "sense_lifesense": "Perception de la vie (portée en pieds)",
+        "spell_damage_all": "Tous les dégâts de sort"
       },
       "Generic": {
         "custom": "Chemin de données personnalisé…"

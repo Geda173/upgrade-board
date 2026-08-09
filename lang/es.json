@@ -272,7 +272,8 @@
         "flag_toolExpertise": "Pericia con herramientas",
         "flag_weaponCriticalThreshold": "Golpe crítico con arma en (tirada)",
         "flag_spellCriticalThreshold": "Golpe crítico con conjuro en (tirada)",
-        "flag_meleeCriticalDamageDice": "Dados de daño crítico cuerpo a cuerpo"
+        "flag_meleeCriticalDamageDice": "Dados de daño crítico cuerpo a cuerpo",
+        "spell_damage_all": "Todo el daño de conjuro (incl. conjuros con tirada de salvación)"
       },
       "Pf2e": {
         "attack": "Tiradas de ataque",
@@ -328,7 +329,8 @@
         "sense_echolocation": "Ecolocalización (alcance en pies)",
         "sense_tremorsense": "Sentido sísmico (alcance en pies)",
         "sense_scent": "Olfato (alcance en pies)",
-        "sense_lifesense": "Sentido de la vida (alcance en pies)"
+        "sense_lifesense": "Sentido de la vida (alcance en pies)",
+        "spell_damage_all": "Todo el daño de conjuro"
       },
       "Generic": {
         "custom": "Ruta de datos personalizada…"

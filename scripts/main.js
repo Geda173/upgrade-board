@@ -5,6 +5,7 @@ import { MODULE_ID, LEGACY_MODULE_ID, SETTINGS, getVocabulary, isHostToken, regi
 import { t } from "./i18n.js";
 import { registerLegacySettings, migrateFromLegacy } from "./migrate.js";
 import { initSockets } from "./sockets.js";
+import { registerDamageHooks } from "./systems/dnd5e-damage.js";
 import { ShopApp } from "./apps/shop-app.js";
 import { EditorApp } from "./apps/editor-app.js";
 import { SettingsApp } from "./apps/settings-app.js";
@@ -35,6 +36,8 @@ Hooks.once("ready", () => {
   initSockets();
   carryOldWorldAcross();
   warnIfNoPartyActor();
+  // dnd5e only, and it says so itself: the one bonus the system has no field for.
+  registerDamageHooks();
 
   // Public API: macros can call game.modules.get("upgrade-board").api.openShop()
   const mod = game.modules.get(MODULE_ID);
