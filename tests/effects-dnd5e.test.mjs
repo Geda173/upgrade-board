@@ -198,6 +198,19 @@ t('condition immunity is not signed', ci[0].value !== '+frightened');
 t('condition immunity with nothing chosen is skipped',
   buildChanges([{ preset: 'condition.immunity', value: '' }]).length === 0);
 
+/* ---------- what "spell damage" can and cannot reach ----------
+ * dnd5e reads `system.bonuses.${actionType}.damage` when it builds the first damage part, and
+ * only an Attack activity reports msak/rsak — a saving-throw spell asks for
+ * `system.bonuses.save.damage`, which is not in the schema. So a Fireball or a Chain Lightning
+ * never sees this bonus, no matter what is written here. The preset is named for the limit
+ * rather than for the wish, because the failure is otherwise completely silent. */
+t('spell damage reaches exactly the two spell-attack paths',
+  JSON.stringify(getPreset('spell.damage').keys)
+    === JSON.stringify(['system.bonuses.msak.damage', 'system.bonuses.rsak.damage']));
+t('no preset claims a save-spell damage path, because dnd5e has none',
+  !getPresetGroups().flatMap(g => g.presets).flatMap(p => p.keys)
+    .some(k => /^system\.bonuses\.(save|spell)\.damage$/.test(k)));
+
 const all = getPresetGroups().flatMap(g => g.presets);
 t('catalog non-empty', all.length > 15);
 t('all presets resolvable', all.every(p => getPreset(p.id)));

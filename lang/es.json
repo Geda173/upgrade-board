@@ -200,7 +200,7 @@
         "ranged_damage": "Daño a distancia",
         "spell_attack": "Tiradas de ataque de conjuro",
         "spell_dc": "CD de salvación de conjuros",
-        "spell_damage": "Daño de conjuro",
+        "spell_damage": "Daño de ataque de conjuro",
         "ac": "Clase de Armadura",
         "hp_max": "Puntos de golpe máximos",
         "save_all": "Todas las tiradas de salvación",

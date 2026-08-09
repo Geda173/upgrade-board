@@ -200,7 +200,7 @@
         "ranged_damage": "Dégâts à distance",
         "spell_attack": "Jets d'attaque de sort",
         "spell_dc": "DD de sauvegarde des sorts",
-        "spell_damage": "Dégâts de sort",
+        "spell_damage": "Dégâts d'attaque de sort",
         "ac": "Classe d'armure",
         "hp_max": "Points de vie maximum",
         "save_all": "Tous les jets de sauvegarde",

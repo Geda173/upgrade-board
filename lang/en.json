@@ -200,7 +200,7 @@
         "ranged_damage": "Ranged weapon damage",
         "spell_attack": "Spell attack rolls",
         "spell_dc": "Spell save DC",
-        "spell_damage": "Spell damage",
+        "spell_damage": "Spell attack damage",
         "ac": "Armor Class",
         "hp_max": "Maximum hit points",
         "save_all": "All saving throws",

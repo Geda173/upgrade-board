@@ -75,6 +75,20 @@ const RAW_DND5E = [
     keys: ["system.bonuses.msak.attack", "system.bonuses.rsak.attack"] },
   { group: "Spellcasting", id: "spell.dc", placeholder: "+1",
     keys: ["system.bonuses.spell.dc"] },
+  /**
+   * Spell *attack* damage, and the label says so on purpose.
+   *
+   * dnd5e looks this up as `system.bonuses.${actionType}.damage` when it builds the first damage
+   * part (base-activity.mjs `_processDamagePart`), and `getActionType()` only returns msak/rsak
+   * for an Attack activity — every other activity reports its own metadata type. A saving-throw
+   * spell therefore asks for `system.bonuses.save.damage`, which is not in the schema at all
+   * (creature.mjs `bonuses` has mwak/rwak/msak/rsak, abilities and spell.dc, and nothing else).
+   * So there is no actor field anywhere in dnd5e 5.3.3 that adds damage to a Fireball or a Chain
+   * Lightning, and no preset here can invent one. The label used to read "Spell damage", which
+   * promised exactly that and then failed the way everything fails here: in silence.
+   * The dnd5e-native answer is an Enchantment writing `system.damageBonus` onto the spell item,
+   * which is a document the GM builds and grants through link mode, not a bonus row.
+   */
   { group: "Spellcasting", id: "spell.damage", damage: true, placeholder: "+1d4",
     keys: ["system.bonuses.msak.damage", "system.bonuses.rsak.damage"] },
 

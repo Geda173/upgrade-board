@@ -200,7 +200,7 @@
         "ranged_damage": "Danni a distanza",
         "spell_attack": "Tiri per colpire con incantesimi",
         "spell_dc": "CD dei tiri salvezza degli incantesimi",
-        "spell_damage": "Danni da incantesimo",
+        "spell_damage": "Danni da attacco con incantesimo",
         "ac": "Classe Armatura",
         "hp_max": "Punti ferita massimi",
         "save_all": "Tutti i tiri salvezza",

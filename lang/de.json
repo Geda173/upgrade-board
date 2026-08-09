@@ -200,7 +200,7 @@
         "ranged_damage": "Fernkampfschaden",
         "spell_attack": "Zauberangriffswürfe",
         "spell_dc": "Zauber-Schwierigkeitsgrad",
-        "spell_damage": "Zauberschaden",
+        "spell_damage": "Zauberangriffs-Schaden",
         "ac": "Rüstungsklasse",
         "hp_max": "Maximale Trefferpunkte",
         "save_all": "Alle Rettungswürfe",
