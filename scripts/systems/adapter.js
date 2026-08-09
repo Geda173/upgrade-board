@@ -239,8 +239,39 @@ function flagged(doc, upgradeId, purchaseId) {
 }
 
 function hasUpgrade(actor, upgradeId, purchaseId = null) {
+  return !!findGrant(actor, upgradeId, purchaseId);
+}
+
+/** The document this module created on an actor for a given upgrade, or null. */
+function findGrant(actor, upgradeId, purchaseId = null) {
   const matches = doc => flagged(doc, upgradeId, purchaseId);
-  return !!actor.items?.some(matches) || !!actor.effects?.some(matches);
+  return actor.items?.find(matches) ?? actor.effects?.find(matches) ?? null;
+}
+
+/**
+ * The mechanical core of a grant, reduced to a string, so a sheet can be compared against what
+ * the catalogue would build today.
+ *
+ * Deliberately ignores name, artwork, description and flags: those are cosmetic, a GM may have
+ * tidied them by hand, and rebuilding a sheet over a renamed icon would be obnoxious. What it
+ * does compare is the part that actually does something — ActiveEffect changes on dnd5e, rule
+ * elements on PF2e. Works on both a resolved payload's `data` and a live embedded document,
+ * which is the whole point: the two have to be reducible to the same shape to be comparable.
+ *
+ * The dnd5e wrapper feat keeps the real changes on an embedded effect rather than on itself,
+ * so that case is unwrapped here.
+ */
+export function grantSignature(source) {
+  if (!source) return null;
+  const effects = source.effects?.contents ?? source.effects;
+  const embedded = Array.isArray(effects) ? effects[0] : null;
+  const changes = source.changes ?? embedded?.changes;
+  if (changes) {
+    return JSON.stringify(changes.map(c => [c.key, Number(c.mode), String(c.value ?? "")]));
+  }
+  const rules = source.system?.rules;
+  if (rules) return JSON.stringify(rules);
+  return null;
 }
 
 /** Apply the upgrade's effect (if any) to its target actors. GM-side only. */
@@ -294,28 +325,60 @@ export async function removeUpgradeEffect(upgradeId, purchaseId = null) {
 }
 
 /**
- * Re-sync: ensure every purchased upgrade's effect exists on its current targets.
- * Catches late joiners and party-roster changes; per-actor upgrades are re-checked too,
- * which repairs the case where an effect was deleted off a sheet by hand.
+ * Re-sync: make the sheets match the catalogue.
+ *
+ * Two jobs. It creates grants that are missing — late joiners, party-roster changes, an effect
+ * someone deleted off a sheet by hand — and it rebuilds grants that have gone stale.
+ *
+ * The second job exists because a grant is a *snapshot*: the payload is built at the moment of
+ * purchase, so correcting a preset in a later release does not reach anything already bought.
+ * "All saving throws" gained the death-save path in v0.25.1 and every character who already owned
+ * it kept the version that silently skipped death saves, with nothing to tell their GM. Saving
+ * the upgrade in the editor rebuilt it, but only if you knew to go and do that for each one — and
+ * the button named for exactly this job quietly did not.
+ *
+ * Only *built* payloads are compared. A linked document is a clone of something the GM owns and
+ * may well have edited on purpose since; re-cloning it over their changes is not a re-sync, it is
+ * a revert. Cosmetic drift is ignored too — see `grantSignature`.
  */
 export async function resyncUpgrades() {
   const { getUpgrades } = await import("../catalog.js");
   let created = 0;
+  let refreshed = 0;
   for (const upgrade of getUpgrades().filter(u => u.purchases?.length)) {
     const payload = await resolveEffectPayload(upgrade);
     if (!payload) continue;
+    const isBuilt = (upgrade.effectMode ?? (upgrade.effectUuid ? EFFECT_MODE.LINK : EFFECT_MODE.NONE))
+      === EFFECT_MODE.BUILD;
+    const wanted = isBuilt ? grantSignature(payload.data) : null;
+
     for (const purchase of upgrade.purchases) {
       // A purchase remembers which actor it landed on, which is the only way a buyer-targeted
       // or repeatable grant can be rebuilt on the right sheet.
       const buyerActor = purchase.actorId ? game.actors.get(purchase.actorId) : null;
+      const purchaseId = upgrade.repeatable ? purchase.id : null;
+
       for (const actor of getTargetActors(upgrade, { buyerActor })) {
-        if (hasUpgrade(actor, upgrade.id, upgrade.repeatable ? purchase.id : null)) continue;
+        const existing = findGrant(actor, upgrade.id, purchaseId);
+        if (existing) {
+          // Nothing to compare against, or nothing has drifted: leave the sheet alone.
+          if (!wanted || grantSignature(existing) === wanted) continue;
+          try {
+            await actor.deleteEmbeddedDocuments(existing.documentName, [existing.id]);
+            await createFromPayload(actor, payload, upgrade, purchase.id, purchase.choice ?? null);
+            refreshed++;
+          } catch (err) {
+            // A grant that could not be replaced must not leave the sheet without one.
+            console.error(`${MODULE_ID} | Could not refresh "${upgrade.name}" on ${actor.name}`, err);
+          }
+          continue;
+        }
         await createFromPayload(actor, payload, upgrade, purchase.id, purchase.choice ?? null);
         created++;
       }
     }
   }
-  return { created };
+  return { created, refreshed };
 }
 
 /**

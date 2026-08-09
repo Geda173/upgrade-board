@@ -609,7 +609,7 @@
       "Placed": "Upgrades: {count} × {currency} bei {actor} platziert.",
       "ClearedHistory": "Upgrades: {count} Verlaufszeilen gelöscht.",
       "NothingToClear": "Nichts zu leeren.",
-      "Resynced": "Upgrades: Abgleich abgeschlossen ({count} Dokumente erstellt).",
+      "Resynced": "Upgrades: Abgleich abgeschlossen ({count} erstellt, {refreshed} aktualisiert).",
       "NeedOneResource": "Upgrades: es muss mindestens eine Ressource geben.",
       "MerchantAccessGranted": "Upgrades: Spieler können jetzt mit dem Token des Händlers interagieren.",
       "SettingsSaved": "Upgrades: {count} Einstellungen gespeichert.",

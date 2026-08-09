@@ -609,7 +609,7 @@
       "Placed": "Upgrades: placed {count} × {currency} on {actor}.",
       "ClearedHistory": "Upgrades: cleared {count} history line(s).",
       "NothingToClear": "Nothing to clear.",
-      "Resynced": "Upgrades: re-sync complete ({count} document(s) created).",
+      "Resynced": "Upgrades: re-sync complete ({count} created, {refreshed} brought up to date).",
       "NeedOneResource": "Upgrades: there has to be at least one resource.",
       "MerchantAccessGranted": "Upgrades: players can now interact with the merchant's token.",
       "SettingsSaved": "Upgrades: {count} setting(s) saved.",

@@ -370,8 +370,8 @@ export class EditorApp extends UpgradesWindow(HandlebarsApplicationMixin(Applica
   }
 
   static async #onResync() {
-    const { created } = await resyncUpgrades();
-    ui.notifications.info(t("UPGRADES.Notify.Resynced", { count: created }));
+    const { created, refreshed } = await resyncUpgrades();
+    ui.notifications.info(t("UPGRADES.Notify.Resynced", { count: created, refreshed }));
     EditorApp.#afterMutation();
   }
 

@@ -609,7 +609,7 @@
       "Placed": "Upgrades: colocados {count} × {currency} en {actor}.",
       "ClearedHistory": "Upgrades: borradas {count} líneas del historial.",
       "NothingToClear": "Nada que vaciar.",
-      "Resynced": "Upgrades: resincronización completada ({count} documentos creados).",
+      "Resynced": "Upgrades: sincronización completada ({count} creados, {refreshed} actualizados).",
       "NeedOneResource": "Upgrades: tiene que haber al menos un recurso.",
       "MerchantAccessGranted": "Upgrades: los jugadores ya pueden interactuar con el token del mercader.",
       "SettingsSaved": "Upgrades: {count} opciones guardadas.",

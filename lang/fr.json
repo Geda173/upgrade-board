@@ -609,7 +609,7 @@
       "Placed": "Upgrades : {count} × {currency} placés sur {actor}.",
       "ClearedHistory": "Upgrades : {count} lignes d'historique effacées.",
       "NothingToClear": "Rien à effacer.",
-      "Resynced": "Upgrades : resynchronisation terminée ({count} documents créés).",
+      "Resynced": "Upgrades : synchronisation terminée ({count} créé(s), {refreshed} mis à jour).",
       "NeedOneResource": "Upgrades : il doit y avoir au moins une ressource.",
       "MerchantAccessGranted": "Upgrades : les joueurs peuvent désormais interagir avec le pion du marchand.",
       "SettingsSaved": "Upgrades : {count} réglages enregistrés.",
