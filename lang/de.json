@@ -213,7 +213,7 @@
         "save_int": "Rettungswürfe auf Intelligenz",
         "save_wis": "Rettungswürfe auf Weisheit",
         "save_cha": "Rettungswürfe auf Charisma",
-        "check_all": "Alle Attributswürfe",
+        "check_all": "Alle Attributswürfe (inkl. Fertigkeiten & Initiative)",
         "skill_all": "Alle Fertigkeitswürfe",
         "init": "Initiative",
         "ability_str": "Stärkewert",

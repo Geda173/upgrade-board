@@ -213,7 +213,7 @@
         "save_int": "Intelligence saving throws",
         "save_wis": "Wisdom saving throws",
         "save_cha": "Charisma saving throws",
-        "check_all": "All ability checks",
+        "check_all": "All ability checks (incl. skills & initiative)",
         "skill_all": "All skill checks",
         "init": "Initiative",
         "ability_str": "Strength score",

@@ -112,8 +112,20 @@ const RAW_DND5E = [
     keys: ["system.attributes.ac.bonus"] },
   { group: "Defence", id: "hp.max", placeholder: "+10",
     keys: ["system.attributes.hp.bonuses.overall"] },
+  /**
+   * All saving throws, and it now means all of them.
+   *
+   * `system.bonuses.abilities.save` reaches the six ability saves, and concentration inherits it
+   * for free (`prepareConcentration` builds its save from `ability.save.value`, which already
+   * carries the global bonus). Death saves do not: `rollDeathSave` starts from an empty parts
+   * array and adds only proficiency-from-Diamond-Soul and `attributes.death.bonuses.save`. Its
+   * own doc comment claims "plus any global save bonuses", which is not what the code does.
+   * So the death path is listed explicitly — a death save is a saving throw, and a preset called
+   * "all saving throws" that quietly skipped the roll people care most about was the same broken
+   * promise as "spell damage" that meant spell *attack* damage. Verified against release-5.3.3.
+   */
   { group: "Defence", id: "save.all", placeholder: "+1",
-    keys: ["system.bonuses.abilities.save"] },
+    keys: ["system.bonuses.abilities.save", "system.attributes.death.bonuses.save"] },
 
   // dnd5e keeps these as *sets of damage types*, not numbers: `system.traits.dr` is a
   // DamageTraitField whose `value` is a SetField, so the change adds the type itself and there
@@ -146,6 +158,10 @@ const RAW_DND5E = [
   { group: "Defence", id: "death.save", placeholder: "+1",
     keys: ["system.attributes.death.bonuses.save"] },
 
+  // Broader than it looks, and the label says so. dnd5e feeds `bonuses.abilities.check` into the
+  // skill/tool roll *and* into initiative alongside their own bonuses, so this stacks with the two
+  // presets below rather than being an alternative to them. Left as the system has it — that
+  // summing is dnd5e's own design — but a GM picking from a dropdown had no way to know.
   { group: "Checks", id: "check.all", placeholder: "+1",
     keys: ["system.bonuses.abilities.check"] },
   { group: "Checks", id: "skill.all", placeholder: "+1",

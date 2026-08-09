@@ -213,7 +213,7 @@
         "save_int": "Tiri salvezza su Intelligenza",
         "save_wis": "Tiri salvezza su Saggezza",
         "save_cha": "Tiri salvezza su Carisma",
-        "check_all": "Tutte le prove di caratteristica",
+        "check_all": "Tutte le prove di caratteristica (incl. abilità e iniziativa)",
         "skill_all": "Tutte le prove di abilità",
         "init": "Iniziativa",
         "ability_str": "Valore di Forza",

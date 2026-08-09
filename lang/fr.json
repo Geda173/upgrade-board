@@ -213,7 +213,7 @@
         "save_int": "Jets de sauvegarde d'Intelligence",
         "save_wis": "Jets de sauvegarde de Sagesse",
         "save_cha": "Jets de sauvegarde de Charisme",
-        "check_all": "Tous les tests de caractéristique",
+        "check_all": "Tous les tests de caractéristique (y compris compétences et initiative)",
         "skill_all": "Tous les tests de compétence",
         "init": "Initiative",
         "ability_str": "Valeur de Force",

@@ -201,6 +201,21 @@ t('condition immunity is not signed', ci[0].value !== '+frightened');
 t('condition immunity with nothing chosen is skipped',
   buildChanges([{ preset: 'condition.immunity', value: '' }]).length === 0);
 
+/* ---------- what the blanket check and save presets reach ----------
+ * Death saves are built from their own parts array and never see `bonuses.abilities.save`
+ * (rollDeathSave, release-5.3.3), so "all saving throws" has to name that path explicitly or it
+ * silently skips the roll that matters most. Concentration needs no entry: it derives its save
+ * from `ability.save.value`, which already carries the global bonus. */
+const saveAll = buildChanges([{ preset: 'save.all', value: '1' }]);
+t('all saving throws reaches the ability saves',
+  saveAll.some(c => c.key === 'system.bonuses.abilities.save'));
+t('all saving throws also reaches death saves',
+  saveAll.some(c => c.key === 'system.attributes.death.bonuses.save'));
+t('both are signed the same way', saveAll.every(c => c.value === '+1'));
+// A GM who wants death saves alone still has a preset for it, so the blanket one covering them
+// does not remove the finer choice.
+t('death saves remain separately buyable', !!getPreset('death.save'));
+
 /* ---------- what "spell damage" can and cannot reach ----------
  * dnd5e reads `system.bonuses.${actionType}.damage` when it builds the first damage part, and
  * only an Attack activity reports msak/rsak — a saving-throw spell asks for

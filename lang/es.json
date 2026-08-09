@@ -213,7 +213,7 @@
         "save_int": "Salvaciones de Inteligencia",
         "save_wis": "Salvaciones de Sabiduría",
         "save_cha": "Salvaciones de Carisma",
-        "check_all": "Todas las pruebas de característica",
+        "check_all": "Todas las pruebas de característica (incl. habilidades e iniciativa)",
         "skill_all": "Todas las pruebas de habilidad",
         "init": "Iniciativa",
         "ability_str": "Valor de Fuerza",
