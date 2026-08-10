@@ -164,6 +164,12 @@
       "Dnd5eFormula": "Les valeurs sont des formules de jet dnd5e et doivent porter un signe : <code>+2</code> pour un bonus fixe, <code>+1d8[cold]</code> pour des dés typés. C'est ainsi que s'écrit « chaque coup d'arme inflige 1d8 dégâts de froid supplémentaires ». Le signe est ajouté pour vous si vous l'omettez ; il compte parce que deux améliorations touchant le même bonus sont mises bout à bout, et <code>+2+3</code> fonctionne là où <code>23</code> échoue. Les valeurs de caractéristique et la vision dans le noir sont de simples nombres, on y met donc <code>2</code> et <code>60</code>.",
       "DragEffect": "Déposez un effet ou un objet ici",
       "DragEffectHint": "depuis une fiche de personnage, l'onglet Objets ou un compendium",
+      "DragItem": "Déposez un objet ici",
+      "DragItemHint": "depuis une fiche de personnage — l'amélioration s'applique à cet objet précis",
+      "CarriedBy": "porté par {owner}",
+      "ItemUnresolved": "L'objet choisi n'existe plus. Déposez-en un nouveau ici.",
+      "ItemUnowned": "Plus personne ne porte cet objet ; son effet ne touche personne tant que quelqu'un ne le reprend pas.",
+      "ItemTargetHint": "L'effet voyage avec l'objet et s'applique à quiconque le porte équipé — harmonisé ou investi lorsque le système l'exige. Un objet rangé n'accorde rien.",
       "Uuid": "UUID",
       "UuidEg": "rempli par glisser-déposer, ou collez-en un",
       "UuidUnresolved": "Cet UUID ne correspond à aucun document de ce monde.",
@@ -514,6 +520,8 @@
       "Unknown": "Acteur inconnu",
       "WholeParty": "Tout le groupe",
       "OneCharacter": "Un personnage en particulier",
+      "AnItem": "Un objet porté par un personnage",
+      "ItemCarried": "{item} (porté par {owner})",
       "OtherCharacters": "Autres personnages"
     },
     "EffectMode": {
@@ -541,6 +549,7 @@
       "Pf2eEffect": "Accordé comme Effet, il apparaît donc dans la barre d'effets",
       "ActiveEffect": "Accordé comme effet actif, il apparaît donc dans l'onglet Effets",
       "QuietFeature": "Accordé comme une aptitude discrète et permanente sur la fiche",
+      "OnItem": "Placé sur l'objet lui-même et s'applique à quiconque le porte équipé",
       "Sentence": "{how} ; retirer ou rembourser l'amélioration le supprime à nouveau.",
       "AlreadyOwned": "Cette amélioration est déjà acquise — l'enregistrement la réapplique à ses cibles."
     },
@@ -615,6 +624,9 @@
       "SettingsSaved": "Upgrades : {count} réglages enregistrés.",
       "NothingToSave": "Upgrades : rien à enregistrer.",
       "PickACharacter": "Upgrades : choisissez un personnage pour une amélioration ne visant qu'un seul personnage.",
+      "PickAnItem": "Upgrades : choisissez un objet pour une amélioration d'objet.",
+      "ItemNeedsOwner": "Upgrades : personne ne porte cet objet. Faites-le plutôt glisser depuis une fiche de personnage.",
+      "ItemLinkUnsupported": "Upgrades : « {name} » lie un document qu'un objet ne peut pas porter — construisez l'effet à la place, ou liez un effet actif.",
       "Migrated": "Upgrade Board : votre tableau existant a été repris de l'ancien module « Upgrades » ({count} améliorations). Vous pouvez désormais désactiver celui-ci sans risque."
     },
     "IconName": {

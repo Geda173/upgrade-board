@@ -164,6 +164,12 @@
       "Dnd5eFormula": "Werte sind dnd5e-Würfelformeln und sollten ein Vorzeichen tragen: <code>+2</code> für einen festen Bonus, <code>+1d8[cold]</code> für typisierte Würfel. So schreibt man „jeder Waffenhieb verursacht 1d8 zusätzlichen Kälteschaden“. Das Vorzeichen wird ergänzt, wenn du es weglässt; es ist wichtig, weil zwei Upgrades auf denselben Bonus aneinandergehängt werden und <code>+2+3</code> funktioniert, wo <code>23</code> es nicht tut. Attributswerte und Dunkelsicht sind schlichte Zahlen, dort steht also <code>2</code> und <code>60</code>.",
       "DragEffect": "Einen Effekt oder Gegenstand hierher ziehen",
       "DragEffectHint": "aus einem Charakterbogen, der Gegenstandsleiste oder einem Kompendium",
+      "DragItem": "Einen Gegenstand hierher ziehen",
+      "DragItemHint": "aus einem Charakterbogen — das Upgrade landet auf genau diesem Gegenstand",
+      "CarriedBy": "getragen von {owner}",
+      "ItemUnresolved": "Der gewählte Gegenstand existiert nicht mehr. Lege hier einen neuen ab.",
+      "ItemUnowned": "Diesen Gegenstand trägt niemand mehr, sein Effekt erreicht also niemanden, bis ihn wieder jemand aufnimmt.",
+      "ItemTargetHint": "Der Effekt reist mit dem Gegenstand und wirkt auf denjenigen, der ihn angelegt hat — eingestimmt bzw. investiert, wo das System es verlangt. Ein verstauter Gegenstand gewährt nichts.",
       "Uuid": "UUID",
       "UuidEg": "wird durch Ziehen ausgefüllt, oder eine einfügen",
       "UuidUnresolved": "Diese UUID verweist auf kein Dokument in dieser Welt.",
@@ -514,6 +520,8 @@
       "Unknown": "Unbekannter Akteur",
       "WholeParty": "Die ganze Gruppe",
       "OneCharacter": "Ein bestimmter Charakter",
+      "AnItem": "Ein Gegenstand, den jemand trägt",
+      "ItemCarried": "{item} (getragen von {owner})",
       "OtherCharacters": "Andere Charaktere"
     },
     "EffectMode": {
@@ -541,6 +549,7 @@
       "Pf2eEffect": "Wird als Effekt gewährt und erscheint daher in der Effektleiste",
       "ActiveEffect": "Wird als aktiver Effekt gewährt und erscheint daher im Reiter „Effekte“",
       "QuietFeature": "Wird als unauffälliges, dauerhaftes Merkmal auf dem Bogen gewährt",
+      "OnItem": "Liegt auf dem Gegenstand selbst und wirkt auf denjenigen, der ihn angelegt hat",
       "Sentence": "{how}; wird das Upgrade entfernt oder erstattet, verschwindet es wieder.",
       "AlreadyOwned": "Dieses Upgrade ist bereits erworben — beim Speichern wird es erneut auf seine Ziele angewendet."
     },
@@ -615,6 +624,9 @@
       "SettingsSaved": "Upgrades: {count} Einstellungen gespeichert.",
       "NothingToSave": "Upgrades: nichts zu speichern.",
       "PickACharacter": "Upgrades: wähle einen Charakter für ein Upgrade, das nur einen betrifft.",
+      "PickAnItem": "Upgrades: wähle einen Gegenstand für ein Gegenstands-Upgrade.",
+      "ItemNeedsOwner": "Upgrades: diesen Gegenstand trägt niemand. Ziehe ihn stattdessen aus einem Charakterbogen.",
+      "ItemLinkUnsupported": "Upgrades: „{name}“ verlinkt ein Dokument, das ein Gegenstand nicht tragen kann — baue den Effekt stattdessen, oder verlinke einen aktiven Effekt.",
       "Migrated": "Upgrade Board: dein bestehendes Board wurde aus dem älteren Modul „Upgrades“ übernommen ({count} Upgrades). Du kannst jenes jetzt gefahrlos deaktivieren."
     },
     "IconName": {

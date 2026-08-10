@@ -164,6 +164,12 @@
       "Dnd5eFormula": "Los valores son fórmulas de tirada de dnd5e y deberían llevar signo: <code>+2</code> para una bonificación fija, <code>+1d8[cold]</code> para dados con tipo. Así se escribe «cada golpe de arma inflige 1d8 de daño de frío adicional». El signo se añade por ti si lo omites; importa porque dos mejoras que tocan la misma bonificación se unen una tras otra, y <code>+2+3</code> funciona donde <code>23</code> no. Los valores de característica y la visión en la oscuridad son números simples, así que ahí se pone <code>2</code> y <code>60</code>.",
       "DragEffect": "Arrastra aquí un efecto o un objeto",
       "DragEffectHint": "desde una hoja de personaje, la barra de Objetos o un compendio",
+      "DragItem": "Arrastra aquí un objeto",
+      "DragItemHint": "desde una hoja de personaje — la mejora recae en ese mismo objeto",
+      "CarriedBy": "lo lleva {owner}",
+      "ItemUnresolved": "El objeto elegido ya no existe. Suelta aquí uno nuevo.",
+      "ItemUnowned": "Ya nadie lleva este objeto, así que su efecto no alcanza a nadie hasta que alguien lo recoja.",
+      "ItemTargetHint": "El efecto viaja con el objeto y se aplica a quien lo lleve equipado — sintonizado o investido donde el sistema lo pida. Un objeto guardado no concede nada.",
       "Uuid": "UUID",
       "UuidEg": "se rellena arrastrando, o pega uno",
       "UuidUnresolved": "Ese UUID no corresponde a ningún documento de este mundo.",
@@ -514,6 +520,8 @@
       "Unknown": "Actor desconocido",
       "WholeParty": "Todo el grupo",
       "OneCharacter": "Un personaje concreto",
+      "AnItem": "Un objeto que lleva un personaje",
+      "ItemCarried": "{item} (lo lleva {owner})",
       "OtherCharacters": "Otros personajes"
     },
     "EffectMode": {
@@ -541,6 +549,7 @@
       "Pf2eEffect": "Se concede como Efecto, así que aparece en la barra de efectos",
       "ActiveEffect": "Se concede como efecto activo, así que aparece en la pestaña Efectos",
       "QuietFeature": "Se concede como un rasgo discreto y permanente en la hoja",
+      "OnItem": "Se coloca en el propio objeto y se aplica a quien lo lleve equipado",
       "Sentence": "{how}; quitar o reembolsar la mejora vuelve a eliminarlo.",
       "AlreadyOwned": "Esta mejora ya está adquirida — al guardar se vuelve a aplicar a sus objetivos."
     },
@@ -615,6 +624,9 @@
       "SettingsSaved": "Upgrades: {count} opciones guardadas.",
       "NothingToSave": "Upgrades: nada que guardar.",
       "PickACharacter": "Upgrades: elige un personaje para una mejora dirigida a uno solo.",
+      "PickAnItem": "Upgrades: elige un objeto para una mejora de objeto.",
+      "ItemNeedsOwner": "Upgrades: nadie lleva ese objeto. Arrástralo desde una hoja de personaje.",
+      "ItemLinkUnsupported": "Upgrades: «{name}» enlaza un documento que un objeto no puede contener — construye el efecto en su lugar, o enlaza un efecto activo.",
       "Migrated": "Upgrade Board: tu tablero existente se ha traído del módulo antiguo «Upgrades» ({count} mejoras). Ya puedes desactivarlo sin problema."
     },
     "IconName": {

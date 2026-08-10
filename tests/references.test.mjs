@@ -22,7 +22,7 @@ const AMBIENT = new Set([
   'if', 'for', 'while', 'switch', 'catch', 'return', 'typeof', 'function', 'await', 'super',
   'Array', 'Object', 'String', 'Number', 'Boolean', 'Math', 'JSON', 'Set', 'Map', 'Promise',
   'Error', 'RegExp', 'Date', 'parseInt', 'parseFloat', 'isNaN', 'structuredClone',
-  'foundry', 'game', 'ui', 'canvas', 'Hooks', 'CONFIG', 'CONST', 'fromUuid', 'ChatMessage',
+  'foundry', 'game', 'ui', 'canvas', 'Hooks', 'CONFIG', 'CONST', 'fromUuid', 'fromUuidSync', 'ChatMessage',
   'Actor', 'Item', 'FilePicker', 'Token', 'Dialog', 'DialogV2', 'console', 'window', 'document',
   'setTimeout', 'clearTimeout', 'requestAnimationFrame', 'fetch', 'Symbol', 'import', 'async'
 ]);

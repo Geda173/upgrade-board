@@ -134,7 +134,32 @@
     </p>
     {{/if}}
 
-    {{#if isActorTarget}}
+    {{#if isItemTarget}}
+    <input type="hidden" name="targetItemUuid" value="{{upgrade.targetItemUuid}}">
+    <div class="upg-drop {{#if hasTargetItem}}filled{{/if}}" data-drop="targetItem">
+      {{#if hasTargetItem}}
+        {{#if targetItemImg}}<img src="{{targetItemImg}}" alt="">{{/if}}
+        <div class="upg-drop-text">
+          <strong>{{targetItemName}}</strong>
+          {{#if targetItemOwner}}<span>{{localize "UPGRADES.UpgradeEditor.CarriedBy" owner=targetItemOwner}}</span>{{/if}}
+        </div>
+        <button type="button" data-action="clearTargetItem" title="{{localize "UPGRADES.Common.Clear"}}"><i class="fa-solid fa-xmark"></i></button>
+      {{else}}
+        <i class="fa-solid fa-hand-pointer"></i>
+        <div class="upg-drop-text">
+          <strong>{{localize "UPGRADES.UpgradeEditor.DragItem"}}</strong>
+          <span>{{localize "UPGRADES.UpgradeEditor.DragItemHint"}}</span>
+        </div>
+      {{/if}}
+    </div>
+    {{#if targetItemMissing}}
+    <p class="upg-warn"><i class="fa-solid fa-triangle-exclamation"></i> {{localize "UPGRADES.UpgradeEditor.ItemUnresolved"}}</p>
+    {{/if}}
+    {{#if targetItemUnowned}}
+    <p class="upg-warn"><i class="fa-solid fa-triangle-exclamation"></i> {{localize "UPGRADES.UpgradeEditor.ItemUnowned"}}</p>
+    {{/if}}
+    <p class="upg-hint">{{localize "UPGRADES.UpgradeEditor.ItemTargetHint"}}</p>
+    {{else if isActorTarget}}
     <div class="form-group">
       <label>{{localize "UPGRADES.UpgradeEditor.Character"}}</label>
       <select name="targetActorId">
@@ -317,12 +342,16 @@
     {{/if}}
 
     {{#if showsGrantNote}}
+    {{#unless isItemTarget}}
+    {{! On an item the payload always sits on the item itself — there is no wrapper feat and no
+        effects-bar choice to make, so offering the checkbox would promise something it cannot do. }}
     <div class="form-group">
       <label class="checkbox">
         <input type="checkbox" name="showInEffectsBar" data-action="rerender" {{#if upgrade.showInEffectsBar}}checked{{/if}}>
         {{localize "UPGRADES.UpgradeEditor.ShowInEffectsBar"}}
       </label>
     </div>
+    {{/unless}}
     <div class="form-group">
       <label class="checkbox">
         <input type="checkbox" name="hideEffect" {{#if upgrade.hideEffect}}checked{{/if}}>

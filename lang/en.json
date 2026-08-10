@@ -164,6 +164,12 @@
       "Dnd5eFormula": "Values are dnd5e roll formulas, and they should carry a sign: <code>+2</code> for a flat bonus, <code>+1d8[cold]</code> for typed dice — that is how “every weapon swing deals an extra 1d8 cold” is written. The sign is added for you if you leave it off; it matters because two upgrades touching the same bonus are joined end to end, and <code>+2+3</code> works where <code>23</code> does not. Ability scores and darkvision are plain numbers, so those take <code>2</code> and <code>60</code>.",
       "DragEffect": "Drag an Effect or Item here",
       "DragEffectHint": "from a character sheet, the Items sidebar, or a compendium",
+      "DragItem": "Drag an item here",
+      "DragItemHint": "from a character sheet — the upgrade lands on that very item",
+      "CarriedBy": "carried by {owner}",
+      "ItemUnresolved": "The chosen item no longer exists. Drop a new one here.",
+      "ItemUnowned": "Nobody carries this item any more, so its effect reaches no one until someone picks it up.",
+      "ItemTargetHint": "The effect travels with the item and applies to whoever has it equipped — attuned or invested where the system asks for it. A stashed item grants nothing.",
       "Uuid": "UUID",
       "UuidEg": "filled in by dragging, or paste one",
       "UuidUnresolved": "That UUID does not resolve to a document in this world.",
@@ -514,6 +520,8 @@
       "Unknown": "Unknown actor",
       "WholeParty": "The whole party",
       "OneCharacter": "One specific character",
+      "AnItem": "An item someone carries",
+      "ItemCarried": "{item} (carried by {owner})",
       "OtherCharacters": "Other characters"
     },
     "EffectMode": {
@@ -541,6 +549,7 @@
       "Pf2eEffect": "Granted as an Effect, so it sits in the effects bar",
       "ActiveEffect": "Granted as an Active Effect, so it sits on the Effects tab",
       "QuietFeature": "Granted as a quiet, permanent feature on the sheet",
+      "OnItem": "Placed on the item itself, applying to whoever has it equipped",
       "Sentence": "{how}; removing or refunding the upgrade deletes it again.",
       "AlreadyOwned": "This upgrade is already owned — saving re-applies it to its targets."
     },
@@ -615,6 +624,9 @@
       "SettingsSaved": "Upgrades: {count} setting(s) saved.",
       "NothingToSave": "Upgrades: nothing to save.",
       "PickACharacter": "Upgrades: pick a character for a single-character upgrade.",
+      "PickAnItem": "Upgrades: pick an item for an item upgrade.",
+      "ItemNeedsOwner": "Upgrades: nobody carries that item. Drag it from a character sheet instead.",
+      "ItemLinkUnsupported": "Upgrades: “{name}” links a document an item cannot carry — build the effect instead, or link an Active Effect.",
       "Migrated": "Upgrade Board: your existing board came across from the older “Upgrades” module ({count} upgrades). You can safely disable that one now."
     },
     "IconName": {

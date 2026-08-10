@@ -164,6 +164,12 @@
       "Dnd5eFormula": "I valori sono formule di tiro di dnd5e e dovrebbero avere un segno: <code>+2</code> per un bonus fisso, <code>+1d8[cold]</code> per dadi tipizzati. È così che si scrive «ogni colpo d'arma infligge 1d8 danni da freddo in più». Il segno viene aggiunto se lo ometti; conta perché due migliorie che toccano lo stesso bonus vengono unite in fila, e <code>+2+3</code> funziona dove <code>23</code> no. I valori di caratteristica e la scurovisione sono numeri semplici, quindi lì si scrive <code>2</code> e <code>60</code>.",
       "DragEffect": "Trascina qui un effetto o un oggetto",
       "DragEffectHint": "da una scheda personaggio, dalla barra Oggetti o da un compendio",
+      "DragItem": "Trascina qui un oggetto",
+      "DragItemHint": "da una scheda personaggio — la miglioria finisce proprio su quell'oggetto",
+      "CarriedBy": "portato da {owner}",
+      "ItemUnresolved": "L'oggetto scelto non esiste più. Trascinane qui uno nuovo.",
+      "ItemUnowned": "Nessuno porta più questo oggetto: il suo effetto non raggiunge nessuno finché qualcuno non lo raccoglie.",
+      "ItemTargetHint": "L'effetto viaggia con l'oggetto e si applica a chi lo tiene equipaggiato — sintonizzato o investito dove il sistema lo richiede. Un oggetto riposto non concede nulla.",
       "Uuid": "UUID",
       "UuidEg": "si compila trascinando, oppure incollane uno",
       "UuidUnresolved": "Questo UUID non corrisponde ad alcun documento di questo mondo.",
@@ -514,6 +520,8 @@
       "Unknown": "Attore sconosciuto",
       "WholeParty": "Tutto il gruppo",
       "OneCharacter": "Un personaggio specifico",
+      "AnItem": "Un oggetto portato da un personaggio",
+      "ItemCarried": "{item} (portato da {owner})",
       "OtherCharacters": "Altri personaggi"
     },
     "EffectMode": {
@@ -541,6 +549,7 @@
       "Pf2eEffect": "Concessa come Effetto, quindi compare nella barra degli effetti",
       "ActiveEffect": "Concessa come effetto attivo, quindi compare nella scheda Effetti",
       "QuietFeature": "Concessa come privilegio discreto e permanente sulla scheda",
+      "OnItem": "Collocata sull'oggetto stesso, si applica a chi lo tiene equipaggiato",
       "Sentence": "{how}; rimuovere o rimborsare la miglioria la cancella di nuovo.",
       "AlreadyOwned": "Questa miglioria è già acquisita — salvando viene riapplicata ai suoi bersagli."
     },
@@ -615,6 +624,9 @@
       "SettingsSaved": "Upgrades: {count} impostazioni salvate.",
       "NothingToSave": "Upgrades: nulla da salvare.",
       "PickACharacter": "Upgrades: scegli un personaggio per una miglioria destinata a uno solo.",
+      "PickAnItem": "Upgrades: scegli un oggetto per una miglioria da oggetto.",
+      "ItemNeedsOwner": "Upgrades: nessuno porta quell'oggetto. Trascinalo invece da una scheda personaggio.",
+      "ItemLinkUnsupported": "Upgrades: «{name}» collega un documento che un oggetto non può contenere — costruisci invece l'effetto, oppure collega un effetto attivo.",
       "Migrated": "Upgrade Board: il tuo tabellone esistente è stato riportato dal vecchio modulo «Upgrades» ({count} migliorie). Ora puoi disattivarlo senza problemi."
     },
     "IconName": {

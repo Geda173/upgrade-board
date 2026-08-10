@@ -74,9 +74,48 @@ export function getTargetActors(upgrade, { buyerActor = null } = {}) {
   return getPartyActors();
 }
 
+/**
+ * The item an "item" upgrade lands on, or null when it is gone or unowned.
+ *
+ * Only items carried by an actor are legal targets: a sidebar item affects nobody, and every
+ * copy handed out is a separate document the grant would silently miss. The picker enforces the
+ * same rule, but the upgrade may have been edited or the item traded away since.
+ */
+export function getTargetItem(upgrade) {
+  const item = upgrade.targetItemUuid ? fromUuidSync(upgrade.targetItemUuid) : null;
+  if (!item || item.documentName !== "Item") {
+    console.warn(`${MODULE_ID} | Upgrade "${upgrade.name}" targets a missing item (${upgrade.targetItemUuid}).`);
+    return null;
+  }
+  if (!(item.parent instanceof Actor)) {
+    console.warn(`${MODULE_ID} | Upgrade "${upgrade.name}" targets an item nobody carries (${upgrade.targetItemUuid}).`);
+    return null;
+  }
+  return item;
+}
+
+/**
+ * The documents an upgrade's payload should be embedded on — actors, or one carried item.
+ * The single path every apply-side caller goes through, so "who gets this" is decided once.
+ */
+export function getTargetDocuments(upgrade, { buyerActor = null } = {}) {
+  if (upgrade.target === TARGET.ITEM) {
+    const item = getTargetItem(upgrade);
+    return item ? [item] : [];
+  }
+  return getTargetActors(upgrade, { buyerActor });
+}
+
 /** Human-readable description of who an upgrade applies to. */
 export function describeTarget(upgrade) {
   if (upgrade.target === TARGET.BUYER) return t("UPGRADES.Target.Buyer");
+  if (upgrade.target === TARGET.ITEM) {
+    const item = upgrade.targetItemUuid ? fromUuidSync(upgrade.targetItemUuid) : null;
+    if (!item) return t("UPGRADES.Target.Unknown");
+    return item.parent instanceof Actor
+      ? t("UPGRADES.Target.ItemCarried", { item: item.name, owner: item.parent.name })
+      : item.name;
+  }
   if (upgrade.target !== TARGET.ACTOR) return t("UPGRADES.Target.Party");
   const actor = upgrade.targetActorId ? game.actors.get(upgrade.targetActorId) : null;
   return actor?.name ?? t("UPGRADES.Target.Unknown");
@@ -172,7 +211,7 @@ export async function resolveEffectPayload(upgrade) {
  * wrapped in a dnd5e feat item so it shows up in Features rather than hiding on the Effects tab.
  * Deleting that one item takes the bonus with it, which is what makes refund/undo clean.
  */
-async function createFromPayload(actor, payload, upgrade, purchaseId = null, choice = null) {
+async function createFromPayload(target, payload, upgrade, purchaseId = null, choice = null) {
   const data = foundry.utils.deepClone(payload.data);
   const suffix = choice?.name ? ` (${choice.name})` : "";
   const link = choice?.name ? `<p>Chosen: @UUID[${choice.uuid}]{${choice.name}}</p>` : "";
@@ -188,6 +227,21 @@ async function createFromPayload(actor, payload, upgrade, purchaseId = null, cho
 
   foundry.utils.setProperty(data, `flags.${MODULE_ID}.upgradeId`, upgrade.id);
   if (purchaseId) foundry.utils.setProperty(data, `flags.${MODULE_ID}.purchaseId`, purchaseId);
+
+  // An item target takes the payload directly. The wrapper feat below is a way of keeping a
+  // character sheet tidy and makes no sense inside a sword.
+  if (target.documentName === "Item") {
+    if (payload.documentName === "ActiveEffect") {
+      // `transfer: true` is what carries the effect to whoever holds the item — and, because
+      // both systems suppress effects from unequipped/unattuned items, what makes a stashed
+      // sword grant nothing. That suppression is the feature, not a bug.
+      data.transfer = true;
+      data.disabled = false;
+      return target.createEmbeddedDocuments("ActiveEffect", [data]);
+    }
+    return mergeRulesIntoItem(target, payload, upgrade, purchaseId);
+  }
+  const actor = target;
 
   // Same choice on the dnd5e side: a bare ActiveEffect shows on the Effects tab, while wrapping
   // it in a feat keeps it quiet and puts it under Features where a permanent upgrade belongs.
@@ -209,6 +263,47 @@ async function createFromPayload(actor, payload, upgrade, purchaseId = null, cho
   }
 
   return actor.createEmbeddedDocuments(payload.documentName, [data]);
+}
+
+/**
+ * PF2e's half of granting to an item: an item cannot contain another item, so the built rule
+ * elements are merged into the target's own `system.rules` instead of arriving as a document.
+ *
+ * Each merged rule is stamped with `{ [MODULE_ID]: { upgradeId, purchaseId } }`. That key is not
+ * in the rule-element schema, which is precisely why it works: Foundry's DataModel validates and
+ * cleans only declared fields (checked against `base.ts` at pf2e-8.3.0), so the tag rides along
+ * in storage, PF2e ignores it, and refund can tell our rules from the GM's own — a merged rule
+ * is not a document, so the usual flag has nowhere else to live. PF2e also ignores rules on
+ * physical items that are not equipped/invested (`requiresEquipped` defaults on), so the
+ * equipped-only behaviour needs nothing from us here.
+ */
+async function mergeRulesIntoItem(item, payload, upgrade, purchaseId = null) {
+  const incoming = payload.data?.system?.rules;
+  if (!Array.isArray(incoming) || !incoming.length) {
+    // A linked document with no rule elements has nothing an item could carry.
+    throw new Error(`payload for "${upgrade.name}" cannot be embedded on an item`);
+  }
+  const tag = { upgradeId: upgrade.id, ...(purchaseId ? { purchaseId } : {}) };
+  const tagged = incoming.map(rule => ({ ...foundry.utils.deepClone(rule), [MODULE_ID]: tag }));
+  const existing = (item.system?.rules ?? []).map(rule => foundry.utils.deepClone(rule));
+  return item.update({ "system.rules": [...existing, ...tagged] });
+}
+
+/** Does this stored rule element belong to the given upgrade or purchase? */
+function mergedRuleMatches(rule, upgradeId, purchaseId) {
+  const tag = rule?.[MODULE_ID];
+  if (!tag) return false;
+  return purchaseId ? tag.purchaseId === purchaseId : tag.upgradeId === upgradeId;
+}
+
+/** Strip this upgrade's merged rule elements back out of an item. Returns how many went. */
+async function stripMergedRules(item, upgradeId, purchaseId = null) {
+  const rules = item.system?.rules;
+  if (!Array.isArray(rules) || !rules.length) return 0;
+  const keep = rules.filter(rule => !mergedRuleMatches(rule, upgradeId, purchaseId));
+  if (keep.length === rules.length) return 0;
+  await item.update({ "system.rules": keep.map(rule => foundry.utils.deepClone(rule)) });
+  return rules.length - keep.length;
 }
 
 /**
@@ -238,14 +333,20 @@ function flagged(doc, upgradeId, purchaseId) {
       || doc.flags?.[LEGACY_MODULE_ID]?.[field] === wanted;
 }
 
-function hasUpgrade(actor, upgradeId, purchaseId = null) {
-  return !!findGrant(actor, upgradeId, purchaseId);
+function hasUpgrade(target, upgradeId, purchaseId = null) {
+  if (findGrant(target, upgradeId, purchaseId)) return true;
+  // A PF2e grant to an item is not a document at all — it is rules merged into the item.
+  const rules = target.documentName === "Item" ? target.system?.rules : null;
+  return Array.isArray(rules) && rules.some(rule => mergedRuleMatches(rule, upgradeId, purchaseId));
 }
 
-/** The document this module created on an actor for a given upgrade, or null. */
-function findGrant(actor, upgradeId, purchaseId = null) {
+/**
+ * The document this module created on a target for a given upgrade, or null.
+ * Works on an actor (embedded items and effects) and on an item (its own effects).
+ */
+function findGrant(target, upgradeId, purchaseId = null) {
   const matches = doc => flagged(doc, upgradeId, purchaseId);
-  return actor.items?.find(matches) ?? actor.effects?.find(matches) ?? null;
+  return target.items?.find(matches) ?? target.effects?.find(matches) ?? null;
 }
 
 /**
@@ -285,21 +386,29 @@ export async function applyUpgradeEffect(upgrade, { buyerActor = null, purchaseI
     return { count: 0, names: [] };
   }
 
-  const targets = getTargetActors(upgrade, { buyerActor });
+  // An item can carry an ActiveEffect or merged rule elements, but never another item — a
+  // linked feature or piece of equipment has no shape a sword could hold.
+  if (upgrade.target === TARGET.ITEM && payload.documentName === "Item"
+      && !payload.data?.system?.rules?.length) {
+    ui.notifications.warn(t("UPGRADES.Notify.ItemLinkUnsupported", { name: upgrade.name }));
+    return { count: 0, names: [] };
+  }
+
+  const targets = getTargetDocuments(upgrade, { buyerActor });
   if (!targets.length) {
     ui.notifications.warn(t("UPGRADES.Notify.NoTarget", { name: upgrade.name }));
     return { count: 0, names: [] };
   }
 
   const names = [];
-  for (const actor of targets) {
+  for (const target of targets) {
     try {
-      if (hasUpgrade(actor, upgrade.id, upgrade.repeatable ? purchaseId : null)) continue;
-      await createFromPayload(actor, payload, upgrade, purchaseId, choice);
-      names.push(actor.name);
+      if (hasUpgrade(target, upgrade.id, upgrade.repeatable ? purchaseId : null)) continue;
+      await createFromPayload(target, payload, upgrade, purchaseId, choice);
+      names.push(target.name);
     } catch (err) {
-      console.error(`${MODULE_ID} | Could not apply effect to ${actor.name}`, err);
-      ui.notifications.error(t("UPGRADES.Notify.ApplyFailed", { name: upgrade.name, actor: actor.name }));
+      console.error(`${MODULE_ID} | Could not apply effect to ${target.name}`, err);
+      ui.notifications.error(t("UPGRADES.Notify.ApplyFailed", { name: upgrade.name, actor: target.name }));
     }
   }
   return { count: names.length, names };
@@ -320,6 +429,26 @@ export async function removeUpgradeEffect(upgradeId, purchaseId = null) {
       await actor.deleteEmbeddedDocuments("ActiveEffect", effects.map(e => e.id));
       count += effects.length;
     }
+    // Item-targeted grants live one level deeper: an effect embedded on a carried item, or
+    // rule elements merged into one. The snapshot matters — the collection shifts under an
+    // await, and the flagged deletions above have already changed it once.
+    for (const item of [...(actor.items ?? [])]) {
+      const embedded = item.effects?.filter(matches) ?? [];
+      if (embedded.length) {
+        await item.deleteEmbeddedDocuments("ActiveEffect", embedded.map(e => e.id));
+        count += embedded.length;
+      }
+      count += await stripMergedRules(item, upgradeId, purchaseId);
+    }
+  }
+  // An upgraded item that was traded back to the sidebar still carries the grant.
+  for (const item of [...(game.items ?? [])]) {
+    const embedded = item.effects?.filter(matches) ?? [];
+    if (embedded.length) {
+      await item.deleteEmbeddedDocuments("ActiveEffect", embedded.map(e => e.id));
+      count += embedded.length;
+    }
+    count += await stripMergedRules(item, upgradeId, purchaseId);
   }
   return { count };
 }
@@ -358,22 +487,26 @@ export async function resyncUpgrades() {
       const buyerActor = purchase.actorId ? game.actors.get(purchase.actorId) : null;
       const purchaseId = upgrade.repeatable ? purchase.id : null;
 
-      for (const actor of getTargetActors(upgrade, { buyerActor })) {
-        const existing = findGrant(actor, upgrade.id, purchaseId);
+      for (const target of getTargetDocuments(upgrade, { buyerActor })) {
+        const existing = findGrant(target, upgrade.id, purchaseId);
         if (existing) {
           // Nothing to compare against, or nothing has drifted: leave the sheet alone.
           if (!wanted || grantSignature(existing) === wanted) continue;
           try {
-            await actor.deleteEmbeddedDocuments(existing.documentName, [existing.id]);
-            await createFromPayload(actor, payload, upgrade, purchase.id, purchase.choice ?? null);
+            await target.deleteEmbeddedDocuments(existing.documentName, [existing.id]);
+            await createFromPayload(target, payload, upgrade, purchase.id, purchase.choice ?? null);
             refreshed++;
           } catch (err) {
             // A grant that could not be replaced must not leave the sheet without one.
-            console.error(`${MODULE_ID} | Could not refresh "${upgrade.name}" on ${actor.name}`, err);
+            console.error(`${MODULE_ID} | Could not refresh "${upgrade.name}" on ${target.name}`, err);
           }
           continue;
         }
-        await createFromPayload(actor, payload, upgrade, purchase.id, purchase.choice ?? null);
+        // A PF2e grant merged into an item's rules is invisible to findGrant — it is not a
+        // document. Present means present: recreating it here would double the rules on every
+        // re-sync. Rebuilding a *stale* merged grant is not attempted yet.
+        if (hasUpgrade(target, upgrade.id, purchaseId)) continue;
+        await createFromPayload(target, payload, upgrade, purchase.id, purchase.choice ?? null);
         created++;
       }
     }

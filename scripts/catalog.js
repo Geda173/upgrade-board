@@ -14,13 +14,15 @@ export const TARGET = {
   PARTY: "party",
   ACTOR: "actor",
   /** Whoever buys it — resolved at purchase time, so the GM need not know in advance. */
-  BUYER: "buyer"
+  BUYER: "buyer",
+  /** An item carried by a character — the effect travels with the item when it changes hands. */
+  ITEM: "item"
 };
 
 /**
  * Upgrade shape:
  * { id, name, cost, img, flavor, description (HTML), hidden, purchased,
- *   purchasedBy, purchasedAt, target, targetActorId, sort,
+ *   purchasedBy, purchasedAt, target, targetActorId, targetItemUuid, sort,
  *   effectMode, effectUuid, effectBuild: { rows: [{preset, value, damageType?, key?, mode?}] },
  *   hideEffect, categoryId, repeatable, showInEffectsBar, requires: [upgradeId],
  *   excludes: [upgradeId],
@@ -32,6 +34,7 @@ export const TARGET = {
  *
  * target: "party" → effect applies to every member of the party actor
  *         "actor" → effect applies only to targetActorId
+ *         "item"  → effect lands on the item at targetItemUuid (must be carried by an actor)
  */
 export function getUpgrades() {
   const stored = foundry.utils.deepClone(game.settings.get(MODULE_ID, SETTINGS.UPGRADES)) ?? [];
@@ -59,6 +62,7 @@ function normalizeUpgrade(upgrade) {
   const normalized = {
     target: TARGET.PARTY,
     targetActorId: null,
+    targetItemUuid: null,
     effectBuild: { rows: [] },
     hideEffect: false,
     categoryId: null,
@@ -107,7 +111,7 @@ export async function upsertUpgrade(data) {
     categoryId: null, repeatable: false, purchases: [], showInEffectsBar: false, requires: [],
     excludes: [],
     choice: { enabled: false, label: "", hint: "" },
-    target: TARGET.PARTY, targetActorId: null, sort: upgrades.length,
+    target: TARGET.PARTY, targetActorId: null, targetItemUuid: null, sort: upgrades.length,
     ...data
   });
   return setUpgrades(upgrades);

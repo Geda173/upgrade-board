@@ -43,6 +43,7 @@ export class UpgradeEditor extends UpgradesWindow(HandlebarsApplicationMixin(App
       addRow: UpgradeEditor.#onAddRow,
       removeRow: UpgradeEditor.#onRemoveRow,
       clearLink: UpgradeEditor.#onClearLink,
+      clearTargetItem: UpgradeEditor.#onClearTargetItem,
       pickImage: UpgradeEditor.#onPickImage,
       cancel: UpgradeEditor.#onCancel
     }
@@ -110,6 +111,7 @@ export class UpgradeEditor extends UpgradesWindow(HandlebarsApplicationMixin(App
       purchased: !!u.purchased,
       target: u.target ?? TARGET.PARTY,
       targetActorId: u.targetActorId ?? "",
+      targetItemUuid: u.targetItemUuid ?? "",
       effectMode: u.effectMode ?? (u.effectUuid ? EFFECT_MODE.LINK : EFFECT_MODE.NONE),
       effectUuid: u.effectUuid ?? "",
       rows: foundry.utils.deepClone(u.effectBuild?.rows ?? [])
@@ -167,7 +169,8 @@ export class UpgradeEditor extends UpgradesWindow(HandlebarsApplicationMixin(App
       targetOptions: [
         { value: TARGET.PARTY, label: t("UPGRADES.Target.WholeParty"), isSelected: draft.target === TARGET.PARTY },
         { value: TARGET.BUYER, label: t("UPGRADES.Target.Buyer"), isSelected: draft.target === TARGET.BUYER },
-        { value: TARGET.ACTOR, label: t("UPGRADES.Target.OneCharacter"), isSelected: draft.target === TARGET.ACTOR }
+        { value: TARGET.ACTOR, label: t("UPGRADES.Target.OneCharacter"), isSelected: draft.target === TARGET.ACTOR },
+        { value: TARGET.ITEM, label: t("UPGRADES.Target.AnItem"), isSelected: draft.target === TARGET.ITEM }
       ],
       isBuyerTarget: draft.target === TARGET.BUYER,
       choiceEnabled: draft.choiceEnabled,
@@ -175,6 +178,8 @@ export class UpgradeEditor extends UpgradesWindow(HandlebarsApplicationMixin(App
       hasTargetActor: !!draft.targetActorId,
       actorGroups: this.#actorGroups(),
       partyNote: this.#partyNote(),
+      isItemTarget: draft.target === TARGET.ITEM,
+      ...this.#targetItemContext(),
 
       effectModeOptions: [
         { value: EFFECT_MODE.NONE, label: t("UPGRADES.EffectMode.None"), isSelected: draft.effectMode === EFFECT_MODE.NONE },
@@ -283,6 +288,28 @@ export class UpgradeEditor extends UpgradesWindow(HandlebarsApplicationMixin(App
     };
   }
 
+  /**
+   * What the chosen target item looks like right now.
+   *
+   * Resolved fresh on every render rather than cached at drop time, because the item can be
+   * deleted or traded to the sidebar while this window sits open — and a stale name over a dead
+   * UUID is exactly the kind of thing that fails silently later, at purchase time.
+   */
+  #targetItemContext() {
+    let item = null;
+    try { item = this.draft.targetItemUuid ? fromUuidSync(this.draft.targetItemUuid) : null; } catch { item = null; }
+    const carried = !!item && item.parent instanceof Actor;
+    return {
+      hasTargetItem: !!item,
+      targetItemName: item?.name ?? null,
+      targetItemImg: item?.img ?? null,
+      targetItemOwner: carried ? item.parent.name : null,
+      // Set but unresolvable: said out loud, or the GM saves a target that no longer exists.
+      targetItemMissing: !!this.draft.targetItemUuid && !item,
+      targetItemUnowned: !!item && !carried
+    };
+  }
+
   /** Party members first — in a busy world the flat character list is unusable. */
   #actorGroups() {
     const party = getPartyActors();
@@ -324,9 +351,11 @@ export class UpgradeEditor extends UpgradesWindow(HandlebarsApplicationMixin(App
   }
 
   #grantNote() {
-    const how = t(this.draft.showInEffectsBar
-      ? (game.system.id === "pf2e" ? "UPGRADES.GrantNote.Pf2eEffect" : "UPGRADES.GrantNote.ActiveEffect")
-      : "UPGRADES.GrantNote.QuietFeature");
+    const how = t(this.draft.target === TARGET.ITEM
+      ? "UPGRADES.GrantNote.OnItem"
+      : this.draft.showInEffectsBar
+        ? (game.system.id === "pf2e" ? "UPGRADES.GrantNote.Pf2eEffect" : "UPGRADES.GrantNote.ActiveEffect")
+        : "UPGRADES.GrantNote.QuietFeature");
     const owned = this.draft.purchased ? ` ${t("UPGRADES.GrantNote.AlreadyOwned")}` : "";
     return t("UPGRADES.GrantNote.Sentence", { how }) + owned;
   }
@@ -364,6 +393,9 @@ export class UpgradeEditor extends UpgradesWindow(HandlebarsApplicationMixin(App
     this.draft.categoryId = val("categoryId");
     this.draft.target = val("target") || TARGET.PARTY;
     this.draft.targetActorId = val("targetActorId");
+    // A hidden field: the drop zone writes the draft directly, but the value has to live in the
+    // form too or the re-render triggered by any other control would lose it.
+    this.draft.targetItemUuid = val("targetItemUuid").trim();
     this.draft.effectUuid = val("effectUuid").trim();
 
     const checkedMode = form.querySelector('[name="effectMode"]:checked');
@@ -448,6 +480,20 @@ export class UpgradeEditor extends UpgradesWindow(HandlebarsApplicationMixin(App
         this.draft.effectMode = EFFECT_MODE.LINK;
         if (!this.draft.name) this.draft.name = doc.name;
         if (!this.draft.img) this.draft.img = doc.img ?? "";
+        this.render();
+      }
+    });
+
+    // The upgrade's target item. Only something carried by an actor is accepted: a sidebar item
+    // affects nobody, and every copy handed out is a different document the grant would miss.
+    wireDropZone(this.element.querySelector('[data-drop="targetItem"]'), {
+      accept: ["Item"],
+      onDrop: (doc, uuid) => {
+        if (!(doc.parent instanceof Actor)) {
+          return ui.notifications.warn(t("UPGRADES.Notify.ItemNeedsOwner"));
+        }
+        this.#syncDraft();
+        this.draft.targetItemUuid = uuid;
         this.render();
       }
     });
@@ -565,6 +611,12 @@ export class UpgradeEditor extends UpgradesWindow(HandlebarsApplicationMixin(App
     this.render();
   }
 
+  static #onClearTargetItem() {
+    this.#syncDraft();
+    this.draft.targetItemUuid = "";
+    this.render();
+  }
+
   static async #onPickImage() {
     this.#syncDraft();
     const FP = foundry.applications.apps.FilePicker?.implementation ?? FilePicker;
@@ -590,6 +642,10 @@ export class UpgradeEditor extends UpgradesWindow(HandlebarsApplicationMixin(App
       ui.notifications.warn(t("UPGRADES.Notify.PickACharacter"));
       return;   // window stays open so the GM can fix it
     }
+    if (d.target === TARGET.ITEM && !d.targetItemUuid) {
+      ui.notifications.warn(t("UPGRADES.Notify.PickAnItem"));
+      return;
+    }
 
     await this.onSave({
       ...(d.id ? { id: d.id } : {}),
@@ -610,6 +666,7 @@ export class UpgradeEditor extends UpgradesWindow(HandlebarsApplicationMixin(App
       categoryId: d.categoryId || null,
       target: d.target,
       targetActorId: d.target === TARGET.ACTOR ? d.targetActorId : null,
+      targetItemUuid: d.target === TARGET.ITEM ? (d.targetItemUuid || null) : null,
       effectMode: d.effectMode,
       effectUuid: d.effectMode === EFFECT_MODE.LINK ? (d.effectUuid || null) : null,
       effectBuild: { rows: d.effectMode === EFFECT_MODE.BUILD ? d.rows : [] }
