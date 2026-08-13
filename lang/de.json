@@ -96,6 +96,7 @@
       "MoveUp": "Nach oben",
       "MoveDown": "Nach unten",
       "Rename": "Umbenennen",
+      "Arrange": "Baum anordnen",
       "Delete": "Löschen",
       "Edit": "Bearbeiten",
       "Upgrades": "Upgrades",
@@ -206,7 +207,17 @@
       "Tree": "Talentbaum — ein Raster mit Verbindungspfeilen",
       "Hint": "Ein Talentbaum zeichnet Upgrades als Kacheln, mit Pfeilen entlang der „kommt nach“-Verknüpfungen. Voraussetzungen bleiben dann innerhalb des Abschnitts.",
       "Gate": "Talente pro Reihe zum Weiterkommen",
-      "GateHint": "0 schaltet die Sperre ab. Bei 2 öffnet sich die zweite Reihe nach 2 genommenen Talenten, die dritte nach 4 — gezählt über alle Reihen darüber, jedes Talent einmal. Direkte „kommt nach“-Verknüpfungen gelten zusätzlich. Wirkt nur in Talentbaum-Abschnitten."
+      "GateHint": "0 schaltet die Sperre ab. Bei 2 öffnet sich die zweite Reihe nach 2 genommenen Talenten, die dritte nach 4 — gezählt über alle Reihen darüber, jedes Talent einmal. Direkte „kommt nach“-Verknüpfungen gelten zusätzlich. Wirkt nur in Talentbaum-Abschnitten.",
+      "Background": "Hintergrundbild",
+      "BackgroundHint": "Panel-Grafik hinter einem Talentbaum, abgedunkelt, damit die Kacheln lesbar bleiben. Leer lassen für das schlichte Panel."
+    },
+    "Arrange": {
+      "Title": "Anordnen: {section}",
+      "Hint": "Ziehe eine Kachel auf eine Zelle, um sie dort festzuheften. Angeheftete Kacheln behalten ihren Platz, wenn sich die Verknüpfungen ändern; das Lösen gibt die Kachel an die automatische Anordnung zurück.",
+      "Pinned": "Von Hand platziert",
+      "ClearTile": "Zurück zur automatischen Anordnung",
+      "ClearAll": "Alle Platzierungen aufheben",
+      "AllDerived": "Alle Kacheln sind automatisch angeordnet."
     },
     "Preset": {
       "Dnd5e": {

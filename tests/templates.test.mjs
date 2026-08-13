@@ -275,6 +275,44 @@ t('shop: a tier-gated card says how far short it is, not just that it is locked'
   shopTree.includes('Take 2 more in the rows above'));
 t('shop: a rows section gains none of the tree attributes',
   !shop.includes('upg-tree-grid') && !shop.includes('data-tree-edges') && !shop.includes('grid-area'));
+
+/* ---------- panel art behind a tree ---------- */
+const shopArt = Handlebars.compile(tpl('shop.hbs'))({
+  isGM: false, balance: 0, vocab, currencies: [], upgrades: [],
+  groups: [{ id: 't', name: 'Painted Grove', icon: 'fa-solid fa-tree', isTree: true,
+    treeEdges: '[]', treeBackground: 'worlds/demo/art/grove.webp',
+    upgrades: [{ id: 'a', displayName: 'Root', displayFlavor: '', displayImg: '', mystery: false,
+      purchased: false, soldOut: false, affordable: true, selected: false, targetLabel: null,
+      effectLines: [], treeCell: '1 / 1', treeTooltip: '<div class="upg-tree-tip"></div>' }] }],
+  hasSections: true, selected: null, selectedDescription: null
+});
+t('shop: a tree with art carries the image and the scrim class',
+  shopArt.includes('has-art') && shopArt.includes("url('worlds/demo/art/grove.webp')"));
+t('shop: a tree without art gets neither', !shopTree.includes('has-art'));
+
+/* ---------- the arrangement window ---------- */
+const arrange = Handlebars.compile(tpl('tree-arrange.hbs'))({
+  sectionName: 'The Old Oak', cols: 4,
+  treeEdges: '[{"from":"a","to":"b","lit":false,"cut":false}]',
+  hasPinned: true,
+  cells: [
+    { row: 0, col: 0, tile: { id: 'a', name: 'Deep Roots', img: '', isImage: false, pinned: false } },
+    { row: 0, col: 1, tile: null },
+    { row: 1, col: 0, tile: { id: 'b', name: 'First Branch', img: '', isImage: false, pinned: true } },
+    { row: 1, col: 1, tile: null }
+  ]
+});
+t('arrange: every cell is a drop target with its coordinates',
+  (arrange.match(/class="upg-arrange-cell" data-row=/g) || []).length === 4);
+t('arrange: tiles are draggable and carry their id',
+  arrange.includes('draggable="true"') && arrange.includes('data-upgrade-id="a"'));
+t('arrange: a hand-placed tile shows the pin and its clear control',
+  /pinned[\s\S]*?upg-pin/.test(arrange) && arrange.includes('data-action="clearTile" data-id="b"'));
+t('arrange: a derived tile carries no pin', !/data-upgrade-id="a"[\s\S]*?upg-pin[\s\S]*?data-upgrade-id="b"/.test(arrange));
+t('arrange: the clear-all control appears once anything is pinned',
+  arrange.includes('data-action="clearAll"'));
+t('arrange: the grid carries its edges for the shared connector pass',
+  arrange.includes('data-tree-edges='));
 (() => {
   const ruled = cards.find(c => c.includes('Oath of Ash'));
   const open = cards.find(c => c.includes('Oath of Bone'));

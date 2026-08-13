@@ -119,6 +119,54 @@ export function wireDropZone(el, { accept = [], onDrop } = {}) {
 }
 
 /**
+ * Talent-tree connectors: one SVG per `.upg-tree-grid` under `root`, drawn from measured tile
+ * positions after render. Shared between the shop and the arrangement window so the two can
+ * never drift — the same reason the card markup refuses to fork. Positions come from
+ * offsetLeft/offsetTop (grid-relative, immune to the section's own horizontal scroll), and
+ * every arrival is vertical, so the arrowhead always points down. Edge state rides in the
+ * grid's `data-tree-edges` JSON: lit when the prerequisite is owned, dim when not, cut when a
+ * spent exclusive choice closed either end.
+ */
+export function drawTreeConnectors(root) {
+  const NS = "http://www.w3.org/2000/svg";
+  for (const grid of root?.querySelectorAll(".upg-tree-grid") ?? []) {
+    grid.querySelector(".upg-tree-svg")?.remove();
+    let edges = [];
+    try { edges = JSON.parse(grid.dataset.treeEdges || "[]"); } catch { /* stale markup */ }
+    if (!edges.length) continue;
+
+    const svg = document.createElementNS(NS, "svg");
+    svg.classList.add("upg-tree-svg");
+    svg.setAttribute("width", grid.scrollWidth);
+    svg.setAttribute("height", grid.scrollHeight);
+
+    for (const edge of edges) {
+      const from = grid.querySelector(`[data-upgrade-id="${CSS.escape(edge.from)}"]`);
+      const to = grid.querySelector(`[data-upgrade-id="${CSS.escape(edge.to)}"]`);
+      if (!from || !to) continue;
+      const x1 = from.offsetLeft + from.offsetWidth / 2;
+      const y1 = from.offsetTop + from.offsetHeight;
+      const x2 = to.offsetLeft + to.offsetWidth / 2;
+      const y2 = to.offsetTop;
+      const state = edge.cut ? "cut" : edge.lit ? "lit" : "dim";
+
+      const path = document.createElementNS(NS, "path");
+      path.setAttribute("d", x1 === x2
+        ? `M${x1},${y1} L${x2},${y2}`
+        : `M${x1},${y1} L${x1},${(y1 + y2) / 2} L${x2},${(y1 + y2) / 2} L${x2},${y2}`);
+      path.classList.add("upg-tree-edge", state);
+      svg.appendChild(path);
+
+      const arrow = document.createElementNS(NS, "path");
+      arrow.setAttribute("d", `M${x2 - 4},${y2 - 6} L${x2 + 4},${y2 - 6} L${x2},${y2} Z`);
+      arrow.classList.add("upg-tree-arrow", state);
+      svg.appendChild(arrow);
+    }
+    grid.prepend(svg);
+  }
+}
+
+/**
  * Everything every window in this module wants: the current theme, a size that fits the screen,
  * and a scroll position that survives the re-render triggered by changing a field.
  *

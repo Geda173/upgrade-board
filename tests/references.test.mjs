@@ -14,7 +14,8 @@ const SCRIPTS = [
   'scripts/settings.js', 'scripts/economy.js', 'scripts/catalog.js', 'scripts/effects.js', 'scripts/main.js', 'scripts/purchase.js',
   'scripts/sockets.js', 'scripts/currency.js', 'scripts/systems/adapter.js',
   'scripts/apps/shop-app.js', 'scripts/apps/editor-app.js', 'scripts/apps/upgrade-editor.js',
-  'scripts/apps/settings-app.js', 'scripts/apps/ui.js', 'scripts/apps/choice-dialog.js'
+  'scripts/apps/settings-app.js', 'scripts/apps/ui.js', 'scripts/apps/choice-dialog.js',
+  'scripts/apps/tree-arrange.js'
 ];
 
 // Things the browser, Foundry, or the language provides.

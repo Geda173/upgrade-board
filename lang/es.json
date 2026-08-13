@@ -96,6 +96,7 @@
       "MoveUp": "Subir",
       "MoveDown": "Bajar",
       "Rename": "Renombrar",
+      "Arrange": "Organizar el árbol",
       "Delete": "Eliminar",
       "Edit": "Editar",
       "Upgrades": "Mejoras",
@@ -206,7 +207,17 @@
       "Tree": "Árbol de talentos — una cuadrícula con flechas",
       "Hint": "Un árbol de talentos dibuja las mejoras como casillas, con flechas según los vínculos «viene después». Los prerrequisitos se quedan entonces dentro de la sección.",
       "Gate": "Talentos por fila para avanzar",
-      "GateHint": "0 desactiva el bloqueo. Con 2, la segunda fila se abre tras tomar 2 talentos, la tercera tras 4 — contados en todas las filas superiores, cada talento una vez. Los vínculos directos «viene después» se aplican además. Solo afecta a las secciones de árbol de talentos."
+      "GateHint": "0 desactiva el bloqueo. Con 2, la segunda fila se abre tras tomar 2 talentos, la tercera tras 4 — contados en todas las filas superiores, cada talento una vez. Los vínculos directos «viene después» se aplican además. Solo afecta a las secciones de árbol de talentos.",
+      "Background": "Ilustración de fondo",
+      "BackgroundHint": "Ilustración tras un árbol de talentos, oscurecida para que las casillas sigan legibles. Dejar vacío para el panel sencillo."
+    },
+    "Arrange": {
+      "Title": "Organizar: {section}",
+      "Hint": "Arrastra una casilla a una celda para fijarla ahí. Las casillas fijadas conservan su sitio cuando cambian los vínculos; quitar la fijación devuelve la casilla a la colocación automática.",
+      "Pinned": "Colocada a mano",
+      "ClearTile": "Volver a la colocación automática",
+      "ClearAll": "Borrar todas las colocaciones",
+      "AllDerived": "Todas las casillas se colocan automáticamente."
     },
     "Preset": {
       "Dnd5e": {

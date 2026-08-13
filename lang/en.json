@@ -96,6 +96,7 @@
       "MoveUp": "Move up",
       "MoveDown": "Move down",
       "Rename": "Rename",
+      "Arrange": "Arrange tree",
       "Delete": "Delete",
       "Edit": "Edit",
       "Upgrades": "Upgrades",
@@ -206,7 +207,17 @@
       "Tree": "Talent tree — a grid with connecting arrows",
       "Hint": "A talent tree draws upgrades as tiles, with arrows along the “comes after” links. Prerequisites then stay within the section.",
       "Gate": "Talents per row to advance",
-      "GateHint": "0 disables the gate. With 2, the second row opens once 2 talents are taken, the third once 4 are — counted across all rows above, each talent once. Direct “comes after” links still apply on top. Only affects talent-tree sections."
+      "GateHint": "0 disables the gate. With 2, the second row opens once 2 talents are taken, the third once 4 are — counted across all rows above, each talent once. Direct “comes after” links still apply on top. Only affects talent-tree sections.",
+      "Background": "Background artwork",
+      "BackgroundHint": "Panel art drawn behind a talent tree, dimmed so the tiles stay readable. Leave empty for the plain panel."
+    },
+    "Arrange": {
+      "Title": "Arrange: {section}",
+      "Hint": "Drag a tile onto a cell to pin it there. Pinned tiles keep their place when the links change; clearing the pin hands the tile back to automatic placement.",
+      "Pinned": "Placed by hand",
+      "ClearTile": "Return to automatic placement",
+      "ClearAll": "Clear all placements",
+      "AllDerived": "Every tile is placed automatically."
     },
     "Preset": {
       "Dnd5e": {

@@ -10,7 +10,7 @@ import { requestPurchase } from "../purchase.js";
 import { emit } from "../sockets.js";
 import { describeTarget } from "../systems/adapter.js";
 import { describeUpgradeEffect } from "../effects.js";
-import { UpgradesWindow } from "./ui.js";
+import { UpgradesWindow, drawTreeConnectors } from "./ui.js";
 import { t } from "../i18n.js";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
@@ -201,7 +201,10 @@ export class ShopApp extends UpgradesWindow(HandlebarsApplicationMixin(Applicati
         cut: excluded.get(id) === true || excluded.get(u.id) === true
       })));
 
-    return { ...group, isTree: true, treeEdges: JSON.stringify(edges), upgrades: tiles };
+    return {
+      ...group, isTree: true, treeEdges: JSON.stringify(edges), upgrades: tiles,
+      treeBackground: group.background || ""
+    };
   }
 
   /**
@@ -226,58 +229,14 @@ export class ShopApp extends UpgradesWindow(HandlebarsApplicationMixin(Applicati
     return `<div class="upg-tree-tip">${parts.join("")}</div>`;
   }
 
-  /**
-   * Connectors: one SVG per tree grid, drawn from measured tile positions after every render.
-   * Positions come from offsetLeft/offsetTop — grid-relative, immune to the section's own
-   * horizontal scroll — and every arrival is vertical, so the arrowhead always points down.
-   */
-  #drawConnectors() {
-    const NS = "http://www.w3.org/2000/svg";
-    for (const grid of this.element?.querySelectorAll(".upg-tree-grid") ?? []) {
-      grid.querySelector(".upg-tree-svg")?.remove();
-      let edges = [];
-      try { edges = JSON.parse(grid.dataset.treeEdges || "[]"); } catch { /* stale markup */ }
-      if (!edges.length) continue;
-
-      const svg = document.createElementNS(NS, "svg");
-      svg.classList.add("upg-tree-svg");
-      svg.setAttribute("width", grid.scrollWidth);
-      svg.setAttribute("height", grid.scrollHeight);
-
-      for (const edge of edges) {
-        const from = grid.querySelector(`[data-upgrade-id="${CSS.escape(edge.from)}"]`);
-        const to = grid.querySelector(`[data-upgrade-id="${CSS.escape(edge.to)}"]`);
-        if (!from || !to) continue;
-        const x1 = from.offsetLeft + from.offsetWidth / 2;
-        const y1 = from.offsetTop + from.offsetHeight;
-        const x2 = to.offsetLeft + to.offsetWidth / 2;
-        const y2 = to.offsetTop;
-        const state = edge.cut ? "cut" : edge.lit ? "lit" : "dim";
-
-        const path = document.createElementNS(NS, "path");
-        path.setAttribute("d", x1 === x2
-          ? `M${x1},${y1} L${x2},${y2}`
-          : `M${x1},${y1} L${x1},${(y1 + y2) / 2} L${x2},${(y1 + y2) / 2} L${x2},${y2}`);
-        path.classList.add("upg-tree-edge", state);
-        svg.appendChild(path);
-
-        const arrow = document.createElementNS(NS, "path");
-        arrow.setAttribute("d", `M${x2 - 4},${y2 - 6} L${x2 + 4},${y2 - 6} L${x2},${y2} Z`);
-        arrow.classList.add("upg-tree-arrow", state);
-        svg.appendChild(arrow);
-      }
-      grid.prepend(svg);
-    }
-  }
-
   #resizeObserver = null;
 
   _onRender(context, options) {
     super._onRender(context, options);
-    this.#drawConnectors();
+    drawTreeConnectors(this.element);
     // Cell positions move when the window is resized, and the connectors are measured pixels.
     this.#resizeObserver?.disconnect();
-    this.#resizeObserver = new ResizeObserver(() => this.#drawConnectors());
+    this.#resizeObserver = new ResizeObserver(() => drawTreeConnectors(this.element));
     for (const grid of this.element?.querySelectorAll(".upg-tree-grid") ?? []) {
       this.#resizeObserver.observe(grid);
     }

@@ -1,0 +1,35 @@
+<div class="upg-window upg-arrange-body">
+  <p class="upg-hint upg-arrange-hint">{{localize "UPGRADES.Arrange.Hint"}}</p>
+
+  <div class="upg-tree-wrap">
+    <section class="upg-tree-grid upg-arrange-grid" style="grid-template-columns: repeat({{cols}}, 104px)"
+             data-tree-edges="{{treeEdges}}">
+      {{#each cells}}
+      <div class="upg-arrange-cell" data-row="{{row}}" data-col="{{col}}">
+        {{#if tile}}
+        <div class="upg-arrange-tile {{#if tile.pinned}}pinned{{/if}}" draggable="true"
+             data-upgrade-id="{{tile.id}}">
+          <div class="upg-art">
+            {{#if tile.isImage}}<img src="{{tile.img}}" alt="">{{else}}<i class="fa-solid fa-wand-sparkles"></i>{{/if}}
+          </div>
+          <h3>{{tile.name}}</h3>
+          {{#if tile.pinned}}
+          <i class="upg-pin fa-solid fa-thumbtack" title="{{localize "UPGRADES.Arrange.Pinned"}}"></i>
+          <a class="upg-unpin" data-action="clearTile" data-id="{{tile.id}}"
+             title="{{localize "UPGRADES.Arrange.ClearTile"}}"><i class="fa-solid fa-xmark"></i></a>
+          {{/if}}
+        </div>
+        {{/if}}
+      </div>
+      {{/each}}
+    </section>
+  </div>
+
+  <footer class="upg-arrange-footer">
+    {{#if hasPinned}}
+    <button type="button" data-action="clearAll"><i class="fa-solid fa-eraser"></i> {{localize "UPGRADES.Arrange.ClearAll"}}</button>
+    {{else}}
+    <span class="upg-hint">{{localize "UPGRADES.Arrange.AllDerived"}}</span>
+    {{/if}}
+  </footer>
+</div>

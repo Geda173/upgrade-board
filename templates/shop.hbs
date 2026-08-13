@@ -38,7 +38,9 @@
   {{#if name}}<h2 class="upg-section-head"><i class="{{icon}}"></i> {{name}}</h2>{{/if}}
   {{! a tree section scrolls inside itself — the page never scrolls sideways }}
   <div {{#if isTree}}class="upg-tree-wrap"{{/if}}>
-  <section class="upg-grid{{#if isTree}} upg-tree-grid{{/if}}" {{#if isTree}}data-tree-edges="{{treeEdges}}"{{/if}}>
+  <section class="upg-grid{{#if isTree}} upg-tree-grid{{/if}}{{#if treeBackground}} has-art{{/if}}"
+           {{#if isTree}}data-tree-edges="{{treeEdges}}"{{/if}}
+           {{#if treeBackground}}style="background-image: url('{{treeBackground}}')"{{/if}}>
     {{#each upgrades}}
     <div class="upg-card {{#if soldOut}}owned{{/if}} {{#if locked}}locked{{/if}} {{#if excluded}}excluded{{/if}} {{#if onPath}}on-path{{/if}} {{#if mystery}}mystery{{/if}} {{#unless affordable}}{{#unless soldOut}}{{#unless mystery}}poor{{/unless}}{{/unless}}{{/unless}} {{#if selected}}active{{/if}}"
          data-action="selectCard" data-upgrade-id="{{id}}"

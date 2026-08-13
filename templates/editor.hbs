@@ -28,6 +28,7 @@
         <span class="upg-category-name">{{name}}</span>
         <a data-action="moveCategoryUp" data-id="{{id}}" title="{{localize "UPGRADES.Editor.MoveUp"}}"><i class="fa-solid fa-chevron-up"></i></a>
         <a data-action="moveCategoryDown" data-id="{{id}}" title="{{localize "UPGRADES.Editor.MoveDown"}}"><i class="fa-solid fa-chevron-down"></i></a>
+        {{#if isTree}}<a data-action="arrangeSection" data-id="{{id}}" title="{{localize "UPGRADES.Editor.Arrange"}}"><i class="fa-solid fa-sitemap"></i></a>{{/if}}
         <a data-action="editCategory" data-id="{{id}}" title="{{localize "UPGRADES.Editor.Rename"}}"><i class="fa-solid fa-pen"></i></a>
         <a data-action="removeCategory" data-id="{{id}}" title="{{localize "UPGRADES.Editor.Delete"}}"><i class="fa-solid fa-trash"></i></a>
       </li>

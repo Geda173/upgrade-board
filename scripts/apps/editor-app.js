@@ -35,6 +35,7 @@ export class EditorApp extends UpgradesWindow(HandlebarsApplicationMixin(Applica
       openSettings: EditorApp.#onOpenSettings,
       placeCurrency: EditorApp.#onPlaceCurrency,
       addCategory: EditorApp.#onAddCategory,
+      arrangeSection: EditorApp.#onArrangeSection,
       editCategory: EditorApp.#onEditCategory,
       removeCategory: EditorApp.#onRemoveCategory,
       moveCategoryUp: EditorApp.#onMoveCategoryUp,
@@ -72,7 +73,7 @@ export class EditorApp extends UpgradesWindow(HandlebarsApplicationMixin(Applica
       })),
       hasMultipleCurrencies: hasMultipleCurrencies(),
       hasCurrencyItem: !!game.settings.get(MODULE_ID, SETTINGS.CURRENCY_ITEM),
-      categories: getCategories(),
+      categories: getCategories().map(c => ({ ...c, isTree: c.layout === "tree" })),
       hasCategories: getCategories().length > 0,
       groups: groupByCategory(
         upgrades
@@ -268,6 +269,11 @@ export class EditorApp extends UpgradesWindow(HandlebarsApplicationMixin(Applica
     if (placed) ui.notifications.info(t("UPGRADES.Notify.Placed", { count: placed, currency: source.name, actor: actor.name }));
   }
 
+  static async #onArrangeSection(_event, target) {
+    const { TreeArrangeApp } = await import("./tree-arrange.js");
+    TreeArrangeApp.show(target.dataset.id);
+  }
+
   static async #onAddCategory() {
     const section = await EditorApp.#promptSection(t("UPGRADES.Editor.NewSection"));
     if (!section) return;
@@ -379,11 +385,27 @@ export class EditorApp extends UpgradesWindow(HandlebarsApplicationMixin(Applica
         <div class="form-group"><label>${t("UPGRADES.Layout.Gate")}</label>
         <input type="number" name="tierGate" min="0" step="1"
                value="${Math.max(0, Math.floor(Number(initial.tierGate) || 0))}"></div>
-        <p class="hint">${t("UPGRADES.Layout.GateHint")}</p>`,
+        <p class="hint">${t("UPGRADES.Layout.GateHint")}</p>
+        <div class="form-group"><label>${t("UPGRADES.Layout.Background")}</label>
+        <div class="upg-bg-pick">
+          <input type="text" name="background" value="${foundry.utils.escapeHTML(initial.background ?? "")}"
+                 placeholder="path/to/panel-art.webp">
+          <button type="button" class="upg-bg-browse" title="${t("UPGRADES.Layout.Background")}"><i class="fa-solid fa-folder-open"></i></button>
+        </div></div>
+        <p class="hint">${t("UPGRADES.Layout.BackgroundHint")}</p>`,
+      render: (_event, dialog) => {
+        // A FilePicker beats typing a path from memory — a wrong one fails as an empty panel.
+        dialog.element.querySelector(".upg-bg-browse")?.addEventListener("click", () => {
+          const input = dialog.element.querySelector('[name="background"]');
+          const FP = foundry.applications.apps.FilePicker?.implementation ?? FilePicker;
+          new FP({ type: "image", current: input.value, callback: path => { input.value = path; } }).browse();
+        });
+      },
       ok: { label: t("UPGRADES.Common.Save"), callback: (_e, button) => ({
         name: button.form.elements.name.value.trim(),
         layout: button.form.elements.layout.value,
-        tierGate: Math.max(0, Math.floor(Number(button.form.elements.tierGate.value) || 0))
+        tierGate: Math.max(0, Math.floor(Number(button.form.elements.tierGate.value) || 0)),
+        background: button.form.elements.background.value.trim()
       }) }
     }).catch(() => null);   // dismissing the dialog rejects; that is a cancel, not an error
     return result?.name ? result : null;
