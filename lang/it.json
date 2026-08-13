@@ -69,6 +69,7 @@
       "Requires": "Richiede {name}",
       "InSection": "{name} (in {section})",
       "OtherSection": "un'altra sezione",
+      "TierGate": "Prendine altri {count} nelle righe sopra",
       "ChooseThisOr": "O questa o {names}",
       "RuledOutBy": "Esclusa da {name}",
       "RuledOut": "Esclusa",
@@ -203,7 +204,9 @@
       "Label": "Disposizione",
       "Rows": "Righe — un elenco piatto di carte",
       "Tree": "Albero dei talenti — una griglia con frecce di collegamento",
-      "Hint": "Un albero dei talenti disegna le migliorie come tessere, con frecce lungo i collegamenti «viene dopo». I prerequisiti restano quindi nella sezione."
+      "Hint": "Un albero dei talenti disegna le migliorie come tessere, con frecce lungo i collegamenti «viene dopo». I prerequisiti restano quindi nella sezione.",
+      "Gate": "Talenti per riga per avanzare",
+      "GateHint": "0 disattiva il blocco. Con 2, la seconda riga si apre dopo 2 talenti presi, la terza dopo 4 — contati su tutte le righe superiori, ogni talento una volta. I collegamenti diretti «viene dopo» valgono in aggiunta. Riguarda solo le sezioni ad albero dei talenti."
     },
     "Preset": {
       "Dnd5e": {
@@ -498,6 +501,7 @@
     "Refuse": {
       "Unavailable": "Quella miglioria non è più disponibile.",
       "NeedsFirst": "«{name}» richiede prima {needs}.",
+      "TierGate": "«{name}» si aprirà quando altri {count} talenti sopra saranno stati presi.",
       "And": " e ",
       "RuledOut": "«{name}» è esclusa — al suo posto è stata scelta «{rival}».",
       "TooCostly": "Non basta per quello ({short}).",

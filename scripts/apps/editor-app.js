@@ -375,10 +375,15 @@ export class EditorApp extends UpgradesWindow(HandlebarsApplicationMixin(Applica
                placeholder="${t('UPGRADES.Dialog.SectionEg')}" autofocus></div>
         <div class="form-group"><label>${t("UPGRADES.Layout.Label")}</label>
         <select name="layout">${options}</select></div>
-        <p class="hint">${t("UPGRADES.Layout.Hint")}</p>`,
+        <p class="hint">${t("UPGRADES.Layout.Hint")}</p>
+        <div class="form-group"><label>${t("UPGRADES.Layout.Gate")}</label>
+        <input type="number" name="tierGate" min="0" step="1"
+               value="${Math.max(0, Math.floor(Number(initial.tierGate) || 0))}"></div>
+        <p class="hint">${t("UPGRADES.Layout.GateHint")}</p>`,
       ok: { label: t("UPGRADES.Common.Save"), callback: (_e, button) => ({
         name: button.form.elements.name.value.trim(),
-        layout: button.form.elements.layout.value
+        layout: button.form.elements.layout.value,
+        tierGate: Math.max(0, Math.floor(Number(button.form.elements.tierGate.value) || 0))
       }) }
     }).catch(() => null);   // dismissing the dialog rejects; that is a cancel, not an error
     return result?.name ? result : null;

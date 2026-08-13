@@ -254,7 +254,8 @@ const shopTree = Handlebars.compile(tpl('shop.hbs'))({
         treeTooltip: '<div class="upg-tree-tip"><h4>Deep Roots</h4></div>' },
       { id: 'branch', displayName: 'First Branch', displayFlavor: '', displayImg: '', mystery: false,
         purchased: false, soldOut: false, affordable: true, selected: false, targetLabel: null,
-        effectLines: [], ownedCount: 3, treeCell: '2 / 1',
+        effectLines: [], ownedCount: 3, treeCell: '2 / 1', locked: true,
+        tierLabel: 'Take 2 more in the rows above',
         treeTooltip: '<div class="upg-tree-tip"><h4>First Branch</h4></div>' }
     ]
   }],
@@ -270,6 +271,8 @@ t('shop: a tile carries its hover summary',
   shopTree.includes('data-tooltip=') && shopTree.includes('upg-tree-tip'));
 t('shop: a repeatable tile shows its plain tally, no maximum implied',
   shopTree.includes('×3') && !shopTree.includes('3/'));
+t('shop: a tier-gated card says how far short it is, not just that it is locked',
+  shopTree.includes('Take 2 more in the rows above'));
 t('shop: a rows section gains none of the tree attributes',
   !shop.includes('upg-tree-grid') && !shop.includes('data-tree-edges') && !shop.includes('grid-area'));
 (() => {

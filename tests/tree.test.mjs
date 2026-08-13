@@ -107,4 +107,46 @@ const at = (map, id) => map.get(id) ?? null;
   t('an empty section is an empty layout', treeLayout([]).size === 0);
 }
 
+/* ---------- the tier gate: classic-WoW row thresholds, decided 2026-08-13 ---------- */
+const { tierShortfall } = await import(new URL('../scripts/catalog.js', import.meta.url));
+{
+  const cats = [{ id: 'tree', layout: 'tree', tierGate: 2 }, { id: 'flat', layout: 'rows', tierGate: 2 }];
+  const g = (id, { requires = [], bought = 0, categoryId = 'tree', sort = 0 } = {}) =>
+    ({ id, requires, sort, treeRow: null, treeCol: null, categoryId,
+       purchases: Array.from({ length: bought }, (_, i) => ({ id: `p${i}` })) });
+
+  const board = [
+    g('a', { bought: 1 }), g('b', { sort: 1 }), g('c', { sort: 2 }),
+    g('x', { requires: ['a'] }), g('y', { requires: ['a'], sort: 1 }),
+    g('z', { requires: ['x'] })
+  ];
+  t('row zero is never gated', tierShortfall(board[0], board, cats) === null);
+  t('a second-row talent is short until the gate is met', (() => {
+    const s = tierShortfall(board.find(u => u.id === 'x'), board, cats);
+    return s && s.needed === 2 && s.have === 1 && s.missing === 1;
+  })());
+  t('the threshold is cumulative: row two needs twice the gate', (() => {
+    const s = tierShortfall(board.find(u => u.id === 'z'), board, cats);
+    return s && s.needed === 4 && s.have === 1;
+  })());
+  t('talents anywhere above count, not just the row directly over it', (() => {
+    const enough = board.map(u => ['a', 'b', 'c', 'x'].includes(u.id) ? { ...u, purchases: [{ id: 'p' }] } : u);
+    return tierShortfall(enough.find(u => u.id === 'z'), enough, cats) === null;
+  })());
+  t('a repeatable counts once however often it was bought', (() => {
+    const farmed = board.map(u => u.id === 'a' ? { ...u, purchases: [{id:'1'},{id:'2'},{id:'3'}] } : u);
+    const s = tierShortfall(farmed.find(u => u.id === 'x'), farmed, cats);
+    return s && s.have === 1;
+  })());
+  t('a rows-layout section is never gated',
+    tierShortfall(g('r1', { categoryId: 'flat', requires: ['a'] }),
+      [g('a', { categoryId: 'flat', bought: 1 }), g('r1', { categoryId: 'flat', requires: ['a'] })], cats) === null);
+  t('gate zero means off', (() => {
+    const open = [{ id: 'tree', layout: 'tree', tierGate: 0 }];
+    return tierShortfall(board.find(u => u.id === 'x'), board, open) === null;
+  })());
+  t('an uncategorised upgrade is never gated',
+    tierShortfall(g('loose', { categoryId: null }), board, cats) === null);
+}
+
 process.exit(bad);

@@ -61,6 +61,7 @@
         </ul>
         {{/if}}
         {{#if requiresLabel}}<div class="upg-requires"><i class="fa-solid fa-lock"></i> {{localize "UPGRADES.Shop.Requires" name=requiresLabel}}</div>{{/if}}
+        {{#if tierLabel}}<div class="upg-requires"><i class="fa-solid fa-layer-group"></i> {{tierLabel}}</div>{{/if}}
         {{#if exclusiveLabel}}<div class="upg-exclusive"><i class="fa-solid fa-code-branch"></i> {{localize "UPGRADES.Shop.ChooseThisOr" names=exclusiveLabel}}</div>{{/if}}
         {{#if excludedBy}}<div class="upg-excluded"><i class="fa-solid fa-ban"></i> {{localize "UPGRADES.Shop.RuledOutBy" name=excludedBy}}</div>{{/if}}
         {{#if effectSecret}}<div class="upg-effect-secret">{{localize "UPGRADES.Shop.EffectSecret"}}</div>{{/if}}

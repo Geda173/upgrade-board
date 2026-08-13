@@ -69,6 +69,7 @@
       "Requires": "Nécessite {name}",
       "InSection": "{name} (dans {section})",
       "OtherSection": "une autre section",
+      "TierGate": "Prenez-en {count} de plus dans les rangées au-dessus",
       "ChooseThisOr": "Ceci ou bien {names}",
       "RuledOutBy": "Écarté par {name}",
       "RuledOut": "Écarté",
@@ -203,7 +204,9 @@
       "Label": "Disposition",
       "Rows": "Rangées — une liste de cartes",
       "Tree": "Arbre de talents — une grille avec des flèches",
-      "Hint": "Un arbre de talents dessine les améliorations en tuiles, reliées par des flèches selon les liens « vient après ». Les prérequis restent alors dans la section."
+      "Hint": "Un arbre de talents dessine les améliorations en tuiles, reliées par des flèches selon les liens « vient après ». Les prérequis restent alors dans la section.",
+      "Gate": "Talents par rangée pour avancer",
+      "GateHint": "0 désactive le verrou. Avec 2, la deuxième rangée s'ouvre après 2 talents pris, la troisième après 4 — comptés sur toutes les rangées au-dessus, chaque talent une fois. Les liens directs « vient après » s'appliquent en plus. Ne concerne que les sections en arbre de talents."
     },
     "Preset": {
       "Dnd5e": {
@@ -498,6 +501,7 @@
     "Refuse": {
       "Unavailable": "Cette amélioration n'est plus disponible.",
       "NeedsFirst": "« {name} » nécessite d'abord {needs}.",
+      "TierGate": "« {name} » s'ouvrira quand {count} talents de plus auront été pris au-dessus.",
       "And": " et ",
       "RuledOut": "« {name} » est écartée — « {rival} » a été choisie à la place.",
       "TooCostly": "Pas assez pour cela ({short}).",

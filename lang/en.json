@@ -69,6 +69,7 @@
       "Requires": "Requires {name}",
       "InSection": "{name} (in {section})",
       "OtherSection": "another section",
+      "TierGate": "Take {count} more in the rows above",
       "ChooseThisOr": "Choose this or {names}",
       "RuledOutBy": "Ruled out by {name}",
       "RuledOut": "Ruled out",
@@ -203,7 +204,9 @@
       "Label": "Layout",
       "Rows": "Rows — a flat list of cards",
       "Tree": "Talent tree — a grid with connecting arrows",
-      "Hint": "A talent tree draws upgrades as tiles, with arrows along the “comes after” links. Prerequisites then stay within the section."
+      "Hint": "A talent tree draws upgrades as tiles, with arrows along the “comes after” links. Prerequisites then stay within the section.",
+      "Gate": "Talents per row to advance",
+      "GateHint": "0 disables the gate. With 2, the second row opens once 2 talents are taken, the third once 4 are — counted across all rows above, each talent once. Direct “comes after” links still apply on top. Only affects talent-tree sections."
     },
     "Preset": {
       "Dnd5e": {
@@ -498,6 +501,7 @@
     "Refuse": {
       "Unavailable": "That upgrade is no longer available.",
       "NeedsFirst": "“{name}” needs {needs} first.",
+      "TierGate": "“{name}” opens once {count} more of the talents above it are taken.",
       "And": " and ",
       "RuledOut": "“{name}” is ruled out — “{rival}” was chosen instead.",
       "TooCostly": "Not enough for that ({short}).",

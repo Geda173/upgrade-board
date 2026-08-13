@@ -69,6 +69,7 @@
       "Requires": "Erfordert {name}",
       "InSection": "{name} (in {section})",
       "OtherSection": "einem anderen Abschnitt",
+      "TierGate": "Nimm noch {count} in den Reihen darüber",
       "ChooseThisOr": "Entweder dies oder {names}",
       "RuledOutBy": "Ausgeschlossen durch {name}",
       "RuledOut": "Ausgeschlossen",
@@ -203,7 +204,9 @@
       "Label": "Darstellung",
       "Rows": "Reihen — eine flache Kartenliste",
       "Tree": "Talentbaum — ein Raster mit Verbindungspfeilen",
-      "Hint": "Ein Talentbaum zeichnet Upgrades als Kacheln, mit Pfeilen entlang der „kommt nach“-Verknüpfungen. Voraussetzungen bleiben dann innerhalb des Abschnitts."
+      "Hint": "Ein Talentbaum zeichnet Upgrades als Kacheln, mit Pfeilen entlang der „kommt nach“-Verknüpfungen. Voraussetzungen bleiben dann innerhalb des Abschnitts.",
+      "Gate": "Talente pro Reihe zum Weiterkommen",
+      "GateHint": "0 schaltet die Sperre ab. Bei 2 öffnet sich die zweite Reihe nach 2 genommenen Talenten, die dritte nach 4 — gezählt über alle Reihen darüber, jedes Talent einmal. Direkte „kommt nach“-Verknüpfungen gelten zusätzlich. Wirkt nur in Talentbaum-Abschnitten."
     },
     "Preset": {
       "Dnd5e": {
@@ -498,6 +501,7 @@
     "Refuse": {
       "Unavailable": "Dieses Upgrade ist nicht mehr verfügbar.",
       "NeedsFirst": "„{name}“ benötigt zuerst {needs}.",
+      "TierGate": "„{name}“ öffnet sich, sobald {count} weitere der Talente darüber genommen sind.",
       "And": " und ",
       "RuledOut": "„{name}“ ist ausgeschlossen — „{rival}“ wurde stattdessen gewählt.",
       "TooCostly": "Dafür reicht es nicht ({short}).",

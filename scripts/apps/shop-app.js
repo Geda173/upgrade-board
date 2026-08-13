@@ -2,7 +2,8 @@
  * Player-facing shop window (ApplicationV2 + Handlebars).
  */
 import { exclusiveClaim, exclusiveSiblings, getCategories, getUpgrades, groupByCategory,
-         isAvailable, isUnlocked, pathDepth, sortByPath, treeLayout, unmetRequirements } from "../catalog.js";
+         isAvailable, isUnlocked, pathDepth, sortByPath, tierShortfall, treeLayout,
+         unmetRequirements } from "../catalog.js";
 import { canAfford, describeCosts, getBalance, getBalances, getCurrencies, hasMultipleCurrencies } from "../economy.js";
 import { MODULE_ID, getVocabulary, isImagePath } from "../settings.js";
 import { requestPurchase } from "../purchase.js";
@@ -91,6 +92,11 @@ export class ShopApp extends UpgradesWindow(HandlebarsApplicationMixin(Applicati
           locked: !isUnlocked(u, all) || !!claim,
           // Named so a player can see what to buy first rather than just that they cannot buy this.
           requiresLabel: mystery ? "" : unmetRequirements(u, all).map(r => r.name).join(", "),
+          // The tier gate explains itself the same way: how many talents short, not just "locked".
+          tierLabel: (() => {
+            const gate = mystery ? null : tierShortfall(u, all);
+            return gate ? t("UPGRADES.Shop.TierGate", { count: gate.missing }) : "";
+          })(),
           onPath: !mystery && pathDepth(u, all) > 0,
           excluded: !!claim,
           // The rival may itself be a "???" teaser, and a card that closes off must not be the
@@ -215,6 +221,7 @@ export class ShopApp extends UpgradesWindow(HandlebarsApplicationMixin(Applicati
     }
     if (u.effectSecret) parts.push(`<div>${esc(t("UPGRADES.Shop.EffectSecret"))}</div>`);
     if (requiresTip) parts.push(`<div class="upg-tip-lock">${esc(t("UPGRADES.Shop.Requires", { name: requiresTip }))}</div>`);
+    if (u.tierLabel) parts.push(`<div class="upg-tip-lock">${esc(u.tierLabel)}</div>`);
     if (u.excludedBy) parts.push(`<div class="upg-tip-lock">${esc(t("UPGRADES.Shop.RuledOutBy", { name: u.excludedBy }))}</div>`);
     return `<div class="upg-tree-tip">${parts.join("")}</div>`;
   }

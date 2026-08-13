@@ -101,6 +101,8 @@ t('preview can show a theme the surrounding window is not using',
 /* ---------- upgrade paths ---------- */
 t('a locked upgrade is refused at the socket entry point, not just in the UI',
   /unmetRequirements\(upgrade\)/.test(read('scripts/purchase.js')));
+t('a tier-gated upgrade is refused at the socket entry point, not just in the UI',
+  /tierShortfall\(upgrade\)/.test(read('scripts/purchase.js')));
 
 /* ---------- the checks cannot go stale inside a dialog ---------- */
 // The approval and buyer dialogs can sit open while other purchases commit; whatever was true

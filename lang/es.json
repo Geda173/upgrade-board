@@ -69,6 +69,7 @@
       "Requires": "Requiere {name}",
       "InSection": "{name} (en {section})",
       "OtherSection": "otra sección",
+      "TierGate": "Toma {count} más en las filas superiores",
       "ChooseThisOr": "Esta o bien {names}",
       "RuledOutBy": "Descartada por {name}",
       "RuledOut": "Descartada",
@@ -203,7 +204,9 @@
       "Label": "Disposición",
       "Rows": "Filas — una lista plana de tarjetas",
       "Tree": "Árbol de talentos — una cuadrícula con flechas",
-      "Hint": "Un árbol de talentos dibuja las mejoras como casillas, con flechas según los vínculos «viene después». Los prerrequisitos se quedan entonces dentro de la sección."
+      "Hint": "Un árbol de talentos dibuja las mejoras como casillas, con flechas según los vínculos «viene después». Los prerrequisitos se quedan entonces dentro de la sección.",
+      "Gate": "Talentos por fila para avanzar",
+      "GateHint": "0 desactiva el bloqueo. Con 2, la segunda fila se abre tras tomar 2 talentos, la tercera tras 4 — contados en todas las filas superiores, cada talento una vez. Los vínculos directos «viene después» se aplican además. Solo afecta a las secciones de árbol de talentos."
     },
     "Preset": {
       "Dnd5e": {
@@ -498,6 +501,7 @@
     "Refuse": {
       "Unavailable": "Esa mejora ya no está disponible.",
       "NeedsFirst": "«{name}» necesita antes {needs}.",
+      "TierGate": "«{name}» se abrirá cuando se hayan tomado {count} talentos más por encima.",
       "And": " y ",
       "RuledOut": "«{name}» queda descartada — en su lugar se eligió «{rival}».",
       "TooCostly": "No alcanza para eso ({short}).",

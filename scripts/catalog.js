@@ -142,7 +142,35 @@ export function unmetRequirements(upgrade, all = getUpgrades()) {
 }
 
 export function isUnlocked(upgrade, all = getUpgrades()) {
-  return unmetRequirements(upgrade, all).length === 0;
+  return unmetRequirements(upgrade, all).length === 0 && !tierShortfall(upgrade, all);
+}
+
+/**
+ * The tier gate: why this upgrade's row is still closed, or null when it is open.
+ *
+ * A tree section may demand that the party takes `tierGate` talents per row before the next row
+ * opens — classic-WoW tiers, decided 2026-08-13. The threshold is cumulative: entering row R
+ * needs R × gate distinct talents owned anywhere in the rows above it, so a small row can never
+ * make everything below it unreachable. A repeatable counts once, however often it was bought —
+ * the gate counts talents taken, not money spent — and a direct `requires` link is a second,
+ * independent prerequisite on top. Like every lock here, the answer is derived from purchase
+ * records on the fly; nothing stores "row open".
+ */
+export function tierShortfall(upgrade, all = getUpgrades(), categories = getCategories()) {
+  if (!upgrade?.categoryId) return null;
+  const section = categories.find(c => c.id === upgrade.categoryId);
+  const gate = Math.max(0, Math.floor(Number(section?.tierGate) || 0));
+  if (!section || section.layout !== "tree" || !gate) return null;
+
+  const siblings = all.filter(u => u.categoryId === section.id);
+  const layout = treeLayout(siblings);
+  const row = layout.get(upgrade.id)?.row ?? 0;
+  if (row === 0) return null;
+
+  const needed = row * gate;
+  const have = siblings.filter(u =>
+    u.purchases?.length && (layout.get(u.id)?.row ?? 0) < row).length;
+  return have >= needed ? null : { needed, have, missing: needed - have };
 }
 
 /**
@@ -340,7 +368,7 @@ export function isExcluded(upgrade, all = getUpgrades()) {
 export function getCategories() {
   const stored = foundry.utils.deepClone(game.settings.get(MODULE_ID, SETTINGS.CATEGORIES)) ?? [];
   return stored
-    .map(c => ({ layout: "rows", background: "", ...c }))
+    .map(c => ({ layout: "rows", background: "", tierGate: 0, ...c }))
     .sort((a, b) => (a.sort ?? 0) - (b.sort ?? 0));
 }
 
@@ -355,7 +383,7 @@ export async function upsertCategory(data) {
   else categories.push({
     id: data.id ?? foundry.utils.randomID(),
     name: t("UPGRADES.New.Section"), icon: "fa-solid fa-folder", sort: categories.length,
-    layout: "rows", background: "",
+    layout: "rows", background: "", tierGate: 0,
     ...data
   });
   return setCategories(categories);

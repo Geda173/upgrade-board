@@ -2,7 +2,7 @@
  * Purchase pipeline: player request → GM approval → commit (deduct, mark, announce).
  * Everything in this file runs on the GM client only (dispatched via sockets.js).
  */
-import { TARGET, addPurchase, exclusiveClaim, getUpgrade, isAvailable, unmetRequirements } from "./catalog.js";
+import { TARGET, addPurchase, exclusiveClaim, getUpgrade, isAvailable, tierShortfall, unmetRequirements } from "./catalog.js";
 import { addHistory, adjustBalance, canAfford, describeCosts, getBalance, getCosts } from "./economy.js";
 import { MODULE_ID, SETTINGS, getVocabulary } from "./settings.js";
 import { anyGMOnline, emit, refreshOpenApps } from "./sockets.js";
@@ -23,6 +23,12 @@ function refusalReason(upgrade) {
   const unmet = unmetRequirements(upgrade);
   if (unmet.length) {
     return t("UPGRADES.Refuse.NeedsFirst", { name: upgrade.name, needs: unmet.map(u => u.name).join(t("UPGRADES.Refuse.And")) });
+  }
+  // The tier gate is the third lock rule, and like the other two it is decided here — on the
+  // client that commits — because another purchase can refund out from under an open dialog.
+  const shortfall = tierShortfall(upgrade);
+  if (shortfall) {
+    return t("UPGRADES.Refuse.TierGate", { name: upgrade.name, count: shortfall.missing });
   }
   const claim = exclusiveClaim(upgrade);
   if (claim) {
