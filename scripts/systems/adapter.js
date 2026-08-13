@@ -337,8 +337,20 @@ async function mergeRulesIntoItem(item, payload, upgrade, purchaseId = null) {
   }
   const tag = { upgradeId: upgrade.id, ...(purchaseId ? { purchaseId } : {}) };
   const tagged = incoming.map(rule => ({ ...foundry.utils.deepClone(rule), [MODULE_ID]: tag }));
-  const existing = (item.system?.rules ?? []).map(rule => foundry.utils.deepClone(rule));
+  const existing = sourceRules(item).map(rule => foundry.utils.deepClone(rule));
   return item.update({ "system.rules": [...existing, ...tagged] });
+}
+
+/**
+ * An item's rules as STORED, never as prepared. PF2e's data prep rebuilds `system.rules` from
+ * source through the rule-element schema, which drops undeclared keys — including the stamp
+ * that is the only thing telling our rules from the GM's own. The stamp survives storage
+ * (verified against base.ts at pf2e-8.3.0 and now against a live world); it just never appears
+ * in prepared data. Reading the prepared array here made refund silently strip nothing and
+ * merging bake prepared-only fields into storage — found live, 2026-08-13.
+ */
+function sourceRules(item) {
+  return (item.toObject?.() ?? item)?.system?.rules ?? item.system?.rules ?? [];
 }
 
 /**
@@ -445,7 +457,7 @@ function mergedRuleMatches(rule, upgradeId, purchaseId) {
 
 /** Strip this upgrade's merged rule elements back out of an item. Returns how many went. */
 async function stripMergedRules(item, upgradeId, purchaseId = null) {
-  const rules = item.system?.rules;
+  const rules = sourceRules(item);
   if (!Array.isArray(rules) || !rules.length) return 0;
   const keep = rules.filter(rule => !mergedRuleMatches(rule, upgradeId, purchaseId));
   if (keep.length === rules.length) return 0;
@@ -484,8 +496,9 @@ function hasUpgrade(target, upgradeId, purchaseId = null) {
   if (findGrant(target, upgradeId, purchaseId)) return true;
   if (target.documentName !== "Item") return false;
   // A grant to an item may not be a document at all: rules merged into the item, or recorded
-  // rune writes. Both must count as "granted" or a re-sync would grant them again.
-  const rules = target.system?.rules;
+  // rune writes. Both must count as "granted" or a re-sync would grant them again. Read from
+  // source — the stamp never survives into prepared data (see sourceRules).
+  const rules = sourceRules(target);
   if (Array.isArray(rules) && rules.some(rule => mergedRuleMatches(rule, upgradeId, purchaseId))) return true;
   return runeGrantMatches(target, upgradeId, purchaseId);
 }
@@ -520,7 +533,10 @@ export function grantSignature(source) {
   if (changes) {
     return JSON.stringify(changes.map(c => [c.key, Number(c.mode), String(c.value ?? "")]));
   }
-  const rules = source.system?.rules;
+  // Rules must come from source, not prepared data: PF2e's prep decorates every rule with
+  // schema defaults (slug, priority, fromEquipment, …), so a prepared grant never compares
+  // equal to the bare payload the catalogue builds and re-sync would rebuild it every pass.
+  const rules = (source.toObject?.() ?? source)?.system?.rules ?? source.system?.rules;
   if (rules) return JSON.stringify(rules);
   return null;
 }

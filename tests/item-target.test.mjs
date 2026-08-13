@@ -68,20 +68,41 @@ const makeActor = name => Object.assign(new Actor(), {
   }
 });
 
+// PF2e's data prep rebuilds an item's rules through the rule-element schema, which keeps only
+// declared fields — the module's per-rule stamp survives in _source but NEVER appears in
+// prepared data. The fakes mirror that split, because reading the prepared array is exactly
+// the live-only bug the first PF2e pass found (refund stripped nothing): prepared === source
+// in a naive fake, and the suite swore the broken code was fine.
+const RULE_FIELDS = new Set(['key', 'selector', 'label', 'type', 'value', 'slug', 'priority',
+  'ignored', 'predicate', 'requiresEquipped', 'requiresInvestment', 'diceNumber', 'dieSize',
+  'damageType', 'keep', 'acuity', 'range']);
+const prepared = system => {
+  const sys = foundry.utils.deepClone(system);
+  if (Array.isArray(sys.rules)) {
+    sys.rules = sys.rules.map(rule =>
+      Object.fromEntries(Object.entries(rule).filter(([k]) => RULE_FIELDS.has(k))));
+  }
+  return sys;
+};
+
 const makeItem = (name, parent, rules = null, { type = 'weapon', system = null } = {}) => {
+  const src = { system: system ?? (rules ? { rules } : {}), flags: {} };
   const item = enliven({
-    name, parent, type, effects: [], flags: {},
-    system: system ?? (rules ? { rules } : {}),
+    name, parent, type, effects: [],
+    system: prepared(src.system),
+    flags: src.flags,
     async createEmbeddedDocuments(_type, docs) {
       this.effects.push(...docs.map(d => enliven(d, 'ActiveEffect')));
     },
     async deleteEmbeddedDocuments(_type, ids) { this.effects = this.effects.filter(d => !ids.includes(d.id)); },
-    // Foundry's Item#update takes flattened key paths; runes and their grant records arrive
-    // that way, and "system.rules" is just one more path.
+    // Foundry's Item#update takes flattened key paths and writes SOURCE data; the prepared
+    // view is then rebuilt, stripping undeclared rule keys the way PF2e does.
     async update(data) {
-      for (const [key, value] of Object.entries(data)) foundry.utils.setProperty(this, key, value);
+      for (const [key, value] of Object.entries(data)) foundry.utils.setProperty(src, key, value);
+      this.system = prepared(src.system);
+      this.flags = src.flags;
     },
-    toObject() { return foundry.utils.deepClone({ system: this.system, flags: this.flags }); }
+    toObject() { return foundry.utils.deepClone(src); }
   }, 'Item');
   parent?.items?.push(item);
   return item;
@@ -185,9 +206,11 @@ applied = await adapter.applyUpgradeEffect(staffUpgrade, { purchaseId: 'p1' });
 t('the rules merge into the item alongside what the GM already wrote',
   applied.count === 1 && staff.system.rules.length === 2
   && JSON.stringify(staff.system.rules[0]) === JSON.stringify(gmRule));
-t('each merged rule is stamped with the module id and purchase',
-  staff.system.rules[1]?.[MODULE_ID]?.upgradeId === 'flame-rune'
-  && staff.system.rules[1]?.[MODULE_ID]?.purchaseId === 'p1');
+t('each merged rule is stamped with the module id and purchase — in SOURCE, where it survives',
+  staff.toObject().system.rules[1]?.[MODULE_ID]?.upgradeId === 'flame-rune'
+  && staff.toObject().system.rules[1]?.[MODULE_ID]?.purchaseId === 'p1');
+t('the stamp never appears in prepared data, which is why nothing may read it from there',
+  staff.system.rules[1]?.[MODULE_ID] === undefined);
 t('no document was created on the item for a merged grant', staff.effects.length === 0);
 
 applied = await adapter.applyUpgradeEffect(staffUpgrade, { purchaseId: 'p2' });
@@ -200,7 +223,8 @@ t('but the same purchase applied twice does not',
 /* ---------- refund finds all of it and touches nothing else ---------- */
 await adapter.removeUpgradeEffect('flame-rune', 'p2');
 t('refunding one purchase strips that purchase’s rules only',
-  staff.system.rules.length === 2 && staff.system.rules[1]?.[MODULE_ID]?.purchaseId === 'p1');
+  staff.system.rules.length === 2
+  && staff.toObject().system.rules[1]?.[MODULE_ID]?.purchaseId === 'p1');
 await adapter.removeUpgradeEffect('flame-rune');
 t('deleting the upgrade strips the rest and leaves the GM’s own rule',
   staff.system.rules.length === 1 && JSON.stringify(staff.system.rules[0]) === JSON.stringify(gmRule));
@@ -307,7 +331,7 @@ t('refunding the stronger rune steps potency back down',
   removed.count === 1 && runeSword.system.runes.potency === 1);
 
 warnings.length = 0;
-runeSword.system.runes.striking = 3;   // the GM improved it by hand since
+await runeSword.update({ 'system.runes.striking': 3 });   // the GM improved it by hand since
 removed = await adapter.removeUpgradeEffect('first-rune');
 t('refund reverses what it wrote and leaves the hand-edited field alone, out loud',
   removed.count === 3 && runeSword.system.runes.potency === 0
