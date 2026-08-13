@@ -194,7 +194,8 @@
       "Advanced": "Advanced",
       "Rolls": "Rolls",
       "Senses": "Senses",
-      "SpecialTraits": "Special traits"
+      "SpecialTraits": "Special traits",
+      "ItemUpgrade": "Item upgrades"
     },
     "Preset": {
       "Dnd5e": {
@@ -279,7 +280,10 @@
         "flag_weaponCriticalThreshold": "Weapon critical hit on (roll)",
         "flag_spellCriticalThreshold": "Spell critical hit on (roll)",
         "flag_meleeCriticalDamageDice": "Melee critical damage dice",
-        "spell_damage_all": "All spell damage (incl. saving throw spells)"
+        "spell_damage_all": "All spell damage (incl. saving throw spells)",
+        "item_magic": "Magical bonus (attack and damage; AC on armor)",
+        "item_damage": "Extra damage dealt by this item",
+        "item_magical": "Counts as magical"
       },
       "Pf2e": {
         "attack": "Attack rolls",
@@ -336,7 +340,11 @@
         "sense_tremorsense": "Tremorsense (range in feet)",
         "sense_scent": "Scent (range in feet)",
         "sense_lifesense": "Lifesense (range in feet)",
-        "spell_damage_all": "All spell damage"
+        "spell_damage_all": "All spell damage",
+        "rune_potency": "Potency rune (attack, or AC on armor)",
+        "rune_striking": "Striking rune (extra damage die)",
+        "rune_resilient": "Resilient rune (saving throws)",
+        "rune_property": "Property rune"
       },
       "Generic": {
         "custom": "Custom data path…"
@@ -365,7 +373,8 @@
       "tremorsense": "Tremorsense",
       "truesight": "Truesight",
       "flag_weaponCriticalThreshold": "Weapon critical hit on",
-      "flag_spellCriticalThreshold": "Spell critical hit on"
+      "flag_spellCriticalThreshold": "Spell critical hit on",
+      "item_magic": "Magical bonus"
     },
     "BonusType": {
       "circumstance": "Circumstance — from where you are or what you did",
@@ -390,7 +399,9 @@
       "Summary": "{amount} {label}",
       "RollMode": "{choice} on {noun}",
       "SenseRange": "{label}, {amount} feet",
-      "SetTo": "{label} {amount}"
+      "SetTo": "{label} {amount}",
+      "Rune": "{rune} rune",
+      "RuneNumeric": "{label} {amount}"
     },
     "ThemeGroup": {
       "Fantasy": "Fantasy",
@@ -627,6 +638,14 @@
       "PickAnItem": "Upgrades: pick an item for an item upgrade.",
       "ItemNeedsOwner": "Upgrades: nobody carries that item. Drag it from a character sheet instead.",
       "ItemLinkUnsupported": "Upgrades: “{name}” links a document an item cannot carry — build the effect instead, or link an Active Effect.",
+      "NoMagicField": "Upgrades: “{item}” cannot carry a magical bonus — only a weapon, armor or ammunition can.",
+      "RuneWrongItemType": "Upgrades: “{item}” cannot take “{label}” — wrong kind of item.",
+      "RuneAlready": "Upgrades: “{item}” already carries that property rune.",
+      "RuneNotBetter": "Upgrades: “{item}” already has a rune at least that strong — nothing was added.",
+      "RuneAbp": "Upgrades: this world uses Automatic Bonus Progression, which suppresses rune values — the rune was recorded but will not apply.",
+      "RuneNeedsPotency": "Upgrades: “{item}” carries more property runes than its potency has slots for; the extra stays dormant until the potency rises.",
+      "RuneChangedByHand": "Upgrades: a rune on “{item}” was changed by hand after this purchase, so that value was left as it is.",
+      "ItemRowsDropped": "Upgrades: bonus rows that only work on an item were removed — this upgrade no longer targets one.",
       "Migrated": "Upgrade Board: your existing board came across from the older “Upgrades” module ({count} upgrades). You can safely disable that one now."
     },
     "IconName": {

@@ -8,7 +8,7 @@
  */
 import { TARGET } from "../catalog.js";
 import { MODULE_ID, LEGACY_MODULE_ID, SETTINGS } from "../settings.js";
-import { EFFECT_MODE, buildChanges, buildRules, isPf2e } from "../effects.js";
+import { EFFECT_MODE, buildChanges, buildEnchantChanges, buildRules, buildRuneWrites, isPf2e } from "../effects.js";
 import { t } from "../i18n.js";
 
 /**
@@ -131,9 +131,15 @@ export async function resolveEffectPayload(upgrade) {
   if (mode === EFFECT_MODE.BUILD && isPf2e()) {
     // PF2e drives mechanics through rule elements on an Effect *item*, not ActiveEffect changes.
     // Duration defaults to unlimited (value -1), which is what a permanent upgrade wants.
-    const rules = buildRules(upgrade.effectBuild?.rows ?? [], { label: upgrade.name || "Upgrade" });
-    if (!rules.length) return null;
+    const rows = upgrade.effectBuild?.rows ?? [];
+    const rules = buildRules(rows, { label: upgrade.name || "Upgrade" });
+    // Rune rows are field writes on the target item, not rules — they ride the payload as a
+    // plan of their own and are applied by `applyRuneWrites`.
+    const runes = upgrade.target === TARGET.ITEM
+      ? buildRuneWrites(rows, getTargetItem(upgrade)) : [];
+    if (!rules.length && !runes.length) return null;
     return {
+      ...(runes.length ? { runes } : {}),
       documentName: "Item",
       data: upgrade.showInEffectsBar
         ? {
@@ -172,9 +178,15 @@ export async function resolveEffectPayload(upgrade) {
   }
 
   if (mode === EFFECT_MODE.BUILD) {
-    const changes = buildChanges(upgrade.effectBuild?.rows ?? []);
-    if (!changes.length) return null;
+    const rows = upgrade.effectBuild?.rows ?? [];
+    const changes = buildChanges(rows);
+    // Item-upgrade rows become a *separate* enchantment-type effect on the item — the only
+    // shape dnd5e applies to an item's own data — never changes on the wielder effect.
+    const enchant = (upgrade.target === TARGET.ITEM && game.system.id === "dnd5e")
+      ? buildEnchantChanges(rows, getTargetItem(upgrade)) : [];
+    if (!changes.length && !enchant.length) return null;
     return {
+      ...(enchant.length ? { enchant } : {}),
       documentName: "ActiveEffect",
       data: {
         name: upgrade.name,
@@ -231,15 +243,55 @@ async function createFromPayload(target, payload, upgrade, purchaseId = null, ch
   // An item target takes the payload directly. The wrapper feat below is a way of keeping a
   // character sheet tidy and makes no sense inside a sword.
   if (target.documentName === "Item") {
+    let made = 0;
+
+    // dnd5e item-preset rows arrive as a separate enchantment: `type: "enchantment"` with a
+    // non-self origin is the one shape whose changes reach the *item's* own data —
+    // Item5e.allApplicableEffects yields applied enchantments and nothing else, and the
+    // actor-side iterator skips them symmetrically (release-5.3.3). `transfer` stays false;
+    // this effect is about the sword, not its wielder. The parent actor is a real, resolvable,
+    // non-self origin that carries no canEnchant() to object.
+    if (payload.enchant?.length) {
+      await target.createEmbeddedDocuments("ActiveEffect", [{
+        name: data.name, img: data.img,
+        type: "enchantment",
+        origin: target.parent?.uuid ?? null,
+        changes: foundry.utils.deepClone(payload.enchant),
+        transfer: false, disabled: false,
+        description: data.description ?? "",
+        flags: foundry.utils.deepClone(data.flags)
+      }]);
+      made++;
+    }
+
     if (payload.documentName === "ActiveEffect") {
       // `transfer: true` is what carries the effect to whoever holds the item — and, because
       // both systems suppress effects from unequipped/unattuned items, what makes a stashed
-      // sword grant nothing. That suppression is the feature, not a bug.
-      data.transfer = true;
-      data.disabled = false;
-      return target.createEmbeddedDocuments("ActiveEffect", [data]);
+      // sword grant nothing. That suppression is the feature, not a bug. A build whose rows
+      // were all item presets has no wielder half, so nothing empty is created.
+      if (data.changes?.length || !payload.enchant) {
+        data.transfer = true;
+        data.disabled = false;
+        await target.createEmbeddedDocuments("ActiveEffect", [data]);
+        made++;
+      }
+      return made;
     }
-    return mergeRulesIntoItem(target, payload, upgrade, purchaseId);
+
+    if (payload.data?.system?.rules?.length) {
+      await mergeRulesIntoItem(target, payload, upgrade, purchaseId);
+      made++;
+    }
+    if (payload.runes?.length) {
+      made += await applyRuneWrites(target, payload.runes, upgrade, purchaseId);
+    }
+    // Rune writes can all be refused legitimately (the sword is already that strong) — each
+    // refusal warned for itself, so zero is a quiet no-op there. Zero *without* runes in play
+    // means a linked document nothing an item can hold, which must stay a hard error.
+    if (!made && !payload.runes?.length) {
+      throw new Error(`payload for "${upgrade.name}" cannot be embedded on an item`);
+    }
+    return made;
   }
   const actor = target;
 
@@ -289,6 +341,101 @@ async function mergeRulesIntoItem(item, payload, upgrade, purchaseId = null) {
   return item.update({ "system.rules": [...existing, ...tagged] });
 }
 
+/**
+ * PF2e rune grants: write the fields, and record what changed under
+ * `flags.<module>.runeGrants` on the item — the same job the per-rule stamp does for merged
+ * rules, because a rune is not a document and the record is the only handle a refund has.
+ *
+ * Numeric runes never downgrade: a +1 upgrade bought for a sword that is already +2 changes
+ * nothing, says so, and records nothing — there is nothing for a refund to reverse. Source
+ * values are read from `toObject()`, not prepared data, because ABP zeroes prepared runes.
+ */
+async function applyRuneWrites(item, runes, upgrade, purchaseId = null) {
+  if (!runes?.length) return 0;
+  const source = item.toObject().system?.runes ?? {};
+  const update = {};
+  const records = [];
+  for (const write of runes) {
+    if (write.field === "property") {
+      const list = update["system.runes.property"] ?? [...(source.property ?? [])];
+      if (list.includes(write.slug)) {
+        ui.notifications.warn(t("UPGRADES.Notify.RuneAlready", { item: item.name }));
+        continue;
+      }
+      list.push(write.slug);
+      update["system.runes.property"] = list;
+      records.push({ upgradeId: upgrade.id, purchaseId, field: "property", slug: write.slug });
+    } else {
+      const key = `system.runes.${write.field}`;
+      const from = update[key] ?? Number(source[write.field] ?? 0);
+      if (from >= write.value) {
+        ui.notifications.warn(t("UPGRADES.Notify.RuneNotBetter", { item: item.name }));
+        continue;
+      }
+      update[key] = write.value;
+      records.push({ upgradeId: upgrade.id, purchaseId, field: write.field, from, to: write.value });
+    }
+  }
+  if (!records.length) return 0;
+
+  const prior = item.flags?.[MODULE_ID]?.runeGrants ?? [];
+  update[`flags.${MODULE_ID}.runeGrants`] = [...prior.map(g => ({ ...g })), ...records];
+  await item.update(update);
+
+  // Two ways a written rune can sit inert, both said out loud rather than discovered mid-fight:
+  // ABP zeroes rune values at every prep, and property runes only occupy slots up to potency.
+  const abp = game.pf2e?.settings?.variants?.abp;
+  if (abp && abp !== "noABP") {
+    ui.notifications.warn(t("UPGRADES.Notify.RuneAbp", { item: item.name }));
+  }
+  const potency = update["system.runes.potency"] ?? Number(source.potency ?? 0);
+  const property = update["system.runes.property"] ?? source.property ?? [];
+  if (property.length > potency) {
+    ui.notifications.warn(t("UPGRADES.Notify.RuneNeedsPotency", { item: item.name }));
+  }
+  return records.length;
+}
+
+/**
+ * Reverse this upgrade's recorded rune writes, newest first so stacked numerics unwind cleanly.
+ * A field the GM has since changed by hand is left alone — reverting their number would be a
+ * second wrong — but the record still goes: the purchase is refunded either way, and silence
+ * is the one thing this may not do.
+ */
+async function removeRuneGrants(item, upgradeId, purchaseId = null) {
+  const grants = item.flags?.[MODULE_ID]?.runeGrants;
+  if (!Array.isArray(grants) || !grants.length) return 0;
+  const matches = g => (purchaseId ? g.purchaseId === purchaseId : g.upgradeId === upgradeId);
+  const mine = grants.filter(matches);
+  if (!mine.length) return 0;
+
+  const source = item.toObject().system?.runes ?? {};
+  const update = {};
+  for (const grant of [...mine].reverse()) {
+    if (grant.field === "property") {
+      const list = update["system.runes.property"] ?? [...(source.property ?? [])];
+      const at = list.indexOf(grant.slug);
+      if (at >= 0) list.splice(at, 1);
+      update["system.runes.property"] = list;
+    } else {
+      const key = `system.runes.${grant.field}`;
+      const current = update[key] ?? Number(source[grant.field] ?? 0);
+      if (current === grant.to) update[key] = grant.from;
+      else ui.notifications.warn(t("UPGRADES.Notify.RuneChangedByHand", { item: item.name }));
+    }
+  }
+  update[`flags.${MODULE_ID}.runeGrants`] = grants.filter(g => !matches(g)).map(g => ({ ...g }));
+  await item.update(update);
+  return mine.length;
+}
+
+/** Does this recorded rune grant belong to the given upgrade or purchase? */
+function runeGrantMatches(item, upgradeId, purchaseId) {
+  const grants = item.flags?.[MODULE_ID]?.runeGrants;
+  return Array.isArray(grants) && grants.some(g =>
+    purchaseId ? g.purchaseId === purchaseId : g.upgradeId === upgradeId);
+}
+
 /** Does this stored rule element belong to the given upgrade or purchase? */
 function mergedRuleMatches(rule, upgradeId, purchaseId) {
   const tag = rule?.[MODULE_ID];
@@ -335,9 +482,12 @@ function flagged(doc, upgradeId, purchaseId) {
 
 function hasUpgrade(target, upgradeId, purchaseId = null) {
   if (findGrant(target, upgradeId, purchaseId)) return true;
-  // A PF2e grant to an item is not a document at all — it is rules merged into the item.
-  const rules = target.documentName === "Item" ? target.system?.rules : null;
-  return Array.isArray(rules) && rules.some(rule => mergedRuleMatches(rule, upgradeId, purchaseId));
+  if (target.documentName !== "Item") return false;
+  // A grant to an item may not be a document at all: rules merged into the item, or recorded
+  // rune writes. Both must count as "granted" or a re-sync would grant them again.
+  const rules = target.system?.rules;
+  if (Array.isArray(rules) && rules.some(rule => mergedRuleMatches(rule, upgradeId, purchaseId))) return true;
+  return runeGrantMatches(target, upgradeId, purchaseId);
 }
 
 /**
@@ -386,10 +536,10 @@ export async function applyUpgradeEffect(upgrade, { buyerActor = null, purchaseI
     return { count: 0, names: [] };
   }
 
-  // An item can carry an ActiveEffect or merged rule elements, but never another item — a
-  // linked feature or piece of equipment has no shape a sword could hold.
+  // An item can carry an ActiveEffect, merged rule elements or rune writes, but never another
+  // item — a linked feature or piece of equipment has no shape a sword could hold.
   if (upgrade.target === TARGET.ITEM && payload.documentName === "Item"
-      && !payload.data?.system?.rules?.length) {
+      && !payload.data?.system?.rules?.length && !payload.runes?.length) {
     ui.notifications.warn(t("UPGRADES.Notify.ItemLinkUnsupported", { name: upgrade.name }));
     return { count: 0, names: [] };
   }
@@ -404,8 +554,10 @@ export async function applyUpgradeEffect(upgrade, { buyerActor = null, purchaseI
   for (const target of targets) {
     try {
       if (hasUpgrade(target, upgrade.id, upgrade.repeatable ? purchaseId : null)) continue;
-      await createFromPayload(target, payload, upgrade, purchaseId, choice);
-      names.push(target.name);
+      const made = await createFromPayload(target, payload, upgrade, purchaseId, choice);
+      // A rune purchase whose every write was refused (already that strong) granted nothing,
+      // and the chat card must not claim otherwise. Document paths return created documents.
+      if (made !== 0) names.push(target.name);
     } catch (err) {
       console.error(`${MODULE_ID} | Could not apply effect to ${target.name}`, err);
       ui.notifications.error(t("UPGRADES.Notify.ApplyFailed", { name: upgrade.name, actor: target.name }));
@@ -439,6 +591,7 @@ export async function removeUpgradeEffect(upgradeId, purchaseId = null) {
         count += embedded.length;
       }
       count += await stripMergedRules(item, upgradeId, purchaseId);
+      count += await removeRuneGrants(item, upgradeId, purchaseId);
     }
   }
   // An upgraded item that was traded back to the sidebar still carries the grant.
@@ -449,6 +602,7 @@ export async function removeUpgradeEffect(upgradeId, purchaseId = null) {
       count += embedded.length;
     }
     count += await stripMergedRules(item, upgradeId, purchaseId);
+    count += await removeRuneGrants(item, upgradeId, purchaseId);
   }
   return { count };
 }
@@ -490,6 +644,12 @@ export async function resyncUpgrades() {
       for (const target of getTargetDocuments(upgrade, { buyerActor })) {
         const existing = findGrant(target, upgrade.id, purchaseId);
         if (existing) {
+          // An item grant can be several pieces — a transferring effect plus an enchantment,
+          // or merged rules plus rune writes. findGrant sees one piece; rebuilding from it
+          // would duplicate the others. Present means present, as with merged rules below;
+          // rebuilding a *stale* multi-piece item grant is not attempted yet.
+          if (target.documentName === "Item"
+              && (payload.enchant?.length || payload.runes?.length)) continue;
           // Nothing to compare against, or nothing has drifted: leave the sheet alone.
           if (!wanted || grantSignature(existing) === wanted) continue;
           try {

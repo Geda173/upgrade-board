@@ -9,8 +9,8 @@ import { TARGET, eligibleExclusions, eligiblePrerequisites, exclusiveSiblings, g
 import { getCosts, getCurrencies } from "../economy.js";
 import { MODULE_ID, SETTINGS, getVocabulary, isImagePath } from "../settings.js";
 import { EFFECT_MODE, getPresetGroups, getPreset, systemSupportsBuilder,
-         getDamageTypes, getResistanceTypes, getConditionTypes, getRowChoices,
-         splitDamageValue, isPf2e, PF2E_BONUS_TYPES } from "../effects.js";
+         getDamageTypes, getResistanceTypes, getConditionTypes, getPropertyRunes,
+         getRowChoices, splitDamageValue, isPf2e, PF2E_BONUS_TYPES } from "../effects.js";
 import { getPartyActors } from "../systems/adapter.js";
 import { UpgradesWindow, wireDropZone } from "./ui.js";
 import { t } from "../i18n.js";
@@ -124,7 +124,12 @@ export class UpgradeEditor extends UpgradesWindow(HandlebarsApplicationMixin(App
     const draft = this.draft;
     const vocab = getVocabulary();
     const linked = draft.effectUuid ? await fromUuid(draft.effectUuid).catch(() => null) : null;
-    const presetGroups = getPresetGroups();
+    // Item presets reach the item's own data, so they are only offerable when the upgrade
+    // targets an item — a preset that cannot apply must not appear in the picker.
+    const presetGroups = getPresetGroups()
+      .map(group => ({ ...group,
+        presets: group.presets.filter(p => !p.itemOnly || draft.target === TARGET.ITEM) }))
+      .filter(group => group.presets.length);
     const all = getUpgrades();
     // What this upgrade is exclusive with decides which prerequisites are legal, so both pickers
     // are rebuilt from the live draft rather than from what was last saved.
@@ -239,8 +244,11 @@ export class UpgradeEditor extends UpgradesWindow(HandlebarsApplicationMixin(App
     // trait — those are sets of damage types with no number to give).
     const isIwr = !!preset?.iwr;
     const valueIsType = !!preset?.valueIsType;
-    // A condition immunity is the same shape as a damage one, asked about a different vocabulary.
-    const kinds = preset?.conditions ? getConditionTypes()
+    // A condition immunity is the same shape as a damage one, asked about a different
+    // vocabulary — and a property rune is that same shape again: the value *is* the choice,
+    // picked from PF2e's own rune names instead of a damage-type list.
+    const kinds = preset?.rune === "property" ? getPropertyRunes()
+      : preset?.conditions ? getConditionTypes()
       : isIwr ? getResistanceTypes() : getDamageTypes();
     // Rows that answer with one of two words, or with nothing at all, have no amount to type.
     const choices = getRowChoices(preset);
@@ -258,6 +266,8 @@ export class UpgradeEditor extends UpgradesWindow(HandlebarsApplicationMixin(App
       valueIsType,
       isToggle,
       isSense: !!preset?.sense,
+      // A rune is not a modifier: no bonus type, no stacking rule, so that select stays away.
+      isRune: !!preset?.rune,
       hasChoices: choices.length > 0,
       choices: choices.map(c => ({ ...c, isSelected: c.id === chosen })),
       // When the type *is* the value it rides in rowValue, so the row keeps one field either way.
@@ -645,6 +655,16 @@ export class UpgradeEditor extends UpgradesWindow(HandlebarsApplicationMixin(App
     if (d.target === TARGET.ITEM && !d.targetItemUuid) {
       ui.notifications.warn(t("UPGRADES.Notify.PickAnItem"));
       return;
+    }
+
+    // Rows authored while the target was an item make no sense anywhere else — they write to
+    // item data the other targets do not have. Dropped out loud, never silently.
+    if (d.target !== TARGET.ITEM) {
+      const kept = d.rows.filter(row => !getPreset(row.preset)?.itemOnly);
+      if (kept.length !== d.rows.length) {
+        ui.notifications.warn(t("UPGRADES.Notify.ItemRowsDropped"));
+        d.rows = kept;
+      }
     }
 
     await this.onSave({

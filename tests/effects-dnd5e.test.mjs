@@ -232,7 +232,12 @@ t('no preset claims a save-spell damage path, because dnd5e has none',
 const all = getPresetGroups().flatMap(g => g.presets);
 t('catalog non-empty', all.length > 15);
 t('all presets resolvable', all.every(p => getPreset(p.id)));
-t('all non-custom presets have keys', all.filter(p => p.id !== 'custom').every(p => p.keys.length > 0));
+// Item presets legitimately carry no keys: they compile through buildEnchantChanges into a
+// separate enchantment-type effect, never through the wielder-change machinery.
+t('all non-custom presets have keys', all.filter(p => p.id !== 'custom' && !p.itemOnly).every(p => p.keys.length > 0));
+t('item presets never leak into wielder changes',
+  all.filter(p => p.itemOnly).every(p =>
+    buildChanges([{ preset: p.id, value: p.toggle ? '' : '1' }]).length === 0));
 // A row that asks for one of two answers must never also render a free-text amount, and every
 // choice it offers has to compile — an unmatched id is dropped by buildChanges without an error.
 for (const p of all.filter(p => p.choices)) {
@@ -254,5 +259,45 @@ for (const g of getPresetGroups()) {
 }
 t(`every dnd5e preset label and group resolves${missed.size ? ` — missing: ${[...missed].join(', ')}` : ''}`,
   missed.size === 0);
+
+/* ---------- item presets: the enchantment shapes (release-5.3.3) ----------
+ * magicalBonus is consumed only when magicAvailable — the mgc property plus attunement — so the
+ * mgc ADD must ride along or the bonus is silently inert (equippable-item.mjs:77-80). UPGRADE
+ * composes as max(), the SRD's own Magic Weapon shape, so stacked purchases do not sum. And
+ * system.damageBonus goes through a FormulaField whose ADD joins " + " and strips the delta's
+ * sign (formula-field.mjs:63-68), so its value must stay UNSIGNED — the one ADD in the module
+ * where signing would be the bug rather than the fix. */
+globalThis.game.system.id = 'dnd5e';
+globalThis.ui = { notifications: { warn: () => {} } };
+const { buildEnchantChanges } = await import(new URL('../scripts/effects.js', import.meta.url));
+const sword5e = { type: 'weapon', name: 'Sword' };
+const ench = buildEnchantChanges([{ preset: 'item.magic', value: '2' }], sword5e);
+t('magical bonus writes system.magicalBonus on a weapon, as UPGRADE',
+  ench.some(c => c.key === 'system.magicalBonus' && c.mode === 4 && c.value === '2'));
+t('the mgc property rides along',
+  ench.some(c => c.key === 'system.properties' && c.mode === 2 && c.value === 'mgc'));
+t('armor keeps the bonus inside its armor schema',
+  buildEnchantChanges([{ preset: 'item.magic', value: '1' }], { type: 'equipment' })
+    .some(c => c.key === 'system.armor.magicalBonus'));
+t('ammunition keeps it at the top level',
+  buildEnchantChanges([{ preset: 'item.magic', value: '1' }], { type: 'consumable' })
+    .some(c => c.key === 'system.magicalBonus'));
+t('an item type with no magical-bonus field produces nothing, not a wrong path',
+  buildEnchantChanges([{ preset: 'item.magic', value: '1' }], { type: 'tool', name: 'Lute' }).length === 0);
+const flame = buildEnchantChanges([{ preset: 'item.damage', value: '1d6', damageType: 'fire' }], sword5e);
+t('extra item damage writes system.damageBonus with ADD',
+  flame.length === 1 && flame[0].key === 'system.damageBonus' && flame[0].mode === 2);
+t('its value stays unsigned — dnd5e joins formula ADDs with " + " itself',
+  flame[0].value === '1d6[fire]');
+t('counts-as-magical is exactly the mgc property and nothing else',
+  JSON.stringify(buildEnchantChanges([{ preset: 'item.magical', value: '' }], sword5e))
+    === JSON.stringify([{ key: 'system.properties', mode: 2, value: 'mgc', priority: null }]));
+t('a zero or negative magical bonus is refused',
+  buildEnchantChanges([{ preset: 'item.magic', value: '0' }], sword5e).length === 0
+  && buildEnchantChanges([{ preset: 'item.magic', value: '-1' }], sword5e).length === 0);
+t('wielder rows never leak into the enchantment',
+  buildEnchantChanges([{ preset: 'ac', value: '1' }], sword5e).length === 0);
+t('the magical bonus reads as what it raises to, not as a stacking bonus',
+  describeRows([{ preset: 'item.magic', value: '2' }]).join().includes('raised to'));
 
 process.exit(bad);

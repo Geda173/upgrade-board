@@ -248,6 +248,34 @@ const RAW_DND5E = [
   { group: "SpecialTraits", id: "flag.meleeCriticalDamageDice", placeholder: "1",
     type: "number", keys: ["flags.dnd5e.meleeCriticalDamageDice"] },
 
+  /**
+   * Item upgrades — the only presets whose changes reach the *item's* own data.
+   *
+   * These never ride the transferring wielder effect. dnd5e applies an effect to an item's own
+   * system data only when it is an applied enchantment — `Item5e.allApplicableEffects` yields
+   * nothing else, and the actor-side iterator skips enchantments symmetrically — so these rows
+   * compile through `buildEnchantChanges()` into a separate `type: "enchantment"` effect
+   * (see `createFromPayload`). Verified against module/documents/item.mjs and
+   * module/documents/active-effect.mjs at release-5.3.3.
+   *
+   * `item.magic` is the SRD's own "+1 weapon" shape: `system.properties` gains "mgc" and the
+   * magical-bonus field is UPGRADEd, which composes as max() — two purchases do not sum, the
+   * bigger wins, exactly as the system's own Magic Weapon spell behaves. Tiers are upgrade
+   * paths, not repeat buys. The field differs by item type (weapon/ammunition vs armor) and is
+   * resolved from the target item in `buildEnchantChanges`. The bonus is gated on
+   * `magicAvailable` — mgc plus attunement if the item requires it — which is the system's rule,
+   * not ours. `item.damage` writes `system.damageBonus`, which base-activity.mjs pushes into
+   * damage part zero of every roll the item makes; it goes through a FormulaField whose ADD
+   * joins with " + " and strips the delta's sign, so the value stays *unsigned* — the one ADD
+   * in this file that must not be signed.
+   */
+  { group: "ItemUpgrade", id: "item.magic", itemOnly: true, enchant: true, type: "number",
+    mode: MODES.UPGRADE, placeholder: "1", keys: [] },
+  { group: "ItemUpgrade", id: "item.damage", itemOnly: true, enchant: true, damage: true,
+    placeholder: "1d6", keys: [] },
+  { group: "ItemUpgrade", id: "item.magical", itemOnly: true, enchant: true, toggle: true,
+    type: "number", keys: [] },
+
   { group: "Advanced", id: "custom", placeholder: "+1", custom: true, keys: [] }
 ];
 
@@ -353,6 +381,28 @@ const RAW_PF2E = [
   { group: "Senses", id: "sense.scent", sense: "scent", acuity: "imprecise", placeholder: "30" },
   { group: "Senses", id: "sense.lifesense", sense: "lifesense", acuity: "imprecise", placeholder: "30" },
 
+  /**
+   * Item upgrades — runes, because PF2e natively models exactly this feature.
+   *
+   * A "+1 sword" is `system.runes.potency: 1`, extra damage dice are the striking rune, and
+   * "+1d6 fire" is the flaming property rune. Writing the field is sufficient: attack bonus,
+   * damage dice, level, price, rarity and the generated item name all derive at data prep
+   * (weapon/document.ts, physical/document.ts at pf2e-8.3.0) — which is also why these rows
+   * produce *field writes*, not rule elements or documents, and are applied and refunded
+   * through the `runeGrants` records in `adapter.js`. Source shape: potency/striking/resilient
+   * are numbers 0–4 (the "greaterStriking" strings are valuation-table slugs, never stored),
+   * `property` an array of camelCase slugs gated on potency for slots. Striking is a weapon
+   * concept, resilient an armor one; potency exists on both.
+   */
+  { group: "ItemUpgrade", id: "rune.potency", itemOnly: true, rune: "potency",
+    type: "number", placeholder: "1" },
+  { group: "ItemUpgrade", id: "rune.striking", itemOnly: true, rune: "striking",
+    type: "number", placeholder: "1" },
+  { group: "ItemUpgrade", id: "rune.resilient", itemOnly: true, rune: "resilient",
+    type: "number", placeholder: "1" },
+  { group: "ItemUpgrade", id: "rune.property", itemOnly: true, rune: "property",
+    valueIsType: true },
+
   { group: "Advanced", id: "custom", placeholder: "1", custom: true, selectors: [] }
 ];
 
@@ -427,6 +477,27 @@ export const PF2E_BONUS_TYPES = localizeFields(RAW_BONUS_TYPES, {
 /** Dice sizes PF2e accepts for a DamageDice rule element. */
 export const PF2E_DIE_SIZES = ["d4", "d6", "d8", "d10", "d12"];
 
+/**
+ * The property runes the picker offers — a curated subset of WEAPON_PROPERTY_RUNES, every slug
+ * verified against src/module/item/physical/runes.ts at pf2e-8.3.0. Slugs are camelCase because
+ * that is what the system stores. Labels resolve through PF2e's own translation keys, so the
+ * dropdown matches the sheet in every language the system ships — and follows the system's
+ * renames for free ("speed" reads Quickstrike in the remaster wording).
+ */
+const WEAPON_PROPERTY_RUNE_SLUGS = [
+  "corrosive", "disrupting", "flaming", "frost", "ghostTouch", "grievous", "holy", "keen",
+  "returning", "serrating", "shock", "speed", "thundering", "unholy", "wounding",
+  "greaterCorrosive", "greaterDisrupting", "greaterFlaming", "greaterFrost", "greaterShock",
+  "greaterThundering"
+];
+
+/** Property runes shaped for the row's dropdown, labelled in the system's own words. */
+export function getPropertyRunes() {
+  return WEAPON_PROPERTY_RUNE_SLUGS
+    .map(slug => ({ id: slug, label: t(`PF2E.WeaponPropertyRune.${slug}.Name`) }))
+    .sort((a, b) => String(a.label).localeCompare(String(b.label)));
+}
+
 export function isPf2e() {
   return game.system.id === "pf2e";
 }
@@ -455,6 +526,9 @@ export function buildRules(rows = [], { label = "Upgrade" } = {}) {
       console.warn(`${MODULE_ID} | Unknown effect preset "${row.preset}" — row skipped.`);
       continue;
     }
+    // Item presets are field writes on the item, not rule elements — buildRuneWrites() is
+    // their compiler, and letting them fall through here would emit garbage rules.
+    if (preset.itemOnly) continue;
     // A sense with no range, like darkvision, is the whole statement on its own.
     if (!raw && !preset.toggle) continue;
 
@@ -707,6 +781,9 @@ export function buildChanges(rows = []) {
       console.warn(`${MODULE_ID} | Unknown effect preset "${row.preset}" — row skipped.`);
       continue;
     }
+    // Item presets never ride the wielder effect: their changes must reach the *item's* own
+    // data, which only an applied enchantment does — buildEnchantChanges() compiles them.
+    if (preset.itemOnly) continue;
     // A toggle preset is the whole statement, so there is no amount and nothing to leave blank.
     if (!raw && !preset.toggle) continue;
 
@@ -743,6 +820,112 @@ export function buildChanges(rows = []) {
 }
 
 /**
+ * Which field carries an item's magical bonus, by item type — or null for a type that has none.
+ * Weapons and ammunition keep it at the top level; armor keeps it inside the `armor` schema.
+ * Verified against weapon.mjs:68, consumable.mjs:61 and equipment.mjs:58 at release-5.3.3.
+ */
+function magicalBonusKey(item) {
+  if (item?.type === "weapon" || item?.type === "consumable") return "system.magicalBonus";
+  if (item?.type === "equipment") return "system.armor.magicalBonus";
+  return null;
+}
+
+/**
+ * Assemble the item-upgrade rows into the changes of a dnd5e enchantment effect.
+ *
+ * Kept apart from `buildChanges` because these changes must live on a different document: an
+ * effect of `type: "enchantment"` created on the item itself, which is the only shape whose
+ * changes dnd5e applies to the item's own data. The `mgc` property rides along whenever the
+ * magical bonus does — without it `magicAvailable` is false and the bonus is silently inert,
+ * which is this codebase's least favourite failure mode.
+ */
+export function buildEnchantChanges(rows = [], item = null) {
+  const changes = [];
+  let needsMgc = false;
+  for (const row of rows) {
+    const preset = getPreset(row.preset);
+    if (!preset?.enchant) continue;
+    const raw = String(row.value ?? "").trim();
+    if (!raw && !preset.toggle) continue;
+
+    if (preset.toggle) {
+      needsMgc = true;
+      continue;
+    }
+    if (preset.id === "item.magic") {
+      const key = magicalBonusKey(item);
+      if (!key) {
+        globalThis.ui?.notifications?.warn(t("UPGRADES.Notify.NoMagicField", { item: item?.name ?? "?" }));
+        continue;
+      }
+      const amount = Number(raw);
+      if (!Number.isFinite(amount) || amount <= 0) {
+        console.warn(`${MODULE_ID} | "${raw}" is not a positive magical bonus — row skipped.`);
+        continue;
+      }
+      needsMgc = true;
+      // UPGRADE, as the SRD's own enchantments do it: max() composition, so stacked purchases
+      // do not sum — the bigger bonus wins, and tiers are authored as upgrade paths.
+      changes.push({ key, mode: MODES.UPGRADE, value: String(amount), priority: null });
+      continue;
+    }
+    if (preset.id === "item.damage") {
+      const parsed = splitDamageValue(raw);
+      const type = (row.damageType ?? parsed.damageType ?? "").trim();
+      // Unsigned on purpose: system.damageBonus goes through dnd5e's FormulaField, whose ADD
+      // joins with " + " and strips the delta's sign — signing is for raw string concatenation.
+      changes.push({
+        key: "system.damageBonus", mode: MODES.ADD,
+        value: `${parsed.amount}${type ? `[${type}]` : ""}`, priority: null
+      });
+      continue;
+    }
+  }
+  if (needsMgc) {
+    changes.unshift({ key: "system.properties", mode: MODES.ADD, value: "mgc", priority: null });
+  }
+  return changes;
+}
+
+/**
+ * Assemble the rune rows into a plan of field writes — `{field, value}` for the numeric runes,
+ * `{field: "property", slug}` for property runes. Application, the refund records and their
+ * reversal all live in `adapter.js` (`applyRuneWrites`/`removeRuneGrants`); this only decides
+ * what a clean write looks like: 1–4, and only on an item type that has the field.
+ */
+export function buildRuneWrites(rows = [], item = null) {
+  const writes = [];
+  for (const row of rows) {
+    const preset = getPreset(row.preset);
+    if (!preset?.rune) continue;
+    const raw = String(row.value ?? "").trim();
+    if (!raw) continue;
+
+    // Striking is a weapon concept and resilient an armor one; potency and property slots
+    // exist on both, but the picker's list is weapon runes, so property stays weapon-only.
+    const wants = { potency: ["weapon", "armor"], striking: ["weapon"],
+                    resilient: ["armor"], property: ["weapon"] }[preset.rune];
+    if (item && !wants.includes(item.type)) {
+      globalThis.ui?.notifications?.warn(t("UPGRADES.Notify.RuneWrongItemType",
+        { item: item.name, label: preset.label }));
+      continue;
+    }
+
+    if (preset.rune === "property") {
+      writes.push({ field: "property", slug: raw });
+      continue;
+    }
+    const value = Math.floor(Number(raw));
+    if (!Number.isFinite(value) || value < 1 || value > 4) {
+      console.warn(`${MODULE_ID} | "${raw}" is not a rune value (1-4) — row skipped.`);
+      continue;
+    }
+    writes.push({ field: preset.rune, value });
+  }
+  return writes;
+}
+
+/**
  * Human-readable lines describing what a built payload actually does, for players.
  * Phrased as it reads on a card — "All weapon damage +1d4 cold" — rather than as data paths.
  */
@@ -766,6 +949,24 @@ export function describeRows(rows = []) {
     // whole line: "Reliable Talent", "Darkvision".
     if (preset.toggle) {
       out.push(preset.label);
+      continue;
+    }
+
+    // A rune is named in the system's own words. The property rune's line comes from PF2e's
+    // translation of the rune itself, so it matches what the sheet will call the weapon.
+    if (preset.rune) {
+      if (preset.rune === "property") {
+        out.push(t("UPGRADES.Describe.Rune", { rune: t(`PF2E.WeaponPropertyRune.${raw}.Name`) }));
+      } else {
+        const amount = /^[+-]/.test(raw) ? raw : `+${raw}`;
+        out.push(t("UPGRADES.Describe.RuneNumeric", { label: preset.label, amount }));
+      }
+      continue;
+    }
+
+    // The magical bonus replaces-by-max rather than adding, so it reads as what it raises to.
+    if (preset.enchant && preset.id === "item.magic") {
+      out.push(t("UPGRADES.Describe.RaisedTo", { label: preset.short ?? preset.label, amount: raw }));
       continue;
     }
 
@@ -850,6 +1051,17 @@ export function describeBuild(rows = []) {
     const label = row.preset === "custom" ? (row.key || "custom") : (preset?.label ?? row.preset);
     if (preset?.toggle) {
       parts.push(label);
+      continue;
+    }
+    if (preset?.rune) {
+      parts.push(preset.rune === "property"
+        ? t("UPGRADES.Describe.Rune", { rune: t(`PF2E.WeaponPropertyRune.${raw}.Name`) })
+        : t("UPGRADES.Describe.RuneNumeric",
+            { label, amount: /^[+-]/.test(raw) ? raw : `+${raw}` }));
+      continue;
+    }
+    if (preset?.enchant && preset.id === "item.magic") {
+      parts.push(t("UPGRADES.Describe.RaisedTo", { label: preset.short ?? label, amount: raw }));
       continue;
     }
     if (preset?.choices) {

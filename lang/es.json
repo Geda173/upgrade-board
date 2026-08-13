@@ -194,7 +194,8 @@
       "Advanced": "Avanzado",
       "Rolls": "Tiradas",
       "Senses": "Sentidos",
-      "SpecialTraits": "Rasgos especiales"
+      "SpecialTraits": "Rasgos especiales",
+      "ItemUpgrade": "Mejoras de objeto"
     },
     "Preset": {
       "Dnd5e": {
@@ -279,7 +280,10 @@
         "flag_weaponCriticalThreshold": "Golpe crítico con arma en (tirada)",
         "flag_spellCriticalThreshold": "Golpe crítico con conjuro en (tirada)",
         "flag_meleeCriticalDamageDice": "Dados de daño crítico cuerpo a cuerpo",
-        "spell_damage_all": "Todo el daño de conjuro (incl. conjuros con tirada de salvación)"
+        "spell_damage_all": "Todo el daño de conjuro (incl. conjuros con tirada de salvación)",
+        "item_magic": "Bonificador mágico (ataque y daño; CA en armaduras)",
+        "item_damage": "Daño adicional infligido por este objeto",
+        "item_magical": "Cuenta como mágico"
       },
       "Pf2e": {
         "attack": "Tiradas de ataque",
@@ -336,7 +340,11 @@
         "sense_tremorsense": "Sentido sísmico (alcance en pies)",
         "sense_scent": "Olfato (alcance en pies)",
         "sense_lifesense": "Sentido de la vida (alcance en pies)",
-        "spell_damage_all": "Todo el daño de conjuro"
+        "spell_damage_all": "Todo el daño de conjuro",
+        "rune_potency": "Runa de potencia (ataque, o CA en armaduras)",
+        "rune_striking": "Runa de impacto (dado de daño adicional)",
+        "rune_resilient": "Runa de resiliencia (tiradas de salvación)",
+        "rune_property": "Runa de propiedad"
       },
       "Generic": {
         "custom": "Ruta de datos personalizada…"
@@ -365,7 +373,8 @@
       "tremorsense": "Sentido sísmico",
       "truesight": "Visión verdadera",
       "flag_weaponCriticalThreshold": "Golpe crítico con arma en",
-      "flag_spellCriticalThreshold": "Golpe crítico con conjuro en"
+      "flag_spellCriticalThreshold": "Golpe crítico con conjuro en",
+      "item_magic": "Bonificador mágico"
     },
     "BonusType": {
       "circumstance": "Circunstancia — por dónde estás o por lo que has hecho",
@@ -390,7 +399,9 @@
       "Summary": "{amount} {label}",
       "RollMode": "{choice} en {noun}",
       "SenseRange": "{label}, {amount} pies",
-      "SetTo": "{label} {amount}"
+      "SetTo": "{label} {amount}",
+      "Rune": "Runa {rune}",
+      "RuneNumeric": "{label} {amount}"
     },
     "ThemeGroup": {
       "Fantasy": "Fantasía",
@@ -627,6 +638,14 @@
       "PickAnItem": "Upgrades: elige un objeto para una mejora de objeto.",
       "ItemNeedsOwner": "Upgrades: nadie lleva ese objeto. Arrástralo desde una hoja de personaje.",
       "ItemLinkUnsupported": "Upgrades: «{name}» enlaza un documento que un objeto no puede contener — construye el efecto en su lugar, o enlaza un efecto activo.",
+      "NoMagicField": "Upgrades: «{item}» no puede llevar un bonificador mágico — solo un arma, una armadura o munición pueden.",
+      "RuneWrongItemType": "Upgrades: «{item}» no puede recibir «{label}» — tipo de objeto equivocado.",
+      "RuneAlready": "Upgrades: «{item}» ya lleva esa runa de propiedad.",
+      "RuneNotBetter": "Upgrades: «{item}» ya tiene una runa al menos igual de fuerte — no se añadió nada.",
+      "RuneAbp": "Upgrades: este mundo usa la progresión automática de bonificadores, que anula los valores de las runas — la runa se escribió pero no se aplicará.",
+      "RuneNeedsPotency": "Upgrades: «{item}» lleva más runas de propiedad de las que su potencia permite; la sobrante queda inactiva hasta que la potencia suba.",
+      "RuneChangedByHand": "Upgrades: una runa de «{item}» se cambió a mano después de esta compra, así que ese valor se dejó como está.",
+      "ItemRowsDropped": "Upgrades: se quitaron las filas de bonificación que solo funcionan en objetos — esta mejora ya no apunta a uno.",
       "Migrated": "Upgrade Board: tu tablero existente se ha traído del módulo antiguo «Upgrades» ({count} mejoras). Ya puedes desactivarlo sin problema."
     },
     "IconName": {

@@ -262,14 +262,15 @@
           <input type="text" name="rowValue" value="{{value}}" placeholder="{{placeholder}}" class="upg-value">
           {{/if}}
 
-          {{#if isPf2e}}{{#unless isIwr}}{{#unless isToggle}}{{#unless hasChoices}}{{#unless isSense}}
-          {{! a resistance is not a modifier, so it has no bonus type and no stacking rule }}
+          {{#if isPf2e}}{{#unless isIwr}}{{#unless isToggle}}{{#unless hasChoices}}{{#unless isSense}}{{#unless isRune}}
+          {{! a resistance is not a modifier, so it has no bonus type and no stacking rule — and
+              neither is a rune: PF2e derives its bonuses at data prep }}
           <select name="rowBonusType" class="upg-bonus-type" title="{{localize "UPGRADES.UpgradeEditor.BonusTypeTitle"}}">
             {{#each bonusTypes}}
             <option value="{{id}}" {{#if isSelected}}selected{{/if}}>{{label}}</option>
             {{/each}}
           </select>
-          {{/unless}}{{/unless}}{{/unless}}{{/unless}}{{/if}}
+          {{/unless}}{{/unless}}{{/unless}}{{/unless}}{{/unless}}{{/if}}
 
           {{#if isDamage}}
           <select name="rowDamageType" class="upg-damage-type">

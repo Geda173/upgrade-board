@@ -24,7 +24,8 @@ t('pf2e catalogue is populated', all.length > 25);
 // so they are held to a different contract — a ruleKey — rather than skipped quietly.
 // A sense is the same kind of exception: Sense's `selector` is a sense type, not a check domain,
 // so holding it to the domain list would reject the very thing it is supposed to say.
-const selectorPresets = all.filter(p => p.id !== "custom" && !p.iwr && !p.sense);
+// Rune presets are field writes compiled by buildRuneWrites, not rule elements — no selector.
+const selectorPresets = all.filter(p => p.id !== "custom" && !p.iwr && !p.sense && !p.rune);
 const unknown = selectorPresets.flatMap(p=>p.selectors).filter(sel=>!VALID.has(sel));
 t('every selector exists in pf2e 8.3.0'+(unknown.length?` (unknown: ${unknown.join(", ")})`:''), unknown.length===0);
 t('every non-IWR preset actually has a selector',
@@ -198,5 +199,54 @@ for (const g of E.getPresetGroups()) {
 }
 t(`every pf2e preset label and group resolves${missed.size ? ` — missing: ${[...missed].join(', ')}` : ''}`,
   missed.size === 0);
+
+/* ---------- rune presets: field writes, not rule elements (pf2e-8.3.0) ----------
+ * Source shape on a weapon is { potency: 0-4, striking: 0-4, property: [camelCase slugs] } —
+ * the "greaterStriking" strings are valuation-table slugs, never stored — and writing the field
+ * is sufficient: bonus, dice, level, price and name all derive at prep. These tests run after
+ * the missed-key walk above because rune labels resolve through PF2e's own translation keys
+ * (PF2E.WeaponPropertyRune.*), which are the system's to provide, not this module's. */
+globalThis.game.system.id = 'pf2e';
+const runeWarns = [];
+globalThis.ui = { notifications: { warn: m => runeWarns.push(m) } };
+const swordP = { type: 'weapon', name: 'Sword' };
+const armorP = { type: 'armor', name: 'Breastplate' };
+t('potency compiles to a field write',
+  JSON.stringify(E.buildRuneWrites([{ preset: 'rune.potency', value: '1' }], swordP))
+    === JSON.stringify([{ field: 'potency', value: 1 }]));
+t('potency is legal on armor too',
+  E.buildRuneWrites([{ preset: 'rune.potency', value: '2' }], armorP).length === 1);
+t('striking is refused on armor, out loud', (() => {
+  const before = runeWarns.length;
+  return E.buildRuneWrites([{ preset: 'rune.striking', value: '1' }], armorP).length === 0
+    && runeWarns.length === before + 1;
+})());
+t('resilient is refused on a weapon',
+  E.buildRuneWrites([{ preset: 'rune.resilient', value: '1' }], swordP).length === 0);
+t('a rune value outside 1-4 is skipped — nothing clamps a stored 7 at this tag',
+  E.buildRuneWrites([{ preset: 'rune.potency', value: '7' }], swordP).length === 0
+  && E.buildRuneWrites([{ preset: 'rune.striking', value: '0' }], swordP).length === 0);
+t('a property rune carries its slug verbatim',
+  JSON.stringify(E.buildRuneWrites([{ preset: 'rune.property', value: 'flaming' }], swordP))
+    === JSON.stringify([{ field: 'property', slug: 'flaming' }]));
+t('rune rows never leak into rule elements',
+  E.buildRules([
+    { preset: 'rune.potency', value: '1' }, { preset: 'rune.property', value: 'flaming' }
+  ]).length === 0);
+
+// Every slug the picker offers must exist in WEAPON_PROPERTY_RUNES at pf2e-8.3.0 — frozen here
+// because a wrong slug is stored happily and then does nothing, ever. Each of these was checked
+// against src/module/item/physical/runes.ts at that tag on 2026-08-13.
+const WEAPON_PROPERTY_RUNES_8_3_0 = new Set([
+  'corrosive', 'disrupting', 'flaming', 'frost', 'ghostTouch', 'grievous', 'holy', 'keen',
+  'returning', 'serrating', 'shock', 'speed', 'thundering', 'unholy', 'wounding',
+  'greaterCorrosive', 'greaterDisrupting', 'greaterFlaming', 'greaterFrost', 'greaterShock',
+  'greaterThundering'
+]);
+const offeredRunes = E.getPropertyRunes();
+t('every offered property rune slug exists at pf2e-8.3.0',
+  offeredRunes.length > 0 && offeredRunes.every(r => WEAPON_PROPERTY_RUNES_8_3_0.has(r.id)));
+t('rune slugs are stored camelCase, never kebab-case',
+  offeredRunes.every(r => !r.id.includes('-')));
 
 process.exit(bad);

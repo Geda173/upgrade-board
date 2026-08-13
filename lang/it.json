@@ -194,7 +194,8 @@
       "Advanced": "Avanzate",
       "Rolls": "Tiri",
       "Senses": "Sensi",
-      "SpecialTraits": "Tratti speciali"
+      "SpecialTraits": "Tratti speciali",
+      "ItemUpgrade": "Migliorie da oggetto"
     },
     "Preset": {
       "Dnd5e": {
@@ -279,7 +280,10 @@
         "flag_weaponCriticalThreshold": "Colpo critico con arma su (tiro)",
         "flag_spellCriticalThreshold": "Colpo critico con incantesimo su (tiro)",
         "flag_meleeCriticalDamageDice": "Dadi di danno critico in mischia",
-        "spell_damage_all": "Tutti i danni da incantesimo (inclusi quelli con tiro salvezza)"
+        "spell_damage_all": "Tutti i danni da incantesimo (inclusi quelli con tiro salvezza)",
+        "item_magic": "Bonus magico (attacco e danni; CA per le armature)",
+        "item_damage": "Danni aggiuntivi inflitti da questo oggetto",
+        "item_magical": "Conta come magico"
       },
       "Pf2e": {
         "attack": "Tiri per colpire",
@@ -336,7 +340,11 @@
         "sense_tremorsense": "Percezione tellurica (gittata in piedi)",
         "sense_scent": "Olfatto (gittata in piedi)",
         "sense_lifesense": "Percezione vitale (gittata in piedi)",
-        "spell_damage_all": "Tutti i danni da incantesimo"
+        "spell_damage_all": "Tutti i danni da incantesimo",
+        "rune_potency": "Runa di potenziamento (attacco, o CA per le armature)",
+        "rune_striking": "Runa di impatto (dado di danno aggiuntivo)",
+        "rune_resilient": "Runa di resilienza (tiri salvezza)",
+        "rune_property": "Runa di proprietà"
       },
       "Generic": {
         "custom": "Percorso dati personalizzato…"
@@ -365,7 +373,8 @@
       "tremorsense": "Percezione tellurica",
       "truesight": "Vista pura",
       "flag_weaponCriticalThreshold": "Colpo critico con arma su",
-      "flag_spellCriticalThreshold": "Colpo critico con incantesimo su"
+      "flag_spellCriticalThreshold": "Colpo critico con incantesimo su",
+      "item_magic": "Bonus magico"
     },
     "BonusType": {
       "circumstance": "Circostanza — da dove ti trovi o da cosa hai fatto",
@@ -390,7 +399,9 @@
       "Summary": "{amount} {label}",
       "RollMode": "{choice}: {noun}",
       "SenseRange": "{label}, {amount} piedi",
-      "SetTo": "{label} {amount}"
+      "SetTo": "{label} {amount}",
+      "Rune": "Runa {rune}",
+      "RuneNumeric": "{label} {amount}"
     },
     "ThemeGroup": {
       "Fantasy": "Fantasy",
@@ -627,6 +638,14 @@
       "PickAnItem": "Upgrades: scegli un oggetto per una miglioria da oggetto.",
       "ItemNeedsOwner": "Upgrades: nessuno porta quell'oggetto. Trascinalo invece da una scheda personaggio.",
       "ItemLinkUnsupported": "Upgrades: «{name}» collega un documento che un oggetto non può contenere — costruisci invece l'effetto, oppure collega un effetto attivo.",
+      "NoMagicField": "Upgrades: «{item}» non può portare un bonus magico — solo un'arma, un'armatura o delle munizioni possono.",
+      "RuneWrongItemType": "Upgrades: «{item}» non può ricevere «{label}» — tipo di oggetto sbagliato.",
+      "RuneAlready": "Upgrades: «{item}» porta già quella runa di proprietà.",
+      "RuneNotBetter": "Upgrades: «{item}» ha già una runa almeno altrettanto potente — non è stato aggiunto nulla.",
+      "RuneAbp": "Upgrades: questo mondo usa la Progressione Automatica dei Bonus, che azzera i valori delle rune — la runa è stata scritta ma non avrà effetto.",
+      "RuneNeedsPotency": "Upgrades: «{item}» porta più rune di proprietà di quante il suo potenziamento conceda; quelle in eccesso restano dormienti finché il potenziamento non sale.",
+      "RuneChangedByHand": "Upgrades: una runa su «{item}» è stata modificata a mano dopo questo acquisto, quindi quel valore è stato lasciato com'è.",
+      "ItemRowsDropped": "Upgrades: le righe di bonus valide solo sugli oggetti sono state rimosse — questa miglioria non punta più a un oggetto.",
       "Migrated": "Upgrade Board: il tuo tabellone esistente è stato riportato dal vecchio modulo «Upgrades» ({count} migliorie). Ora puoi disattivarlo senza problemi."
     },
     "IconName": {

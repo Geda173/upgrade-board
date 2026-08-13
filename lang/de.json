@@ -194,7 +194,8 @@
       "Advanced": "Erweitert",
       "Rolls": "Würfe",
       "Senses": "Sinne",
-      "SpecialTraits": "Besondere Eigenschaften"
+      "SpecialTraits": "Besondere Eigenschaften",
+      "ItemUpgrade": "Gegenstands-Upgrades"
     },
     "Preset": {
       "Dnd5e": {
@@ -279,7 +280,10 @@
         "flag_weaponCriticalThreshold": "Kritischer Waffentreffer ab (Wurf)",
         "flag_spellCriticalThreshold": "Kritischer Zaubertreffer ab (Wurf)",
         "flag_meleeCriticalDamageDice": "Extra-Schadenswürfel bei kritischem Nahkampftreffer",
-        "spell_damage_all": "Gesamter Zauberschaden (inkl. Rettungswurf-Zauber)"
+        "spell_damage_all": "Gesamter Zauberschaden (inkl. Rettungswurf-Zauber)",
+        "item_magic": "Magischer Bonus (Angriff und Schaden; RK bei Rüstung)",
+        "item_damage": "Zusätzlicher Schaden dieses Gegenstands",
+        "item_magical": "Gilt als magisch"
       },
       "Pf2e": {
         "attack": "Angriffswürfe",
@@ -336,7 +340,11 @@
         "sense_tremorsense": "Erschütterungssinn (Reichweite in Fuß)",
         "sense_scent": "Geruchssinn (Reichweite in Fuß)",
         "sense_lifesense": "Lebenssinn (Reichweite in Fuß)",
-        "spell_damage_all": "Gesamter Zauberschaden"
+        "spell_damage_all": "Gesamter Zauberschaden",
+        "rune_potency": "Potenzrune (Angriff, bei Rüstung RK)",
+        "rune_striking": "Schlagrune (zusätzlicher Schadenswürfel)",
+        "rune_resilient": "Widerstandsrune (Rettungswürfe)",
+        "rune_property": "Eigenschaftsrune"
       },
       "Generic": {
         "custom": "Eigener Datenpfad …"
@@ -365,7 +373,8 @@
       "tremorsense": "Erschütterungssinn",
       "truesight": "Wahrer Blick",
       "flag_weaponCriticalThreshold": "Kritischer Waffentreffer ab",
-      "flag_spellCriticalThreshold": "Kritischer Zaubertreffer ab"
+      "flag_spellCriticalThreshold": "Kritischer Zaubertreffer ab",
+      "item_magic": "Magischer Bonus"
     },
     "BonusType": {
       "circumstance": "Umstand — aus der Lage oder dem eigenen Handeln",
@@ -390,7 +399,9 @@
       "Summary": "{amount} {label}",
       "RollMode": "{choice} auf {noun}",
       "SenseRange": "{label}, {amount} Fuß",
-      "SetTo": "{label} {amount}"
+      "SetTo": "{label} {amount}",
+      "Rune": "{rune}-Rune",
+      "RuneNumeric": "{label} {amount}"
     },
     "ThemeGroup": {
       "Fantasy": "Fantasy",
@@ -627,6 +638,14 @@
       "PickAnItem": "Upgrades: wähle einen Gegenstand für ein Gegenstands-Upgrade.",
       "ItemNeedsOwner": "Upgrades: diesen Gegenstand trägt niemand. Ziehe ihn stattdessen aus einem Charakterbogen.",
       "ItemLinkUnsupported": "Upgrades: „{name}“ verlinkt ein Dokument, das ein Gegenstand nicht tragen kann — baue den Effekt stattdessen, oder verlinke einen aktiven Effekt.",
+      "NoMagicField": "Upgrades: „{item}“ kann keinen magischen Bonus tragen — nur Waffen, Rüstungen und Munition können das.",
+      "RuneWrongItemType": "Upgrades: „{item}“ kann „{label}“ nicht aufnehmen — falsche Art von Gegenstand.",
+      "RuneAlready": "Upgrades: „{item}“ trägt diese Eigenschaftsrune bereits.",
+      "RuneNotBetter": "Upgrades: „{item}“ trägt bereits eine mindestens so starke Rune — nichts hinzugefügt.",
+      "RuneAbp": "Upgrades: diese Welt nutzt Automatische Bonusprogression, die Runenwerte unterdrückt — die Rune wurde eingetragen, wirkt aber nicht.",
+      "RuneNeedsPotency": "Upgrades: „{item}“ trägt mehr Eigenschaftsrunen, als seine Potenz Plätze bietet; die überzählige bleibt schlafend, bis die Potenz steigt.",
+      "RuneChangedByHand": "Upgrades: eine Rune auf „{item}“ wurde nach diesem Kauf von Hand geändert, dieser Wert bleibt daher unangetastet.",
+      "ItemRowsDropped": "Upgrades: Bonuszeilen, die nur auf Gegenständen wirken, wurden entfernt — dieses Upgrade zielt nicht mehr auf einen.",
       "Migrated": "Upgrade Board: dein bestehendes Board wurde aus dem älteren Modul „Upgrades“ übernommen ({count} Upgrades). Du kannst jenes jetzt gefahrlos deaktivieren."
     },
     "IconName": {

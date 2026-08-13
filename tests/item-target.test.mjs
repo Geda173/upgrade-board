@@ -45,7 +45,7 @@ globalThis.fromUuid = async uuid => uuids.get(uuid) ?? null;
 // for anything else — the realism that caught the v0.24.1 bug.
 let docId = 0;
 const enliven = (d, documentName) => ({
-  ...d, id: `d${docId++}`, documentName,
+  ...d, id: `d${docId++}`, documentName, uuid: `Fake.${documentName}.${docId}`,
   getFlag(scope, key) {
     if (scope !== 'upgrade-board') throw new Error(`Flag scope "${scope}" is not valid or not currently active`);
     return this.flags?.[scope]?.[key];
@@ -53,7 +53,7 @@ const enliven = (d, documentName) => ({
 });
 
 const makeActor = name => Object.assign(new Actor(), {
-  name, items: [], effects: [],
+  name, uuid: `Fake.Actor.${docId++}`, items: [], effects: [],
   async createEmbeddedDocuments(type, docs) {
     this[type === 'Item' ? 'items' : 'effects'].push(...docs.map(d => {
       const doc = enliven(d, type);
@@ -68,15 +68,20 @@ const makeActor = name => Object.assign(new Actor(), {
   }
 });
 
-const makeItem = (name, parent, rules = null) => {
+const makeItem = (name, parent, rules = null, { type = 'weapon', system = null } = {}) => {
   const item = enliven({
-    name, parent, effects: [],
-    system: rules ? { rules } : {},
+    name, parent, type, effects: [], flags: {},
+    system: system ?? (rules ? { rules } : {}),
     async createEmbeddedDocuments(_type, docs) {
       this.effects.push(...docs.map(d => enliven(d, 'ActiveEffect')));
     },
     async deleteEmbeddedDocuments(_type, ids) { this.effects = this.effects.filter(d => !ids.includes(d.id)); },
-    async update(data) { if ('system.rules' in data) this.system.rules = data['system.rules']; }
+    // Foundry's Item#update takes flattened key paths; runes and their grant records arrive
+    // that way, and "system.rules" is just one more path.
+    async update(data) {
+      for (const [key, value] of Object.entries(data)) foundry.utils.setProperty(this, key, value);
+    },
+    toObject() { return foundry.utils.deepClone({ system: this.system, flags: this.flags }); }
   }, 'Item');
   parent?.items?.push(item);
   return item;
@@ -211,5 +216,105 @@ stray.effects.push(enliven({ flags: { [MODULE_ID]: { upgradeId: 'keen-edge' } } 
 game.items = [stray];
 removed = await adapter.removeUpgradeEffect('keen-edge');
 t('refund sweeps sidebar items too', removed.count === 1 && stray.effects.length === 0);
+
+/* ---------- dnd5e item presets: the "+1 flaming sword" is an enchantment ----------
+ * An ordinary transferring effect never reaches the item's own data — only an effect of
+ * type "enchantment" with a non-self origin does (Item5e.allApplicableEffects at
+ * release-5.3.3). So the item rows must arrive as their own effect: type enchantment,
+ * origin the carrier, transfer false, and the wielder rows (if any) stay on the familiar
+ * transferring effect beside it. */
+const daeron = makeActor('Daeron the Vigilant');
+const blade = makeItem('Cinder Blade', daeron);
+uuids.set('Actor.d.Item.blade', blade);
+game.actors = [galadon, anders, daeron, seelah];
+game.items = [];
+
+const plusOne = {
+  id: 'plus-one', name: 'Plus One, Flaming', target: TARGET.ITEM,
+  targetItemUuid: 'Actor.d.Item.blade', effectMode: 'build',
+  effectBuild: { rows: [
+    { preset: 'item.magic', value: '1' },
+    { preset: 'item.damage', value: '1d6', damageType: 'fire' },
+    { preset: 'ac', value: '1' }                       // a wielder row, mixed in on purpose
+  ] },
+  repeatable: false, purchases: []
+};
+applied = await adapter.applyUpgradeEffect(plusOne, { purchaseId: 'p10' });
+const enchGrant = blade.effects.find(e => e.type === 'enchantment');
+const wielderGrant = blade.effects.find(e => e.type !== 'enchantment');
+t('the item rows land as an enchantment on the blade', applied.count === 1 && !!enchGrant);
+t('its origin is the carrier, never the blade itself',
+  enchGrant?.origin === daeron.uuid && enchGrant?.origin !== blade.uuid);
+t('an enchantment does not transfer — it is about the sword, not the wielder',
+  enchGrant?.transfer === false && enchGrant?.disabled === false);
+t('it writes the magical bonus as UPGRADE plus the mgc property',
+  enchGrant?.changes.some(c => c.key === 'system.magicalBonus' && c.mode === 4 && c.value === '1')
+  && enchGrant?.changes.some(c => c.key === 'system.properties' && c.value === 'mgc'));
+t('the flame damage rides the enchantment unsigned',
+  enchGrant?.changes.some(c => c.key === 'system.damageBonus' && c.value === '1d6[fire]'));
+t('the wielder row stays on a separate transferring effect',
+  wielderGrant?.transfer === true
+  && wielderGrant?.changes.some(c => c.key === 'system.attributes.ac.bonus')
+  && !wielderGrant?.changes.some(c => c.key === 'system.magicalBonus'));
+t('both pieces are flagged for refund',
+  blade.effects.every(e => e.flags?.[MODULE_ID]?.upgradeId === 'plus-one'));
+
+removed = await adapter.removeUpgradeEffect('plus-one');
+t('refund sweeps the enchantment and the wielder effect together',
+  removed.count === 2 && blade.effects.length === 0);
+
+/* ---------- PF2e rune presets: field writes with a recorded handle ---------- */
+game.system.id = 'pf2e';
+const runeSword = makeItem('Worldbough Blade', seelah, null,
+  { type: 'weapon', system: { runes: { potency: 0, striking: 0, property: [] } } });
+uuids.set('Actor.s.Item.runeSword', runeSword);
+
+const runeUpgrade = {
+  id: 'first-rune', name: 'First Rune', target: TARGET.ITEM,
+  targetItemUuid: 'Actor.s.Item.runeSword', effectMode: 'build',
+  effectBuild: { rows: [
+    { preset: 'rune.potency', value: '1' },
+    { preset: 'rune.striking', value: '1' },
+    { preset: 'rune.property', value: 'flaming' }
+  ] },
+  repeatable: true, purchases: []
+};
+applied = await adapter.applyUpgradeEffect(runeUpgrade, { purchaseId: 'r1' });
+t('the rune fields are written on the item',
+  applied.count === 1 && runeSword.system.runes.potency === 1
+  && runeSword.system.runes.striking === 1
+  && JSON.stringify(runeSword.system.runes.property) === JSON.stringify(['flaming']));
+t('no document is created for a rune grant', runeSword.effects.length === 0);
+t('each write is recorded under the module flag, with its purchase',
+  runeSword.flags[MODULE_ID]?.runeGrants?.length === 3
+  && runeSword.flags[MODULE_ID].runeGrants.every(g => g.upgradeId === 'first-rune' && g.purchaseId === 'r1'));
+
+warnings.length = 0;
+applied = await adapter.applyUpgradeEffect(runeUpgrade, { purchaseId: 'r2' });
+t('a repeat purchase that cannot raise anything grants nothing and says why',
+  applied.count === 0 && runeSword.system.runes.potency === 1
+  && runeSword.flags[MODULE_ID].runeGrants.length === 3 && warnings.length >= 3);
+
+const betterRune = { ...runeUpgrade, id: 'better-rune',
+  effectBuild: { rows: [{ preset: 'rune.potency', value: '2' }] }, purchases: [] };
+await adapter.applyUpgradeEffect(betterRune, { purchaseId: 'r3' });
+t('a stronger potency raises the field and records where it came from',
+  runeSword.system.runes.potency === 2
+  && runeSword.flags[MODULE_ID].runeGrants.find(g => g.upgradeId === 'better-rune')?.from === 1);
+
+removed = await adapter.removeUpgradeEffect('better-rune');
+t('refunding the stronger rune steps potency back down',
+  removed.count === 1 && runeSword.system.runes.potency === 1);
+
+warnings.length = 0;
+runeSword.system.runes.striking = 3;   // the GM improved it by hand since
+removed = await adapter.removeUpgradeEffect('first-rune');
+t('refund reverses what it wrote and leaves the hand-edited field alone, out loud',
+  removed.count === 3 && runeSword.system.runes.potency === 0
+  && runeSword.system.runes.striking === 3
+  && runeSword.system.runes.property.length === 0
+  && warnings.length === 1);
+t('the records go with the refund',
+  (runeSword.flags[MODULE_ID].runeGrants ?? []).length === 0);
 
 process.exit(bad);

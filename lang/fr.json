@@ -194,7 +194,8 @@
       "Advanced": "Avancé",
       "Rolls": "Jets",
       "Senses": "Sens",
-      "SpecialTraits": "Traits spéciaux"
+      "SpecialTraits": "Traits spéciaux",
+      "ItemUpgrade": "Améliorations d'objet"
     },
     "Preset": {
       "Dnd5e": {
@@ -279,7 +280,10 @@
         "flag_weaponCriticalThreshold": "Coup critique d'arme sur (jet)",
         "flag_spellCriticalThreshold": "Coup critique de sort sur (jet)",
         "flag_meleeCriticalDamageDice": "Dés de dégâts critiques au corps à corps",
-        "spell_damage_all": "Tous les dégâts de sort (y compris les sorts à jet de sauvegarde)"
+        "spell_damage_all": "Tous les dégâts de sort (y compris les sorts à jet de sauvegarde)",
+        "item_magic": "Bonus magique (attaque et dégâts ; CA pour une armure)",
+        "item_damage": "Dégâts supplémentaires infligés par cet objet",
+        "item_magical": "Compte comme magique"
       },
       "Pf2e": {
         "attack": "Jets d'attaque",
@@ -336,7 +340,11 @@
         "sense_tremorsense": "Perception des vibrations (portée en pieds)",
         "sense_scent": "Odorat (portée en pieds)",
         "sense_lifesense": "Perception de la vie (portée en pieds)",
-        "spell_damage_all": "Tous les dégâts de sort"
+        "spell_damage_all": "Tous les dégâts de sort",
+        "rune_potency": "Rune de puissance (attaque, ou CA pour une armure)",
+        "rune_striking": "Rune de frappe (dé de dégâts supplémentaire)",
+        "rune_resilient": "Rune de résilience (jets de sauvegarde)",
+        "rune_property": "Rune de propriété"
       },
       "Generic": {
         "custom": "Chemin de données personnalisé…"
@@ -365,7 +373,8 @@
       "tremorsense": "Perception des vibrations",
       "truesight": "Vision véritable",
       "flag_weaponCriticalThreshold": "Coup critique d'arme sur",
-      "flag_spellCriticalThreshold": "Coup critique de sort sur"
+      "flag_spellCriticalThreshold": "Coup critique de sort sur",
+      "item_magic": "Bonus magique"
     },
     "BonusType": {
       "circumstance": "Circonstance — liée au lieu ou à ce que vous avez fait",
@@ -390,7 +399,9 @@
       "Summary": "{amount} {label}",
       "RollMode": "{choice} : {noun}",
       "SenseRange": "{label}, {amount} pieds",
-      "SetTo": "{label} {amount}"
+      "SetTo": "{label} {amount}",
+      "Rune": "Rune {rune}",
+      "RuneNumeric": "{label} {amount}"
     },
     "ThemeGroup": {
       "Fantasy": "Fantasy",
@@ -627,6 +638,14 @@
       "PickAnItem": "Upgrades : choisissez un objet pour une amélioration d'objet.",
       "ItemNeedsOwner": "Upgrades : personne ne porte cet objet. Faites-le plutôt glisser depuis une fiche de personnage.",
       "ItemLinkUnsupported": "Upgrades : « {name} » lie un document qu'un objet ne peut pas porter — construisez l'effet à la place, ou liez un effet actif.",
+      "NoMagicField": "Upgrades : « {item} » ne peut pas porter de bonus magique — seuls une arme, une armure ou des munitions le peuvent.",
+      "RuneWrongItemType": "Upgrades : « {item} » ne peut pas recevoir « {label} » — mauvais type d'objet.",
+      "RuneAlready": "Upgrades : « {item} » porte déjà cette rune de propriété.",
+      "RuneNotBetter": "Upgrades : « {item} » a déjà une rune au moins aussi puissante — rien n'a été ajouté.",
+      "RuneAbp": "Upgrades : ce monde utilise la progression automatique des bonus, qui neutralise les runes — la rune a été inscrite mais ne s'appliquera pas.",
+      "RuneNeedsPotency": "Upgrades : « {item} » porte plus de runes de propriété que sa puissance n'offre d'emplacements ; l'excédent reste inactif tant que la puissance n'augmente pas.",
+      "RuneChangedByHand": "Upgrades : une rune de « {item} » a été modifiée à la main après cet achat ; cette valeur a donc été laissée telle quelle.",
+      "ItemRowsDropped": "Upgrades : les lignes de bonus réservées aux objets ont été retirées — cette amélioration ne cible plus d'objet.",
       "Migrated": "Upgrade Board : votre tableau existant a été repris de l'ancien module « Upgrades » ({count} améliorations). Vous pouvez désormais désactiver celui-ci sans risque."
     },
     "IconName": {
