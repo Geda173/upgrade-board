@@ -67,6 +67,8 @@
       "Setup": "Einrichtung",
       "OnPath": "Setzt einen Upgrade-Pfad fort",
       "Requires": "Erfordert {name}",
+      "InSection": "{name} (in {section})",
+      "OtherSection": "einem anderen Abschnitt",
       "ChooseThisOr": "Entweder dies oder {names}",
       "RuledOutBy": "Ausgeschlossen durch {name}",
       "RuledOut": "Ausgeschlossen",
@@ -196,6 +198,12 @@
       "Senses": "Sinne",
       "SpecialTraits": "Besondere Eigenschaften",
       "ItemUpgrade": "Gegenstands-Upgrades"
+    },
+    "Layout": {
+      "Label": "Darstellung",
+      "Rows": "Reihen — eine flache Kartenliste",
+      "Tree": "Talentbaum — ein Raster mit Verbindungspfeilen",
+      "Hint": "Ein Talentbaum zeichnet Upgrades als Kacheln, mit Pfeilen entlang der „kommt nach“-Verknüpfungen. Voraussetzungen bleiben dann innerhalb des Abschnitts."
     },
     "Preset": {
       "Dnd5e": {
@@ -588,7 +596,7 @@
       "Into": "In",
       "HowMany": "Wie viele",
       "Place": "Platzieren",
-      "RenameSection": "Abschnitt umbenennen",
+      "EditSection": "Abschnitt bearbeiten",
       "DeleteSection": "Abschnitt löschen",
       "DeleteSectionBody": "Den Abschnitt {name} löschen?",
       "DeleteSectionKeeps": "Seine {count} Upgrades bleiben erhalten, sie sind dann einfach keinem Abschnitt mehr zugeordnet.",

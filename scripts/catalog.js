@@ -71,6 +71,10 @@ function normalizeUpgrade(upgrade) {
     requires: [],
     excludes: [],
     choice: { enabled: false, label: "", hint: "" },
+    // Tree placement. null means "derive it" — see treeLayout(); only a GM dragging a tile
+    // onto a specific cell ever writes a number here.
+    treeRow: null,
+    treeCol: null,
     ...upgrade
   };
 
@@ -112,6 +116,7 @@ export async function upsertUpgrade(data) {
     excludes: [],
     choice: { enabled: false, label: "", hint: "" },
     target: TARGET.PARTY, targetActorId: null, targetItemUuid: null, sort: upgrades.length,
+    treeRow: null, treeCol: null,
     ...data
   });
   return setUpgrades(upgrades);
@@ -181,6 +186,52 @@ export function pathDepth(upgrade, all = getUpgrades(), seen = new Set()) {
 export function sortByPath(upgrades, all = getUpgrades()) {
   return [...upgrades].sort((a, b) =>
     (pathDepth(a, all) - pathDepth(b, all)) || ((a.sort ?? 0) - (b.sort ?? 0)));
+}
+
+/**
+ * Where each tile of a tree section sits: a Map of upgrade id → { row, col }.
+ *
+ * Derive first, let the GM override. A derived tile lands at its longest `requires` path from a
+ * root — a chain of three reads 0, 1, 2 with nobody touching anything — and takes the lowest
+ * free column of its row in `sort` order. An authored `treeRow`/`treeCol` wins over both, and
+ * two tiles authored into the same cell nudge right rather than stack, so a half-edited board
+ * still renders every tile somewhere.
+ *
+ * Geometry only follows edges *inside* the section. A cross-section prerequisite keeps locking —
+ * the lock rules read `requires` regardless of layout — but there is no arrow to another tree,
+ * so for placement such a tile is a root and its tooltip does the explaining. Cycles are clamped
+ * the same way `pathDepth` clamps them: a member of a `requires` loop lands at the depth of its
+ * longest acyclic approach instead of hanging the render.
+ */
+export function treeLayout(sectionUpgrades) {
+  const inSection = new Map(sectionUpgrades.map(u => [u.id, u]));
+  const depthOf = (u, seen = new Set()) => {
+    if (!u || seen.has(u.id)) return 0;
+    seen.add(u.id);
+    const depths = (u.requires ?? [])
+      .map(id => inSection.get(id))
+      .filter(Boolean)
+      .map(req => 1 + depthOf(req, new Set(seen)));
+    return depths.length ? Math.max(...depths) : 0;
+  };
+
+  const authored = value => (Number.isInteger(value) && value >= 0 ? value : null);
+  const rowOf = u => authored(u.treeRow) ?? depthOf(u);
+  const bySort = [...sectionUpgrades].sort((a, b) => (a.sort ?? 0) - (b.sort ?? 0));
+
+  const taken = new Set();
+  const result = new Map();
+  const place = (u, startCol) => {
+    const row = rowOf(u);
+    let col = startCol;
+    while (taken.has(`${row}:${col}`)) col++;
+    taken.add(`${row}:${col}`);
+    result.set(u.id, { row, col });
+  };
+  // Authored tiles claim their cells first, so a derived tile can never push one aside.
+  for (const u of bySort) if (authored(u.treeCol) !== null) place(u, authored(u.treeCol));
+  for (const u of bySort) if (authored(u.treeCol) === null) place(u, 0);
+  return result;
 }
 
 /** Can this still be bought? Repeatable upgrades never run out. */
@@ -280,11 +331,17 @@ export function isExcluded(upgrade, all = getUpgrades()) {
 
 /**
  * Sections the GM groups upgrades into ("Lighthouse", "Runes and Enchanting").
- * Shape: { id, name, icon, sort }. Upgrades reference one by id, or null for uncategorised.
+ * Shape: { id, name, icon, sort, layout, background }. Upgrades reference one by id, or null
+ * for uncategorised. `layout` decides how the shop draws the section: "rows" is the flat list
+ * everything has always been, "tree" is a talent-tree grid with connectors. Per section, never
+ * global — one board holds a flat repeatable section and a four-deep chain at the same time,
+ * and a global choice would be wrong for it.
  */
 export function getCategories() {
   const stored = foundry.utils.deepClone(game.settings.get(MODULE_ID, SETTINGS.CATEGORIES)) ?? [];
-  return stored.sort((a, b) => (a.sort ?? 0) - (b.sort ?? 0));
+  return stored
+    .map(c => ({ layout: "rows", background: "", ...c }))
+    .sort((a, b) => (a.sort ?? 0) - (b.sort ?? 0));
 }
 
 export async function setCategories(categories) {
@@ -298,6 +355,7 @@ export async function upsertCategory(data) {
   else categories.push({
     id: data.id ?? foundry.utils.randomID(),
     name: t("UPGRADES.New.Section"), icon: "fa-solid fa-folder", sort: categories.length,
+    layout: "rows", background: "",
     ...data
   });
   return setCategories(categories);

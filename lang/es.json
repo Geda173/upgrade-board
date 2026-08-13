@@ -67,6 +67,8 @@
       "Setup": "Configuración",
       "OnPath": "Continúa una ruta de mejoras",
       "Requires": "Requiere {name}",
+      "InSection": "{name} (en {section})",
+      "OtherSection": "otra sección",
       "ChooseThisOr": "Esta o bien {names}",
       "RuledOutBy": "Descartada por {name}",
       "RuledOut": "Descartada",
@@ -196,6 +198,12 @@
       "Senses": "Sentidos",
       "SpecialTraits": "Rasgos especiales",
       "ItemUpgrade": "Mejoras de objeto"
+    },
+    "Layout": {
+      "Label": "Disposición",
+      "Rows": "Filas — una lista plana de tarjetas",
+      "Tree": "Árbol de talentos — una cuadrícula con flechas",
+      "Hint": "Un árbol de talentos dibuja las mejoras como casillas, con flechas según los vínculos «viene después». Los prerrequisitos se quedan entonces dentro de la sección."
     },
     "Preset": {
       "Dnd5e": {
@@ -588,7 +596,7 @@
       "Into": "En",
       "HowMany": "Cuántas",
       "Place": "Colocar",
-      "RenameSection": "Renombrar la sección",
+      "EditSection": "Editar sección",
       "DeleteSection": "Eliminar la sección",
       "DeleteSectionBody": "¿Eliminar la sección {name}?",
       "DeleteSectionKeeps": "Sus {count} mejoras se conservan, simplemente dejan de pertenecer a una sección.",

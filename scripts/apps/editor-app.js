@@ -269,18 +269,18 @@ export class EditorApp extends UpgradesWindow(HandlebarsApplicationMixin(Applica
   }
 
   static async #onAddCategory() {
-    const name = await EditorApp.#promptName(t("UPGRADES.Editor.NewSection"), "");
-    if (!name) return;
-    await upsertCategory({ name });
+    const section = await EditorApp.#promptSection(t("UPGRADES.Editor.NewSection"));
+    if (!section) return;
+    await upsertCategory(section);
     EditorApp.#afterMutation();
   }
 
   static async #onEditCategory(_event, target) {
     const category = getCategories().find(c => c.id === target.dataset.id);
     if (!category) return;
-    const name = await EditorApp.#promptName(t("UPGRADES.Dialog.RenameSection"), category.name);
-    if (!name) return;
-    await upsertCategory({ id: category.id, name });
+    const section = await EditorApp.#promptSection(t("UPGRADES.Dialog.EditSection"), category);
+    if (!section) return;
+    await upsertCategory({ id: category.id, ...section });
     EditorApp.#afterMutation();
   }
 
@@ -358,15 +358,30 @@ export class EditorApp extends UpgradesWindow(HandlebarsApplicationMixin(Applica
     EditorApp.#afterMutation();
   }
 
-  static async #promptName(title, initial) {
+  /**
+   * Name and layout for a section, in one small dialog. Layout is a per-section choice — a flat
+   * shop section and a talent tree are both legitimate on the same board, which is exactly why
+   * there is no global "board mode" anywhere.
+   */
+  static async #promptSection(title, initial = {}) {
+    const chosen = initial.layout ?? "rows";
+    const options = ["rows", "tree"].map(value =>
+      `<option value="${value}" ${value === chosen ? "selected" : ""}>${
+        t(value === "tree" ? "UPGRADES.Layout.Tree" : "UPGRADES.Layout.Rows")}</option>`).join("");
     const result = await DialogV2.prompt({
       window: { title },
       content: `<div class="form-group"><label>Name</label>
-        <input type="text" name="name" value="${foundry.utils.escapeHTML(initial ?? "")}"
-               placeholder="${t('UPGRADES.Dialog.SectionEg')}" autofocus></div>`,
-      ok: { label: t("UPGRADES.Common.Save"), callback: (_e, button) => button.form.elements.name.value.trim() }
+        <input type="text" name="name" value="${foundry.utils.escapeHTML(initial.name ?? "")}"
+               placeholder="${t('UPGRADES.Dialog.SectionEg')}" autofocus></div>
+        <div class="form-group"><label>${t("UPGRADES.Layout.Label")}</label>
+        <select name="layout">${options}</select></div>
+        <p class="hint">${t("UPGRADES.Layout.Hint")}</p>`,
+      ok: { label: t("UPGRADES.Common.Save"), callback: (_e, button) => ({
+        name: button.form.elements.name.value.trim(),
+        layout: button.form.elements.layout.value
+      }) }
     }).catch(() => null);   // dismissing the dialog rejects; that is a cancel, not an error
-    return result || null;
+    return result?.name ? result : null;
   }
 
   static async #onResync() {

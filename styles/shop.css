@@ -758,6 +758,53 @@
   font-size: 10px; color: var(--upg-accent); margin-top: 5px;
   display: flex; align-items: center; gap: 5px; line-height: 1.3;
 }
+
+/* ---------- talent-tree layout ----------
+   A section whose layout is "tree". The card markup is the same as everywhere else — the tile
+   is the card reshaped, never a second template — and everything a tile has no room for moves
+   into its tooltip. Colours reuse the palette contract; no theme needs a new variable. */
+.upgrades .upg-tree-wrap { overflow-x: auto; }   /* the section scrolls; the page never does */
+.upgrades .upg-tree-grid {
+  position: relative;             /* the SVG overlay and the offset measurements anchor here */
+  grid-template-columns: none;    /* fixed cells — the connectors are drawn in pixels */
+  grid-auto-columns: 104px;
+  grid-auto-rows: minmax(112px, auto);
+  gap: 30px 26px;
+  justify-content: center;
+  width: max-content;
+  min-width: 100%;
+  padding: 24px 30px 18px;
+}
+.upgrades .upg-tree-svg { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
+.upgrades .upg-tree-edge { fill: none; stroke-width: 2; }
+.upgrades .upg-tree-edge.lit { stroke: var(--upg-gold-bright); }
+.upgrades .upg-tree-edge.dim { stroke: var(--upg-line-soft); }
+.upgrades .upg-tree-edge.cut { stroke: var(--upg-disabled-line); stroke-dasharray: 4 3; }
+.upgrades .upg-tree-arrow { stroke: none; }
+.upgrades .upg-tree-arrow.lit { fill: var(--upg-gold-bright); }
+.upgrades .upg-tree-arrow.dim { fill: var(--upg-line-soft); }
+.upgrades .upg-tree-arrow.cut { fill: var(--upg-disabled-line); }
+
+.upgrades .upg-tree-grid .upg-card { z-index: 1; }
+.upgrades .upg-tree-grid .upg-card .upg-art { height: 62px; font-size: 26px; }
+.upgrades .upg-tree-grid .upg-card .upg-body { padding: 6px 8px 8px; text-align: center; }
+.upgrades .upg-tree-grid .upg-card h3 { font-size: 11px; line-height: 1.2; }
+.upgrades .upg-tree-grid .upg-card :is(.upg-flavor, .upg-excerpt, .upg-effects, .upg-owned-by,
+  .upg-for, .upg-requires, .upg-exclusive, .upg-excluded, .upg-effect-secret, .upg-buy,
+  .upg-path-link) { display: none; }
+.upgrades .upg-tree-grid .upg-card .upg-cost { justify-content: center; margin-top: 3px; font-size: 11px; }
+.upgrades .upg-tree-grid .upg-stamp { font-size: 10px; }
+/* the plain owned tally, bottom-right as the reference has it; never "N/max" — there is no max */
+.upgrades .upg-tree-grid .upg-tally { top: auto; left: auto; bottom: 4px; right: 4px; }
+
+/* the hover summary rides Foundry's tooltip, so it renders outside the window and needs its
+   own upg-prefixed anchor to satisfy the global-stylesheet rule */
+.upg-tree-tip { max-width: 260px; text-align: left; }
+.upg-tree-tip h4 { margin: 0 0 2px; }
+.upg-tree-tip em { opacity: 0.8; }
+.upg-tree-tip ul { margin: 4px 0 0; padding-left: 16px; }
+.upg-tree-tip .upg-tip-cost { opacity: 0.9; margin-bottom: 2px; }
+.upg-tree-tip .upg-tip-lock { margin-top: 4px; opacity: 0.85; font-style: italic; }
 .upg-prereqs { display: flex; flex-direction: column; gap: 4px; }
 .upg-prereqs label.checkbox { display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; }
 /* A catalogue of any size turns either picker into a wall of checkboxes, so the list is capped

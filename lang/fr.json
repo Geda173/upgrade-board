@@ -67,6 +67,8 @@
       "Setup": "Configuration",
       "OnPath": "Poursuit un parcours d'améliorations",
       "Requires": "Nécessite {name}",
+      "InSection": "{name} (dans {section})",
+      "OtherSection": "une autre section",
       "ChooseThisOr": "Ceci ou bien {names}",
       "RuledOutBy": "Écarté par {name}",
       "RuledOut": "Écarté",
@@ -196,6 +198,12 @@
       "Senses": "Sens",
       "SpecialTraits": "Traits spéciaux",
       "ItemUpgrade": "Améliorations d'objet"
+    },
+    "Layout": {
+      "Label": "Disposition",
+      "Rows": "Rangées — une liste de cartes",
+      "Tree": "Arbre de talents — une grille avec des flèches",
+      "Hint": "Un arbre de talents dessine les améliorations en tuiles, reliées par des flèches selon les liens « vient après ». Les prérequis restent alors dans la section."
     },
     "Preset": {
       "Dnd5e": {
@@ -588,7 +596,7 @@
       "Into": "Vers",
       "HowMany": "Combien",
       "Place": "Placer",
-      "RenameSection": "Renommer la section",
+      "EditSection": "Modifier la section",
       "DeleteSection": "Supprimer la section",
       "DeleteSectionBody": "Supprimer la section {name} ?",
       "DeleteSectionKeeps": "Ses {count} améliorations sont conservées, elles se retrouvent simplement sans section.",

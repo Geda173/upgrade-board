@@ -134,9 +134,18 @@ export class UpgradeEditor extends UpgradesWindow(HandlebarsApplicationMixin(App
     // What this upgrade is exclusive with decides which prerequisites are legal, so both pickers
     // are rebuilt from the live draft rather than from what was last saved.
     const live = { id: draft.id, requires: draft.requires, excludes: draft.excludes };
-    const candidates = eligiblePrerequisites(live, all);
-    const rivals = exclusiveSiblings(live, all);
     const sections = getCategories();
+    // Prerequisites stay inside their tree: an edge into or out of a tree-layout section has no
+    // arrow to draw, so the picker stops offering it. A picker rule only — never a migration.
+    // Anything already ticked stays listed whatever its section, because the sync reads the
+    // rendered checkboxes back and hiding a tick would silently strip a working legacy link.
+    const treeSections = new Set(sections.filter(c => c.layout === "tree").map(c => c.id));
+    const ownSection = draft.categoryId || null;
+    const candidates = eligiblePrerequisites(live, all).filter(u =>
+      draft.requires.includes(u.id)
+      || (u.categoryId ?? null) === ownSection
+      || (!treeSections.has(u.categoryId ?? null) && !treeSections.has(ownSection)));
+    const rivals = exclusiveSiblings(live, all);
     const prereqEntries = UpgradeEditor.#pickerEntries(
       candidates, draft.requires, this.#pinned.requires, sections);
     const exclusionEntries = UpgradeEditor.#pickerEntries(

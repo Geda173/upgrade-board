@@ -209,8 +209,9 @@ const upgradeEditor = Handlebars.compile(tpl('upgrade-editor.hbs'))({
 /* ---------- assertions: these catch ../ depth mistakes, which fail silently ---------- */
 // Bound the split to the card grid first. Splitting the whole document leaves the LAST card's
 // chunk running on into the detail pane, which made a correct template look like a leak.
-// Cards now live in one grid per section; collect across all of them, each bounded to its own grid.
-const cards = [...shop.matchAll(/<section class="upg-grid">([\s\S]*?)<\/section>/g)]
+// Cards now live in one grid per section; collect across all of them, each bounded to its own
+// grid. The opening tag is matched loosely because a tree section carries extra attributes.
+const cards = [...shop.matchAll(/<section class="upg-grid[^"]*"[^>]*>([\s\S]*?)<\/section>/g)]
   .flatMap(m => m[1].split('<div class="upg-card').slice(1));
 const teaser = cards.find(c => c.includes('mystery'));
 const normal = cards.find(c => c.includes('Nightbloom'));
@@ -239,6 +240,38 @@ t('shop: a multi-resource price shows every component',
            return !!c && (c.match(/upg-price/g) || []).length === 2; })());
 t('shop: section heading rendered', shop.includes('upg-section-head') && shop.includes('Lighthouse'));
 t('shop: every card still rendered across sections', cards.length === 8);
+
+/* ---------- a tree section: same card markup, extra geometry ---------- */
+const shopTree = Handlebars.compile(tpl('shop.hbs'))({
+  isGM: false, balance: 3, vocab, currencies: [], upgrades: [],
+  groups: [{
+    id: 'tree1', name: 'The Old Oak', icon: 'fa-solid fa-tree', isTree: true,
+    treeEdges: '[{"from":"root","to":"branch","lit":true,"cut":false}]',
+    upgrades: [
+      { id: 'root', displayName: 'Deep Roots', displayFlavor: '', displayImg: '', mystery: false,
+        purchased: true, soldOut: true, affordable: false, selected: false, targetLabel: null,
+        effectLines: [], treeCell: '1 / 1',
+        treeTooltip: '<div class="upg-tree-tip"><h4>Deep Roots</h4></div>' },
+      { id: 'branch', displayName: 'First Branch', displayFlavor: '', displayImg: '', mystery: false,
+        purchased: false, soldOut: false, affordable: true, selected: false, targetLabel: null,
+        effectLines: [], ownedCount: 3, treeCell: '2 / 1',
+        treeTooltip: '<div class="upg-tree-tip"><h4>First Branch</h4></div>' }
+    ]
+  }],
+  hasSections: true, selected: null, selectedDescription: null
+});
+t('shop: a tree section wraps in its own scroll container',
+  shopTree.includes('class="upg-tree-wrap"'));
+t('shop: a tree grid carries its edges for the connector overlay',
+  /class="upg-grid upg-tree-grid"\s+data-tree-edges="\[\{/.test(shopTree));
+t('shop: a tile is placed by grid-area, not left to flow',
+  shopTree.includes('style="grid-area: 1 / 1"') && shopTree.includes('style="grid-area: 2 / 1"'));
+t('shop: a tile carries its hover summary',
+  shopTree.includes('data-tooltip=') && shopTree.includes('upg-tree-tip'));
+t('shop: a repeatable tile shows its plain tally, no maximum implied',
+  shopTree.includes('×3') && !shopTree.includes('3/'));
+t('shop: a rows section gains none of the tree attributes',
+  !shop.includes('upg-tree-grid') && !shop.includes('data-tree-edges') && !shop.includes('grid-area'));
 (() => {
   const ruled = cards.find(c => c.includes('Oath of Ash'));
   const open = cards.find(c => c.includes('Oath of Bone'));

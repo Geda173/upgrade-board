@@ -36,10 +36,13 @@
 
   {{#each groups}}
   {{#if name}}<h2 class="upg-section-head"><i class="{{icon}}"></i> {{name}}</h2>{{/if}}
-  <section class="upg-grid">
+  {{! a tree section scrolls inside itself — the page never scrolls sideways }}
+  <div {{#if isTree}}class="upg-tree-wrap"{{/if}}>
+  <section class="upg-grid{{#if isTree}} upg-tree-grid{{/if}}" {{#if isTree}}data-tree-edges="{{treeEdges}}"{{/if}}>
     {{#each upgrades}}
     <div class="upg-card {{#if soldOut}}owned{{/if}} {{#if locked}}locked{{/if}} {{#if excluded}}excluded{{/if}} {{#if onPath}}on-path{{/if}} {{#if mystery}}mystery{{/if}} {{#unless affordable}}{{#unless soldOut}}{{#unless mystery}}poor{{/unless}}{{/unless}}{{/unless}} {{#if selected}}active{{/if}}"
-         data-action="selectCard" data-upgrade-id="{{id}}">
+         data-action="selectCard" data-upgrade-id="{{id}}"
+         {{#if treeCell}}style="grid-area: {{treeCell}}" data-tooltip="{{treeTooltip}}"{{/if}}>
       {{#if soldOut}}<div class="upg-stamp">{{localize "UPGRADES.Common.Owned"}}</div>{{/if}}
       {{#if ownedCount}}<div class="upg-tally">×{{ownedCount}}</div>{{/if}}
       {{#if onPath}}<div class="upg-path-link" title="{{localize "UPGRADES.Shop.OnPath"}}"><i class="fa-solid fa-link"></i></div>{{/if}}
@@ -88,6 +91,7 @@
     </div>
     {{/each}}
   </section>
+  </div>
   {{/each}}
   {{#unless groups.length}}
   <p class="upg-empty">{{localize "UPGRADES.Shop.Empty"}}</p>

@@ -67,6 +67,8 @@
       "Setup": "Configurazione",
       "OnPath": "Prosegue un percorso di migliorie",
       "Requires": "Richiede {name}",
+      "InSection": "{name} (in {section})",
+      "OtherSection": "un'altra sezione",
       "ChooseThisOr": "O questa o {names}",
       "RuledOutBy": "Esclusa da {name}",
       "RuledOut": "Esclusa",
@@ -196,6 +198,12 @@
       "Senses": "Sensi",
       "SpecialTraits": "Tratti speciali",
       "ItemUpgrade": "Migliorie da oggetto"
+    },
+    "Layout": {
+      "Label": "Disposizione",
+      "Rows": "Righe — un elenco piatto di carte",
+      "Tree": "Albero dei talenti — una griglia con frecce di collegamento",
+      "Hint": "Un albero dei talenti disegna le migliorie come tessere, con frecce lungo i collegamenti «viene dopo». I prerequisiti restano quindi nella sezione."
     },
     "Preset": {
       "Dnd5e": {
@@ -588,7 +596,7 @@
       "Into": "In",
       "HowMany": "Quante",
       "Place": "Colloca",
-      "RenameSection": "Rinomina la sezione",
+      "EditSection": "Modifica sezione",
       "DeleteSection": "Elimina la sezione",
       "DeleteSectionBody": "Eliminare la sezione {name}?",
       "DeleteSectionKeeps": "Le sue {count} migliorie restano, semplicemente non appartengono più ad alcuna sezione.",

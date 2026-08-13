@@ -1,8 +1,8 @@
 /**
  * Player-facing shop window (ApplicationV2 + Handlebars).
  */
-import { exclusiveClaim, exclusiveSiblings, getUpgrades, groupByCategory, isAvailable, isUnlocked,
-         pathDepth, sortByPath, unmetRequirements } from "../catalog.js";
+import { exclusiveClaim, exclusiveSiblings, getCategories, getUpgrades, groupByCategory,
+         isAvailable, isUnlocked, pathDepth, sortByPath, treeLayout, unmetRequirements } from "../catalog.js";
 import { canAfford, describeCosts, getBalance, getBalances, getCurrencies, hasMultipleCurrencies } from "../economy.js";
 import { MODULE_ID, getVocabulary, isImagePath } from "../settings.js";
 import { requestPurchase } from "../purchase.js";
@@ -130,8 +130,9 @@ export class ShopApp extends UpgradesWindow(HandlebarsApplicationMixin(Applicati
     const selected = upgrades.find(u => u.selected && !u.mystery) ?? null;
 
     // Sections are only rendered as headings once the GM defines some; a world with none
-    // still gets exactly the flat grid it had before.
-    const groups = groupByCategory(upgrades);
+    // still gets exactly the flat grid it had before. A section whose layout is "tree" gains
+    // grid positions and connector edges; its cards are the same markup reshaped by CSS.
+    const groups = groupByCategory(upgrades).map(group => ShopApp.#treeContext(group, all, isGM));
 
     return {
       isGM,
@@ -153,6 +154,127 @@ export class ShopApp extends UpgradesWindow(HandlebarsApplicationMixin(Applicati
   }
 
 
+
+  /**
+   * A tree section's extra geometry: a grid cell per tile, and the connector edges.
+   *
+   * Geometry only follows edges inside the section — a cross-section prerequisite still locks,
+   * but there is no arrow into another tree, so the tooltip names it (with its section) instead.
+   * Edge state is most of the WoW feel: lit when the prerequisite is owned, dim when not, cut
+   * when either end has been ruled out by a spent exclusive choice.
+   */
+  static #treeContext(group, all, isGM) {
+    if (group.layout !== "tree" || !group.upgrades.length) return group;
+    const layout = treeLayout(group.upgrades);
+    const inSection = new Set(group.upgrades.map(u => u.id));
+    const owned = new Map(all.map(u => [u.id, !!u.purchased]));
+    const excluded = new Map(group.upgrades.map(u => [u.id, !!u.excluded]));
+    const sections = new Map(getCategories().map(c => [c.id, c.name]));
+
+    const tiles = group.upgrades.map(u => {
+      const cell = layout.get(u.id);
+      // Unmet prerequisites, named — and located, when the arrow that would explain the lock
+      // cannot be drawn because the prerequisite lives in another section.
+      const requiresTip = u.mystery ? "" : unmetRequirements(u, all).map(r => {
+        const named = (r.hidden && !isGM) ? "???" : r.name;
+        return inSection.has(r.id) ? named
+          : t("UPGRADES.Shop.InSection", { name: named, section: sections.get(r.categoryId) ?? t("UPGRADES.Shop.OtherSection") });
+      }).join(", ");
+      return {
+        ...u,
+        treeCell: `${cell.row + 1} / ${cell.col + 1}`,
+        treeTooltip: ShopApp.#tileTooltip(u, requiresTip)
+      };
+    });
+
+    const edges = group.upgrades.flatMap(u => (u.requires ?? [])
+      .filter(id => inSection.has(id))
+      .map(id => ({
+        from: id, to: u.id,
+        lit: owned.get(id) === true,
+        cut: excluded.get(id) === true || excluded.get(u.id) === true
+      })));
+
+    return { ...group, isTree: true, treeEdges: JSON.stringify(edges), upgrades: tiles };
+  }
+
+  /**
+   * The hover summary for a tree tile. A summary on purpose: the detail pane stays the place
+   * for the full description and the buy button — the tooltip never grows one.
+   */
+  static #tileTooltip(u, requiresTip) {
+    const esc = s => String(s ?? "").replace(/[&<>"']/g,
+      ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+    const parts = [`<h4>${esc(u.displayName)}</h4>`];
+    if (u.costs?.length) {
+      parts.push(`<div class="upg-tip-cost">${u.costs.map(c => `${c.amount} ${esc(c.name)}`).join(", ")}</div>`);
+    }
+    if (u.displayFlavor) parts.push(`<em>${esc(u.displayFlavor)}</em>`);
+    if (u.effectLines?.length) {
+      parts.push(`<ul>${u.effectLines.map(line => `<li>${esc(line)}</li>`).join("")}</ul>`);
+    }
+    if (u.effectSecret) parts.push(`<div>${esc(t("UPGRADES.Shop.EffectSecret"))}</div>`);
+    if (requiresTip) parts.push(`<div class="upg-tip-lock">${esc(t("UPGRADES.Shop.Requires", { name: requiresTip }))}</div>`);
+    if (u.excludedBy) parts.push(`<div class="upg-tip-lock">${esc(t("UPGRADES.Shop.RuledOutBy", { name: u.excludedBy }))}</div>`);
+    return `<div class="upg-tree-tip">${parts.join("")}</div>`;
+  }
+
+  /**
+   * Connectors: one SVG per tree grid, drawn from measured tile positions after every render.
+   * Positions come from offsetLeft/offsetTop — grid-relative, immune to the section's own
+   * horizontal scroll — and every arrival is vertical, so the arrowhead always points down.
+   */
+  #drawConnectors() {
+    const NS = "http://www.w3.org/2000/svg";
+    for (const grid of this.element?.querySelectorAll(".upg-tree-grid") ?? []) {
+      grid.querySelector(".upg-tree-svg")?.remove();
+      let edges = [];
+      try { edges = JSON.parse(grid.dataset.treeEdges || "[]"); } catch { /* stale markup */ }
+      if (!edges.length) continue;
+
+      const svg = document.createElementNS(NS, "svg");
+      svg.classList.add("upg-tree-svg");
+      svg.setAttribute("width", grid.scrollWidth);
+      svg.setAttribute("height", grid.scrollHeight);
+
+      for (const edge of edges) {
+        const from = grid.querySelector(`[data-upgrade-id="${CSS.escape(edge.from)}"]`);
+        const to = grid.querySelector(`[data-upgrade-id="${CSS.escape(edge.to)}"]`);
+        if (!from || !to) continue;
+        const x1 = from.offsetLeft + from.offsetWidth / 2;
+        const y1 = from.offsetTop + from.offsetHeight;
+        const x2 = to.offsetLeft + to.offsetWidth / 2;
+        const y2 = to.offsetTop;
+        const state = edge.cut ? "cut" : edge.lit ? "lit" : "dim";
+
+        const path = document.createElementNS(NS, "path");
+        path.setAttribute("d", x1 === x2
+          ? `M${x1},${y1} L${x2},${y2}`
+          : `M${x1},${y1} L${x1},${(y1 + y2) / 2} L${x2},${(y1 + y2) / 2} L${x2},${y2}`);
+        path.classList.add("upg-tree-edge", state);
+        svg.appendChild(path);
+
+        const arrow = document.createElementNS(NS, "path");
+        arrow.setAttribute("d", `M${x2 - 4},${y2 - 6} L${x2 + 4},${y2 - 6} L${x2},${y2} Z`);
+        arrow.classList.add("upg-tree-arrow", state);
+        svg.appendChild(arrow);
+      }
+      grid.prepend(svg);
+    }
+  }
+
+  #resizeObserver = null;
+
+  _onRender(context, options) {
+    super._onRender(context, options);
+    this.#drawConnectors();
+    // Cell positions move when the window is resized, and the connectors are measured pixels.
+    this.#resizeObserver?.disconnect();
+    this.#resizeObserver = new ResizeObserver(() => this.#drawConnectors());
+    for (const grid of this.element?.querySelectorAll(".upg-tree-grid") ?? []) {
+      this.#resizeObserver.observe(grid);
+    }
+  }
 
   /** Strip the GM's HTML down to a short line for the card face. */
   static #excerpt(html, limit = 130) {
@@ -221,6 +343,8 @@ export class ShopApp extends UpgradesWindow(HandlebarsApplicationMixin(Applicati
 
   async _onClose(options) {
     await super._onClose(options);
+    this.#resizeObserver?.disconnect();
+    this.#resizeObserver = null;
     if (ShopApp.instance === this) ShopApp.instance = null;
   }
 }

@@ -67,6 +67,8 @@
       "Setup": "Setup",
       "OnPath": "Continues an upgrade path",
       "Requires": "Requires {name}",
+      "InSection": "{name} (in {section})",
+      "OtherSection": "another section",
       "ChooseThisOr": "Choose this or {names}",
       "RuledOutBy": "Ruled out by {name}",
       "RuledOut": "Ruled out",
@@ -196,6 +198,12 @@
       "Senses": "Senses",
       "SpecialTraits": "Special traits",
       "ItemUpgrade": "Item upgrades"
+    },
+    "Layout": {
+      "Label": "Layout",
+      "Rows": "Rows — a flat list of cards",
+      "Tree": "Talent tree — a grid with connecting arrows",
+      "Hint": "A talent tree draws upgrades as tiles, with arrows along the “comes after” links. Prerequisites then stay within the section."
     },
     "Preset": {
       "Dnd5e": {
@@ -588,7 +596,7 @@
       "Into": "Into",
       "HowMany": "How many",
       "Place": "Place",
-      "RenameSection": "Rename section",
+      "EditSection": "Edit section",
       "DeleteSection": "Delete section",
       "DeleteSectionBody": "Delete the section {name}?",
       "DeleteSectionKeeps": "Its {count} upgrade(s) are kept — they simply become uncategorised.",
