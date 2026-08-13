@@ -26,6 +26,7 @@
       <li>
         <i class="{{icon}}"></i>
         <span class="upg-category-name">{{name}}</span>
+        {{#if gateWarnRow}}<i class="fa-solid fa-triangle-exclamation upg-gate-warn" title="{{localize "UPGRADES.Editor.GateWarn" row=gateWarnRow}}"></i>{{/if}}
         <a data-action="moveCategoryUp" data-id="{{id}}" title="{{localize "UPGRADES.Editor.MoveUp"}}"><i class="fa-solid fa-chevron-up"></i></a>
         <a data-action="moveCategoryDown" data-id="{{id}}" title="{{localize "UPGRADES.Editor.MoveDown"}}"><i class="fa-solid fa-chevron-down"></i></a>
         {{#if isTree}}<a data-action="arrangeSection" data-id="{{id}}" title="{{localize "UPGRADES.Editor.Arrange"}}"><i class="fa-solid fa-sitemap"></i></a>{{/if}}
@@ -67,6 +68,7 @@
             {{else if purchased}}<span class="tag owned">{{localize "UPGRADES.Editor.OwnedBy" name=purchasedBy}}</span>
             {{else if hidden}}<span class="tag hidden">{{localize "UPGRADES.Editor.Hidden"}}</span>
             {{else}}<span class="tag">{{localize "UPGRADES.Editor.Available"}}</span>{{/if}}
+            {{#if orphaned}}<span class="tag upg-orphan" title="{{localize "UPGRADES.Editor.OrphanTitle"}}"><i class="fa-solid fa-link-slash"></i> {{localize "UPGRADES.Editor.Orphan"}}</span>{{/if}}
           </td>
           <td class="upg-actions">
             <a data-action="editUpgrade" data-id="{{id}}" title="{{localize "UPGRADES.Editor.Edit"}}"><i class="fa-solid fa-pen"></i></a>

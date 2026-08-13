@@ -97,6 +97,9 @@
       "MoveDown": "Nach unten",
       "Rename": "Umbenennen",
       "Arrange": "Baum anordnen",
+      "Orphan": "Ziel verloren",
+      "OrphanTitle": "Der Gegenstand, für den dies gekauft wurde, existiert nicht mehr oder wird von niemandem getragen. Erstatte den Kauf, oder richte das Upgrade auf einen neuen Gegenstand.",
+      "GateWarn": "Reihe {row} kann sich nie öffnen: exklusive Wahlen begrenzen, was die Reihen darüber liefern können. Senke die Sperre oder ergänze Talente.",
       "Delete": "Löschen",
       "Edit": "Bearbeiten",
       "Upgrades": "Upgrades",
@@ -174,6 +177,7 @@
       "ItemUnresolved": "Der gewählte Gegenstand existiert nicht mehr. Lege hier einen neuen ab.",
       "ItemUnowned": "Diesen Gegenstand trägt niemand mehr, sein Effekt erreicht also niemanden, bis ihn wieder jemand aufnimmt.",
       "ItemTargetHint": "Der Effekt reist mit dem Gegenstand und wirkt auf denjenigen, der ihn angelegt hat — eingestimmt bzw. investiert, wo das System es verlangt. Ein verstauter Gegenstand gewährt nichts.",
+      "ItemChoiceNote": "Der Käufer benennt den Gegenstand beim Kauf — lass die Ablagefläche dafür leer, oder lege hier einen festen Gegenstand fest, um die Frage zu überspringen.",
       "Uuid": "UUID",
       "UuidEg": "wird durch Ziehen ausgefüllt, oder eine einfügen",
       "UuidUnresolved": "Diese UUID verweist auf kein Dokument in dieser Welt.",
@@ -513,6 +517,7 @@
       "Unavailable": "Dieses Upgrade ist nicht mehr verfügbar.",
       "NeedsFirst": "„{name}“ benötigt zuerst {needs}.",
       "TierGate": "„{name}“ öffnet sich, sobald {count} weitere der Talente darüber genommen sind.",
+      "NoItemChosen": "„{name}“ braucht einen mit dem Kauf benannten, getragenen Gegenstand.",
       "And": " und ",
       "RuledOut": "„{name}“ ist ausgeschlossen — „{rival}“ wurde stattdessen gewählt.",
       "TooCostly": "Dafür reicht es nicht ({short}).",
@@ -556,6 +561,7 @@
       "OneCharacter": "Ein bestimmter Charakter",
       "AnItem": "Ein Gegenstand, den jemand trägt",
       "ItemCarried": "{item} (getragen von {owner})",
+      "ChosenItem": "Ein beim Kauf gewählter Gegenstand",
       "OtherCharacters": "Andere Charaktere"
     },
     "EffectMode": {

@@ -14,7 +14,7 @@ const { DialogV2 } = foundry.applications.api;
  * @returns {Promise<{uuid: string, name: string, img: string}|null>}
  *   null when the buyer cancels, which aborts the purchase before anything is spent.
  */
-export async function promptForDocument({ label, hint } = {}) {
+export async function promptForDocument({ label, hint, accept = [], validate = null } = {}) {
   let picked = null;
 
   const content = `
@@ -42,7 +42,12 @@ export async function promptForDocument({ label, hint } = {}) {
       if (ok) ok.disabled = true;   // nothing to confirm until something is dropped
 
       wireDropZone(zone, {
+        accept,
         onDrop: doc => {
+          // The caller may have a rule the drop kind alone cannot express — "carried by
+          // somebody", say. Refused loudly here, while the buyer can still fix it.
+          const objection = validate?.(doc);
+          if (objection) return ui.notifications.warn(objection);
           picked = { uuid: doc.uuid, name: doc.name, img: doc.img ?? "" };
           zone.classList.add("filled");
           zone.innerHTML = `

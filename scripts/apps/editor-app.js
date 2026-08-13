@@ -1,8 +1,9 @@
 /**
  * GM console: upgrade CRUD, currency ledger, history. (ApplicationV2 + Handlebars)
  */
-import { deleteCategory, deleteUpgrade, exclusiveSiblings, getCategories, getUpgrade, getUpgrades,
-         groupByCategory, moveCategory, removePurchase, upsertCategory, upsertUpgrade } from "../catalog.js";
+import { TARGET, deleteCategory, deleteUpgrade, exclusiveSiblings, gateUnsatisfiableRow,
+         getCategories, getUpgrade, getUpgrades, groupByCategory, moveCategory, removePurchase,
+         upsertCategory, upsertUpgrade } from "../catalog.js";
 import { adjustBalance, clearHistory, describeCosts, editHistoryReason, getBalance, getBalances,
          getCosts, getCurrencies, getCurrency, getHistory, hasMultipleCurrencies,
          removeHistory } from "../economy.js";
@@ -73,7 +74,12 @@ export class EditorApp extends UpgradesWindow(HandlebarsApplicationMixin(Applica
       })),
       hasMultipleCurrencies: hasMultipleCurrencies(),
       hasCurrencyItem: !!game.settings.get(MODULE_ID, SETTINGS.CURRENCY_ITEM),
-      categories: getCategories().map(c => ({ ...c, isTree: c.layout === "tree" })),
+      categories: getCategories().map(c => {
+        const badRow = gateUnsatisfiableRow(c, upgrades);
+        return { ...c, isTree: c.layout === "tree",
+          // 1-based for the human reading it; the layout counts from 0.
+          gateWarnRow: badRow === null ? null : badRow + 1 };
+      }),
       hasCategories: getCategories().length > 0,
       groups: groupByCategory(
         upgrades
@@ -90,7 +96,8 @@ export class EditorApp extends UpgradesWindow(HandlebarsApplicationMixin(Applica
             costLabel: describeCosts(u).map(c => `${c.amount} ${c.currency.name}`).join(", ") || "—",
             ownedCount: u.purchases?.length ?? 0,
             isRepeatable: !!u.repeatable,
-            ownedNames: (u.purchases ?? []).map(p => p.actorName).filter(Boolean).join(", ")
+            ownedNames: (u.purchases ?? []).map(p => p.actorName).filter(Boolean).join(", "),
+            orphaned: EditorApp.#isOrphaned(u)
           }))
       ),
       history: history.slice(-25).reverse().map(h => ({
@@ -110,6 +117,24 @@ export class EditorApp extends UpgradesWindow(HandlebarsApplicationMixin(Applica
       // The list is capped at 25, so a Clear button has to say what it is really about to remove.
       historyTotal: history.length
     };
+  }
+
+  /**
+   * A bought item upgrade whose item is gone — deleted, or traded off every sheet. The grants
+   * went with the item, which is correct, but the purchase record still says "owned" and
+   * nothing else would ever tell the GM. Re-sync cannot recreate an item.
+   */
+  static #isOrphaned(u) {
+    if (u.target !== TARGET.ITEM || !u.purchases?.length) return false;
+    const uuids = u.targetItemUuid
+      ? [u.targetItemUuid]
+      : u.purchases.map(p => p.choice?.uuid).filter(Boolean);
+    if (!uuids.length) return true;   // bought, item-targeted, and no item on record at all
+    return uuids.some(uuid => {
+      let doc = null;
+      try { doc = fromUuidSync(uuid); } catch { doc = null; }
+      return !doc || !(doc.parent instanceof Actor);
+    });
   }
 
   /** Short "what does it do" cell for the upgrade table. */

@@ -107,7 +107,8 @@ const shop = Handlebars.compile(tpl('shop.hbs'))({
 
 const editor = Handlebars.compile(tpl('editor.hbs'))({
   vocab, balance: 7,
-  categories: [{ id: 'c1', name: 'Lighthouse', icon: 'fa-solid fa-tower-observation' }],
+  categories: [{ id: 'c1', name: 'Lighthouse', icon: 'fa-solid fa-tower-observation' },
+               { id: 'c2', name: 'Starved Grove', icon: 'fa-solid fa-tree', isTree: true, gateWarnRow: 3 }],
   hasCategories: true,
   groups: [{ id: 'c1', name: 'Lighthouse', icon: 'fa-solid fa-tower-observation', upgrades: [
     { id: 'a', name: 'Nightbloom', img: '', costLabel: '3 Sprigs, 1 Pearl of Power',
@@ -118,7 +119,10 @@ const editor = Handlebars.compile(tpl('editor.hbs'))({
     { id: 'e', name: 'Healing Draught', img: '', costLabel: '1 Sprigs', purchased: true,
       isRepeatable: true,
       ownedCount: 3, ownedNames: 'Ander Raventail', hidden: false,
-      targetLabel: 'Whoever buys it', effectLabel: '' }] }],
+      targetLabel: 'Whoever buys it', effectLabel: '' },
+    { id: 'o', name: 'Lost Blade', img: '', costLabel: '4 Sprigs', purchased: true,
+      purchasedBy: 'Pat', ownedCount: 1, hidden: false, orphaned: true,
+      targetLabel: 'An item chosen at purchase', effectLabel: '' }] }],
   hasHistory: true,
   historyTotal: 2,
   // `price` is the field a purchase entry actually stores; a fixture using `cost` hid the fact
@@ -351,6 +355,11 @@ t('shop: a sold-out card is stamped Owned', shop.includes('upg-stamp'));
 })();
 
 t('editor: repeatable upgrade shows a purchase tally', editor.includes('Bought \u00d73'));
+t('editor: a bought upgrade whose item is gone says so instead of looking healthy',
+  editor.includes('upg-orphan') && editor.includes('Target lost')
+  && /no longer exists, or nobody carries it/.test(editor));
+t('editor: an impossible tier gate is flagged on its section, naming the row',
+  editor.includes('upg-gate-warn') && editor.includes('Row 3 can never open'));
 t('editor: repeatable upgrade lists its owners', editor.includes('Ander Raventail'));
 t('editor: section heading row rendered', editor.includes('upg-group-row') && editor.includes('Lighthouse'));
 t('editor: section management list rendered', editor.includes('upg-category-list'));

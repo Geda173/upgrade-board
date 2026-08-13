@@ -97,6 +97,9 @@
       "MoveDown": "Descendre",
       "Rename": "Renommer",
       "Arrange": "Disposer l'arbre",
+      "Orphan": "Cible perdue",
+      "OrphanTitle": "L'objet pour lequel ceci a été acheté n'existe plus, ou personne ne le porte. Remboursez l'achat, ou pointez l'amélioration vers un nouvel objet.",
+      "GateWarn": "La rangée {row} ne pourra jamais s'ouvrir : les choix exclusifs plafonnent ce que les rangées au-dessus peuvent fournir. Baissez le verrou ou ajoutez des talents.",
       "Delete": "Supprimer",
       "Edit": "Modifier",
       "Upgrades": "Améliorations",
@@ -174,6 +177,7 @@
       "ItemUnresolved": "L'objet choisi n'existe plus. Déposez-en un nouveau ici.",
       "ItemUnowned": "Plus personne ne porte cet objet ; son effet ne touche personne tant que quelqu'un ne le reprend pas.",
       "ItemTargetHint": "L'effet voyage avec l'objet et s'applique à quiconque le porte équipé — harmonisé ou investi lorsque le système l'exige. Un objet rangé n'accorde rien.",
+      "ItemChoiceNote": "L'acheteur désigne l'objet à l'achat — laissez la zone de dépôt vide pour cela, ou fixez ici un objet précis pour sauter la question.",
       "Uuid": "UUID",
       "UuidEg": "rempli par glisser-déposer, ou collez-en un",
       "UuidUnresolved": "Cet UUID ne correspond à aucun document de ce monde.",
@@ -513,6 +517,7 @@
       "Unavailable": "Cette amélioration n'est plus disponible.",
       "NeedsFirst": "« {name} » nécessite d'abord {needs}.",
       "TierGate": "« {name} » s'ouvrira quand {count} talents de plus auront été pris au-dessus.",
+      "NoItemChosen": "« {name} » exige qu'un objet porté soit désigné avec l'achat.",
       "And": " et ",
       "RuledOut": "« {name} » est écartée — « {rival} » a été choisie à la place.",
       "TooCostly": "Pas assez pour cela ({short}).",
@@ -556,6 +561,7 @@
       "OneCharacter": "Un personnage en particulier",
       "AnItem": "Un objet porté par un personnage",
       "ItemCarried": "{item} (porté par {owner})",
+      "ChosenItem": "Un objet choisi à l'achat",
       "OtherCharacters": "Autres personnages"
     },
     "EffectMode": {

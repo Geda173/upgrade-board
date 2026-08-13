@@ -149,4 +149,35 @@ const { tierShortfall } = await import(new URL('../scripts/catalog.js', import.m
     tierShortfall(g('loose', { categoryId: null }), board, cats) === null);
 }
 
+/* ---------- the unsatisfiable-gate check: show the GM the arithmetic ---------- */
+const { gateUnsatisfiableRow } = await import(new URL('../scripts/catalog.js', import.meta.url));
+{
+  const tree = { id: 'tree', layout: 'tree', tierGate: 2 };
+  const g = (id, { requires = [], excludes = [], sort = 0 } = {}) =>
+    ({ id, requires, excludes, sort, treeRow: null, treeCol: null, categoryId: 'tree', purchases: [] });
+
+  const fine = [
+    g('a'), g('b', { sort: 1 }),
+    g('x', { requires: ['a'] }), g('y', { requires: ['a'], sort: 1 })
+  ];
+  t('a gate the rows can supply raises no warning', gateUnsatisfiableRow(tree, fine) === null);
+
+  const starved = [
+    g('a'), g('b', { sort: 1, excludes: ['a'] }),   // an exclusive pair yields one talent, gate needs two
+    g('x', { requires: ['a'] })
+  ];
+  t('an exclusive pair that starves the gate is named by row', gateUnsatisfiableRow(tree, starved) === 1);
+
+  const deep = [
+    g('a'), g('b', { sort: 1 }),
+    g('x', { requires: ['a'] }), g('y', { requires: ['a'], sort: 1, excludes: ['x'] }),
+    g('z', { requires: ['x'] })   // row 2 needs 4; above it: a, b, and one of x/y = 3
+  ];
+  t('the check is cumulative, like the gate itself', gateUnsatisfiableRow(tree, deep) === 2);
+
+  t('gate zero never warns', gateUnsatisfiableRow({ ...tree, tierGate: 0 }, starved) === null);
+  t('a rows section never warns', gateUnsatisfiableRow({ ...tree, layout: 'rows' }, starved) === null);
+  t('an empty section never warns', gateUnsatisfiableRow(tree, []) === null);
+}
+
 process.exit(bad);

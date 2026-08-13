@@ -76,6 +76,16 @@ export async function handlePurchaseRequest({ upgradeId, userId, choice = null }
     }
   }
 
+  // A nominated item must still be a carried item when the request lands. The buyer's client
+  // checked, but requests travel and items move — this is the client that commits, so this is
+  // where the answer counts.
+  if (upgrade.target === TARGET.ITEM && !upgrade.targetItemUuid) {
+    const doc = choice?.uuid ? await fromUuid(choice.uuid).catch(() => null) : null;
+    if (!doc || doc.documentName !== "Item" || !(doc.parent instanceof Actor)) {
+      return notifyUser(userId, t("UPGRADES.Refuse.NoItemChosen", { name: upgrade.name }));
+    }
+  }
+
   // Resolve who it lands on before spending anything, so a failure here costs nothing.
   let buyerActor = null;
   if (upgrade.target === TARGET.BUYER) {
@@ -197,9 +207,16 @@ export async function requestPurchase(upgradeId) {
   let choice = null;
   if (upgrade?.choice?.enabled) {
     const { promptForDocument } = await import("./apps/choice-dialog.js");
+    // An item-targeted upgrade without a fixed item is nominating its own target: the prompt
+    // narrows to carried items, because a sidebar item affects nobody (same rule as the editor).
+    const nominatesItem = upgrade.target === TARGET.ITEM && !upgrade.targetItemUuid;
     choice = await promptForDocument({
       label: upgrade.choice.label || t("UPGRADES.Buyer.Choose"),
-      hint: upgrade.choice.hint || ""
+      hint: upgrade.choice.hint || "",
+      accept: nominatesItem ? ["Item"] : [],
+      validate: nominatesItem
+        ? doc => (doc.parent instanceof Actor ? null : t("UPGRADES.Notify.ItemNeedsOwner"))
+        : null
     });
     if (!choice) return;   // cancelled: nothing spent, nothing sent
   }

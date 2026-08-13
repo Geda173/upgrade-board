@@ -97,6 +97,9 @@
       "MoveDown": "Move down",
       "Rename": "Rename",
       "Arrange": "Arrange tree",
+      "Orphan": "Target lost",
+      "OrphanTitle": "The item this was bought for no longer exists, or nobody carries it. Refund the purchase, or point the upgrade at a new item.",
+      "GateWarn": "Row {row} can never open: exclusive choices cap what the rows above can supply. Lower the gate or add talents.",
       "Delete": "Delete",
       "Edit": "Edit",
       "Upgrades": "Upgrades",
@@ -174,6 +177,7 @@
       "ItemUnresolved": "The chosen item no longer exists. Drop a new one here.",
       "ItemUnowned": "Nobody carries this item any more, so its effect reaches no one until someone picks it up.",
       "ItemTargetHint": "The effect travels with the item and applies to whoever has it equipped — attuned or invested where the system asks for it. A stashed item grants nothing.",
+      "ItemChoiceNote": "The buyer nominates the item at purchase — leave the drop zone empty for that, or set a fixed item here to skip the question.",
       "Uuid": "UUID",
       "UuidEg": "filled in by dragging, or paste one",
       "UuidUnresolved": "That UUID does not resolve to a document in this world.",
@@ -513,6 +517,7 @@
       "Unavailable": "That upgrade is no longer available.",
       "NeedsFirst": "“{name}” needs {needs} first.",
       "TierGate": "“{name}” opens once {count} more of the talents above it are taken.",
+      "NoItemChosen": "“{name}” needs a carried item nominated with the purchase.",
       "And": " and ",
       "RuledOut": "“{name}” is ruled out — “{rival}” was chosen instead.",
       "TooCostly": "Not enough for that ({short}).",
@@ -556,6 +561,7 @@
       "OneCharacter": "One specific character",
       "AnItem": "An item someone carries",
       "ItemCarried": "{item} (carried by {owner})",
+      "ChosenItem": "An item chosen at purchase",
       "OtherCharacters": "Other characters"
     },
     "EffectMode": {

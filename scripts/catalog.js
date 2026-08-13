@@ -358,6 +358,39 @@ export function isExcluded(upgrade, all = getUpgrades()) {
 /* ---------- Categories ---------- */
 
 /**
+ * The first tree row a tier gate makes permanently unreachable, or null when every row can
+ * open. The hazard: an exclusive set only ever yields ONE owned talent however many of its
+ * members sit in the rows above, so a gate that counts on all of them waits forever. This is
+ * the GM's arithmetic — the check exists to show it, never to block a save: a board mid-edit
+ * is allowed to be briefly impossible.
+ */
+export function gateUnsatisfiableRow(section, all = getUpgrades()) {
+  const gate = Math.max(0, Math.floor(Number(section?.tierGate) || 0));
+  if (section?.layout !== "tree" || !gate) return null;
+  const siblings = all.filter(u => u.categoryId === section.id);
+  if (!siblings.length) return null;
+
+  const layout = treeLayout(siblings);
+  const maxRow = Math.max(...[...layout.values()].map(c => c.row));
+  for (let row = 1; row <= maxRow; row++) {
+    const aboveIds = new Set(siblings.filter(u => layout.get(u.id).row < row).map(u => u.id));
+    const counted = new Set();
+    let obtainable = 0;
+    for (const id of aboveIds) {
+      if (counted.has(id)) continue;
+      // The whole exclusive set collapses to one obtainable talent within these rows.
+      for (const member of exclusiveSet(siblings.find(u => u.id === id), all)) {
+        if (aboveIds.has(member.id)) counted.add(member.id);
+      }
+      counted.add(id);
+      obtainable += 1;
+    }
+    if (obtainable < row * gate) return row;
+  }
+  return null;
+}
+
+/**
  * Sections the GM groups upgrades into ("Lighthouse", "Runes and Enchanting").
  * Shape: { id, name, icon, sort, layout, background }. Upgrades reference one by id, or null
  * for uncategorised. `layout` decides how the shop draws the section: "rows" is the flat list

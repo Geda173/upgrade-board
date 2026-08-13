@@ -97,6 +97,9 @@
       "MoveDown": "Sposta giù",
       "Rename": "Rinomina",
       "Arrange": "Disponi l'albero",
+      "Orphan": "Bersaglio perso",
+      "OrphanTitle": "L'oggetto per cui è stato comprato non esiste più, o nessuno lo porta. Rimborsa l'acquisto, o punta la miglioria a un nuovo oggetto.",
+      "GateWarn": "La riga {row} non potrà mai aprirsi: le scelte esclusive limitano ciò che le righe sopra possono fornire. Abbassa il blocco o aggiungi talenti.",
       "Delete": "Elimina",
       "Edit": "Modifica",
       "Upgrades": "Migliorie",
@@ -174,6 +177,7 @@
       "ItemUnresolved": "L'oggetto scelto non esiste più. Trascinane qui uno nuovo.",
       "ItemUnowned": "Nessuno porta più questo oggetto: il suo effetto non raggiunge nessuno finché qualcuno non lo raccoglie.",
       "ItemTargetHint": "L'effetto viaggia con l'oggetto e si applica a chi lo tiene equipaggiato — sintonizzato o investito dove il sistema lo richiede. Un oggetto riposto non concede nulla.",
+      "ItemChoiceNote": "L'acquirente indica l'oggetto al momento dell'acquisto — lascia vuota la zona di rilascio per questo, oppure fissa qui un oggetto preciso per saltare la domanda.",
       "Uuid": "UUID",
       "UuidEg": "si compila trascinando, oppure incollane uno",
       "UuidUnresolved": "Questo UUID non corrisponde ad alcun documento di questo mondo.",
@@ -513,6 +517,7 @@
       "Unavailable": "Quella miglioria non è più disponibile.",
       "NeedsFirst": "«{name}» richiede prima {needs}.",
       "TierGate": "«{name}» si aprirà quando altri {count} talenti sopra saranno stati presi.",
+      "NoItemChosen": "«{name}» richiede un oggetto portato, indicato con l'acquisto.",
       "And": " e ",
       "RuledOut": "«{name}» è esclusa — al suo posto è stata scelta «{rival}».",
       "TooCostly": "Non basta per quello ({short}).",
@@ -556,6 +561,7 @@
       "OneCharacter": "Un personaggio specifico",
       "AnItem": "Un oggetto portato da un personaggio",
       "ItemCarried": "{item} (portato da {owner})",
+      "ChosenItem": "Un oggetto scelto all'acquisto",
       "OtherCharacters": "Altri personaggi"
     },
     "EffectMode": {

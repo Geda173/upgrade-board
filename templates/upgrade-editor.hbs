@@ -159,6 +159,9 @@
     <p class="upg-warn"><i class="fa-solid fa-triangle-exclamation"></i> {{localize "UPGRADES.UpgradeEditor.ItemUnowned"}}</p>
     {{/if}}
     <p class="upg-hint">{{localize "UPGRADES.UpgradeEditor.ItemTargetHint"}}</p>
+    {{#if choiceEnabled}}
+    <p class="upg-hint">{{localize "UPGRADES.UpgradeEditor.ItemChoiceNote"}}</p>
+    {{/if}}
     {{else if isActorTarget}}
     <div class="form-group">
       <label>{{localize "UPGRADES.UpgradeEditor.Character"}}</label>

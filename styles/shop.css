@@ -838,6 +838,10 @@
 .upg-arrange-tile .upg-unpin:hover { color: var(--upg-ink); }
 .upg-arrange-footer { display: flex; justify-content: flex-end; margin-top: 12px; }
 
+/* warnings the console carries: an impossible gate, a bought upgrade whose item is gone */
+.upgrades .upg-gate-warn { color: var(--upg-gold-bright); margin-left: 2px; }
+.upgrades .tag.upg-orphan { color: var(--upg-disabled-ink); border-color: var(--upg-disabled-line); }
+
 /* the hover summary rides Foundry's tooltip, so it renders outside the window and needs its
    own upg-prefixed anchor to satisfy the global-stylesheet rule */
 .upg-tree-tip { max-width: 260px; text-align: left; }

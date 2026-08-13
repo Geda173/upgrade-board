@@ -81,14 +81,17 @@ export function getTargetActors(upgrade, { buyerActor = null } = {}) {
  * copy handed out is a separate document the grant would silently miss. The picker enforces the
  * same rule, but the upgrade may have been edited or the item traded away since.
  */
-export function getTargetItem(upgrade) {
-  const item = upgrade.targetItemUuid ? fromUuidSync(upgrade.targetItemUuid) : null;
+export function getTargetItem(upgrade, choice = null) {
+  // A fixed target always wins; without one, the buyer's nomination (recorded on the
+  // purchase) is the target. Both resolve through the same carried-item rules.
+  const uuid = upgrade.targetItemUuid || choice?.uuid || null;
+  const item = uuid ? fromUuidSync(uuid) : null;
   if (!item || item.documentName !== "Item") {
-    console.warn(`${MODULE_ID} | Upgrade "${upgrade.name}" targets a missing item (${upgrade.targetItemUuid}).`);
+    console.warn(`${MODULE_ID} | Upgrade "${upgrade.name}" targets a missing item (${uuid}).`);
     return null;
   }
   if (!(item.parent instanceof Actor)) {
-    console.warn(`${MODULE_ID} | Upgrade "${upgrade.name}" targets an item nobody carries (${upgrade.targetItemUuid}).`);
+    console.warn(`${MODULE_ID} | Upgrade "${upgrade.name}" targets an item nobody carries (${uuid}).`);
     return null;
   }
   return item;
@@ -98,9 +101,9 @@ export function getTargetItem(upgrade) {
  * The documents an upgrade's payload should be embedded on — actors, or one carried item.
  * The single path every apply-side caller goes through, so "who gets this" is decided once.
  */
-export function getTargetDocuments(upgrade, { buyerActor = null } = {}) {
+export function getTargetDocuments(upgrade, { buyerActor = null, choice = null } = {}) {
   if (upgrade.target === TARGET.ITEM) {
-    const item = getTargetItem(upgrade);
+    const item = getTargetItem(upgrade, choice);
     return item ? [item] : [];
   }
   return getTargetActors(upgrade, { buyerActor });
@@ -110,7 +113,9 @@ export function getTargetDocuments(upgrade, { buyerActor = null } = {}) {
 export function describeTarget(upgrade) {
   if (upgrade.target === TARGET.BUYER) return t("UPGRADES.Target.Buyer");
   if (upgrade.target === TARGET.ITEM) {
-    const item = upgrade.targetItemUuid ? fromUuidSync(upgrade.targetItemUuid) : null;
+    // No fixed item means the buyer nominates one when they purchase.
+    if (!upgrade.targetItemUuid) return t("UPGRADES.Target.ChosenItem");
+    const item = fromUuidSync(upgrade.targetItemUuid);
     if (!item) return t("UPGRADES.Target.Unknown");
     return item.parent instanceof Actor
       ? t("UPGRADES.Target.ItemCarried", { item: item.name, owner: item.parent.name })
@@ -125,7 +130,7 @@ export function describeTarget(upgrade) {
  * Resolve an upgrade's payload into `{ documentName, data }` ready to embed, or null.
  * "build" assembles an ActiveEffect from the GM's preset rows; "link" clones a real document.
  */
-export async function resolveEffectPayload(upgrade) {
+export async function resolveEffectPayload(upgrade, { choice = null } = {}) {
   const mode = upgrade.effectMode ?? (upgrade.effectUuid ? EFFECT_MODE.LINK : EFFECT_MODE.NONE);
 
   if (mode === EFFECT_MODE.BUILD && isPf2e()) {
@@ -134,9 +139,10 @@ export async function resolveEffectPayload(upgrade) {
     const rows = upgrade.effectBuild?.rows ?? [];
     const rules = buildRules(rows, { label: upgrade.name || "Upgrade" });
     // Rune rows are field writes on the target item, not rules — they ride the payload as a
-    // plan of their own and are applied by `applyRuneWrites`.
+    // plan of their own and are applied by `applyRuneWrites`. The item may itself be the
+    // buyer's nomination, which is why the choice reaches down this far.
     const runes = upgrade.target === TARGET.ITEM
-      ? buildRuneWrites(rows, getTargetItem(upgrade)) : [];
+      ? buildRuneWrites(rows, getTargetItem(upgrade, choice)) : [];
     if (!rules.length && !runes.length) return null;
     return {
       ...(runes.length ? { runes } : {}),
@@ -183,7 +189,7 @@ export async function resolveEffectPayload(upgrade) {
     // Item-upgrade rows become a *separate* enchantment-type effect on the item — the only
     // shape dnd5e applies to an item's own data — never changes on the wielder effect.
     const enchant = (upgrade.target === TARGET.ITEM && game.system.id === "dnd5e")
-      ? buildEnchantChanges(rows, getTargetItem(upgrade)) : [];
+      ? buildEnchantChanges(rows, getTargetItem(upgrade, choice)) : [];
     if (!changes.length && !enchant.length) return null;
     return {
       ...(enchant.length ? { enchant } : {}),
@@ -543,7 +549,7 @@ export function grantSignature(source) {
 
 /** Apply the upgrade's effect (if any) to its target actors. GM-side only. */
 export async function applyUpgradeEffect(upgrade, { buyerActor = null, purchaseId = null, choice = null } = {}) {
-  const payload = await resolveEffectPayload(upgrade);
+  const payload = await resolveEffectPayload(upgrade, { choice });
   if (!payload) {
     // A cosmetic upgrade is a normal, silent case; a broken link is not.
     if (upgrade.effectMode === EFFECT_MODE.LINK && upgrade.effectUuid) {
@@ -560,7 +566,7 @@ export async function applyUpgradeEffect(upgrade, { buyerActor = null, purchaseI
     return { count: 0, names: [] };
   }
 
-  const targets = getTargetDocuments(upgrade, { buyerActor });
+  const targets = getTargetDocuments(upgrade, { buyerActor, choice });
   if (!targets.length) {
     ui.notifications.warn(t("UPGRADES.Notify.NoTarget", { name: upgrade.name }));
     return { count: 0, names: [] };
@@ -645,19 +651,26 @@ export async function resyncUpgrades() {
   let created = 0;
   let refreshed = 0;
   for (const upgrade of getUpgrades().filter(u => u.purchases?.length)) {
-    const payload = await resolveEffectPayload(upgrade);
-    if (!payload) continue;
+    // A buyer-nominated item makes the payload per-purchase — the enchantment's field depends
+    // on what kind of item was chosen — so resolution moves inside the loop for that case.
+    const nominated = upgrade.target === TARGET.ITEM && !upgrade.targetItemUuid;
+    const basePayload = nominated ? null : await resolveEffectPayload(upgrade);
+    if (!nominated && !basePayload) continue;
     const isBuilt = (upgrade.effectMode ?? (upgrade.effectUuid ? EFFECT_MODE.LINK : EFFECT_MODE.NONE))
       === EFFECT_MODE.BUILD;
-    const wanted = isBuilt ? grantSignature(payload.data) : null;
+    const wanted = isBuilt && basePayload ? grantSignature(basePayload.data) : null;
 
     for (const purchase of upgrade.purchases) {
       // A purchase remembers which actor it landed on, which is the only way a buyer-targeted
       // or repeatable grant can be rebuilt on the right sheet.
       const buyerActor = purchase.actorId ? game.actors.get(purchase.actorId) : null;
       const purchaseId = upgrade.repeatable ? purchase.id : null;
+      const payload = nominated
+        ? await resolveEffectPayload(upgrade, { choice: purchase.choice ?? null })
+        : basePayload;
+      if (!payload) continue;
 
-      for (const target of getTargetDocuments(upgrade, { buyerActor })) {
+      for (const target of getTargetDocuments(upgrade, { buyerActor, choice: purchase.choice ?? null })) {
         const existing = findGrant(target, upgrade.id, purchaseId);
         if (existing) {
           // An item grant can be several pieces — a transferring effect plus an enchantment,

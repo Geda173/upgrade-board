@@ -97,6 +97,9 @@
       "MoveDown": "Bajar",
       "Rename": "Renombrar",
       "Arrange": "Organizar el árbol",
+      "Orphan": "Objetivo perdido",
+      "OrphanTitle": "El objeto para el que se compró ya no existe, o nadie lo lleva. Reembolsa la compra, o apunta la mejora a un objeto nuevo.",
+      "GateWarn": "La fila {row} nunca podrá abrirse: las elecciones excluyentes limitan lo que las filas superiores pueden aportar. Baja el bloqueo o añade talentos.",
       "Delete": "Eliminar",
       "Edit": "Editar",
       "Upgrades": "Mejoras",
@@ -174,6 +177,7 @@
       "ItemUnresolved": "El objeto elegido ya no existe. Suelta aquí uno nuevo.",
       "ItemUnowned": "Ya nadie lleva este objeto, así que su efecto no alcanza a nadie hasta que alguien lo recoja.",
       "ItemTargetHint": "El efecto viaja con el objeto y se aplica a quien lo lleve equipado — sintonizado o investido donde el sistema lo pida. Un objeto guardado no concede nada.",
+      "ItemChoiceNote": "El comprador designa el objeto al comprar — deja la zona de soltar vacía para eso, o fija aquí un objeto concreto para saltarte la pregunta.",
       "Uuid": "UUID",
       "UuidEg": "se rellena arrastrando, o pega uno",
       "UuidUnresolved": "Ese UUID no corresponde a ningún documento de este mundo.",
@@ -513,6 +517,7 @@
       "Unavailable": "Esa mejora ya no está disponible.",
       "NeedsFirst": "«{name}» necesita antes {needs}.",
       "TierGate": "«{name}» se abrirá cuando se hayan tomado {count} talentos más por encima.",
+      "NoItemChosen": "«{name}» necesita un objeto llevado, designado con la compra.",
       "And": " y ",
       "RuledOut": "«{name}» queda descartada — en su lugar se eligió «{rival}».",
       "TooCostly": "No alcanza para eso ({short}).",
@@ -556,6 +561,7 @@
       "OneCharacter": "Un personaje concreto",
       "AnItem": "Un objeto que lleva un personaje",
       "ItemCarried": "{item} (lo lleva {owner})",
+      "ChosenItem": "Un objeto elegido al comprar",
       "OtherCharacters": "Otros personajes"
     },
     "EffectMode": {

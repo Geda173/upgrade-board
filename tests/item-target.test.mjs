@@ -341,4 +341,31 @@ t('refund reverses what it wrote and leaves the hand-edited field alone, out lou
 t('the records go with the refund',
   (runeSword.flags[MODULE_ID].runeGrants ?? []).length === 0);
 
+/* ---------- buyer-nominated items: the choice IS the target ---------- */
+game.system.id = 'dnd5e';
+const nominated = {
+  id: 'sharpen', name: 'Sharpen Anything', target: TARGET.ITEM, targetItemUuid: null,
+  choice: { enabled: true, label: 'Which blade?', hint: '' },
+  effectMode: 'build',
+  effectBuild: { rows: [{ preset: 'item.magic', value: '1' }] },
+  repeatable: true, purchases: []
+};
+t('with no fixed item, the target reads as the buyer’s choice',
+  adapter.describeTarget(nominated) === 'An item chosen at purchase');
+t('the nomination resolves exactly like a fixed target',
+  adapter.getTargetDocuments(nominated, { choice: { uuid: 'Actor.d.Item.blade' } })[0] === blade);
+t('no nomination, no target', adapter.getTargetDocuments(nominated, {}).length === 0);
+
+applied = await adapter.applyUpgradeEffect(nominated,
+  { purchaseId: 'n1', choice: { uuid: 'Actor.d.Item.blade', name: 'Cinder Blade' } });
+const nomGrant = blade.effects.find(e => e.type === 'enchantment');
+t('the grant lands on the nominated item as an enchantment',
+  applied.count === 1 && !!nomGrant
+  && nomGrant.changes.some(c => c.key === 'system.magicalBonus'));
+t('the nomination names the grant, as every choice does',
+  nomGrant?.name.includes('Cinder Blade'));
+removed = await adapter.removeUpgradeEffect('sharpen');
+t('refunding a nominated grant sweeps it like any other',
+  removed.count === 1 && blade.effects.length === 0);
+
 process.exit(bad);

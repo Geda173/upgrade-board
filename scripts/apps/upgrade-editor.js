@@ -661,7 +661,9 @@ export class UpgradeEditor extends UpgradesWindow(HandlebarsApplicationMixin(App
       ui.notifications.warn(t("UPGRADES.Notify.PickACharacter"));
       return;   // window stays open so the GM can fix it
     }
-    if (d.target === TARGET.ITEM && !d.targetItemUuid) {
+    // No fixed item is fine when the buyer nominates one at purchase; with no nomination
+    // either, the upgrade would have no way to ever land anywhere.
+    if (d.target === TARGET.ITEM && !d.targetItemUuid && !d.choiceEnabled) {
       ui.notifications.warn(t("UPGRADES.Notify.PickAnItem"));
       return;
     }

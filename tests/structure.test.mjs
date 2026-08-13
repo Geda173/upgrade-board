@@ -103,6 +103,8 @@ t('a locked upgrade is refused at the socket entry point, not just in the UI',
   /unmetRequirements\(upgrade\)/.test(read('scripts/purchase.js')));
 t('a tier-gated upgrade is refused at the socket entry point, not just in the UI',
   /tierShortfall\(upgrade\)/.test(read('scripts/purchase.js')));
+t('a nominated item is re-validated on the committing client, not trusted from the buyer',
+  /Refuse\.NoItemChosen/.test(read('scripts/purchase.js')));
 
 /* ---------- the checks cannot go stale inside a dialog ---------- */
 // The approval and buyer dialogs can sit open while other purchases commit; whatever was true
@@ -219,7 +221,7 @@ t('the merchant token wrap is applied only once',
   /_upgradesMerchantBound/.test(read('scripts/main.js')));
 
 t('the buyer is asked on their own client, before the request is sent',
-  /promptForDocument[\s\S]{0,400}emit\(\{ type: "requestPurchase"/.test(read('scripts/purchase.js')));
+  /promptForDocument[\s\S]{0,900}emit\(\{ type: "requestPurchase"/.test(read('scripts/purchase.js')));
 t('cancelling the prompt spends nothing', /if \(!choice\) return;/.test(read('scripts/purchase.js')));
 t('the choice is remembered on the purchase so re-sync can rebuild it',
   /choice: purchase\.choice/.test(read('scripts/systems/adapter.js')));
