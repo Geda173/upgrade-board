@@ -18,7 +18,12 @@ globalThis.CONST = { ACTIVE_EFFECT_MODES: { CUSTOM: 0, MULTIPLY: 1, ADD: 2, DOWN
 globalThis.game = { system: { id: 'dnd5e' }, i18n };
 globalThis.CONFIG = {};
 
-const { applySpellDamageBonus, spellDamageBonus, SPELL_DAMAGE_FLAG } =
+// Capture what gets registered, so the suite runs the handler Foundry would run — not a
+// helper that happens to sit next to it.
+const registered = {};
+globalThis.Hooks = { on(name, fn) { registered[name] = fn; } };
+
+const { applySpellDamageBonus, spellDamageBonus, SPELL_DAMAGE_FLAG, registerDamageHooks } =
   await import(new URL('../scripts/systems/dnd5e-damage.js', import.meta.url));
 const { buildChanges, buildRules, getPreset, getPresetGroups, describeRows } =
   await import(new URL('../scripts/effects.js', import.meta.url));
@@ -110,6 +115,32 @@ t('pf2e carries the damage type', rule[0].damageType === 'cold');
 t('no pf2e preset writes a module flag',
   getPresetGroups().flatMap(g => g.presets).every(p => !p.moduleFlag));
 globalThis.game.system.id = 'dnd5e';
+
+/* ---------- the registered handler never cancels a roll ---------- */
+// dnd5e's basic-roll.mjs fires this through `Hooks.call` and returns no rolls at all when a
+// handler answers `false`. v0.25.0 registered the boolean helper directly, so every weapon
+// swing and every cantrip in the world produced no damage roll until the module was disabled.
+// The applied/not-applied boolean is fine for the assertions above; it must never reach Foundry.
+registerDamageHooks();
+const handler = registered['dnd5e.preRollDamageV2'];
+t('a handler is registered on dnd5e.preRollDamageV2', typeof handler === 'function');
+t('the registered handler is not the boolean helper', handler !== applySpellDamageBonus);
+for (const [label, cfg] of [
+  ['a weapon', roll('weapon', '+1d6[cold]')],
+  ['a feat', roll('feat', '+1d6[cold]')],
+  ['a spell with no bonus bought', roll('spell', null)],
+  ['a spell that gets the bonus', roll('spell', '+1d6[cold]')],
+  ['a roll with no parts', { subject: { item: { type: 'spell' }, actor: withFlag('+1d6[cold]') }, rolls: [] }],
+  ['a malformed config', {}],
+  ['an empty config', undefined]
+]) {
+  t(`${label} is never cancelled by the registered handler`, handler(cfg) !== false);
+}
+const viaHandler = roll('spell', '+1d6[cold]');
+handler(viaHandler);
+t('the registered handler still appends the bonus',
+  JSON.stringify(viaHandler.rolls[0].parts) === JSON.stringify(['10d8', '+1d6[cold]']));
+delete globalThis.Hooks;
 
 /* ---------- the hook is actually registered ---------- */
 const main = (await import('node:fs')).readFileSync(new URL('../scripts/main.js', import.meta.url), 'utf8');

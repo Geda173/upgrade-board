@@ -25,6 +25,12 @@
  *
  * PF2e needs none of this. `spell-damage` is a real domain there, so its preset is an ordinary
  * DamageDice rule element and the system applies it.
+ *
+ * One rule the handler must never break: `basic-roll.mjs` fires the hook through `Hooks.call`
+ * and treats an explicit `false` as "cancel the roll" (`=== false ) return []`). So the registered
+ * handler returns nothing, ever. The boolean `applySpellDamageBonus` exists for the tests and is
+ * wrapped, not registered — v0.25.0 registered it directly and every weapon and cantrip in the
+ * world stopped rolling damage until the module was disabled.
  */
 import { MODULE_ID } from "../settings.js";
 
@@ -67,8 +73,16 @@ export function applySpellDamageBonus(config) {
   return true;
 }
 
+/**
+ * The registered handler. Deliberately returns nothing: `Hooks.call` cancels the roll on an
+ * explicit `false`, and "nothing to add" is not a reason to stop a fighter swinging a sword.
+ */
+export function onPreRollDamage(config) {
+  applySpellDamageBonus(config);
+}
+
 /** Wire it up. A no-op on any system but dnd5e. */
 export function registerDamageHooks() {
   if (game.system?.id !== "dnd5e") return;
-  Hooks.on("dnd5e.preRollDamageV2", applySpellDamageBonus);
+  Hooks.on("dnd5e.preRollDamageV2", onPreRollDamage);
 }
