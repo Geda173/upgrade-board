@@ -1,0 +1,13 @@
+.DS_Store
+node_modules/
+*.zip
+
+# local agent context (not published)
+CLAUDE.md
+.claude/
+plans/
+node_modules/
+tests/.cache/
+
+# worksheet for rewriting the text by hand (local only)
+rewrite/

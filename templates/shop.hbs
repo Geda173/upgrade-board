@@ -1,0 +1,132 @@
+<div class="upg-window">
+  <header class="upg-banner">
+    <div class="upg-npc">
+      {{#if vocab.hostIsImage}}<img src="{{vocab.hostImg}}" alt="{{vocab.hostName}}">{{else}}<i class="{{vocab.hostIconClass}}"></i>{{/if}}
+    </div>
+    <div class="upg-title">
+      <h1>{{vocab.hostName}}</h1>
+      {{#if vocab.greeting}}<div class="upg-sub">“{{vocab.greeting}}”</div>{{/if}}
+    </div>
+    <div class="upg-balance">
+      {{#each currencies}}
+      <div class="upg-purse">
+        <div class="upg-num">
+          {{#if isImage}}<img class="upg-currency-img" src="{{icon}}" alt="">
+          {{else}}<i class="{{icon}}"></i>{{/if}}
+          {{balance}}
+        </div>
+        <div class="upg-lbl">{{name}}</div>
+      </div>
+      {{/each}}
+      {{#if canDeposit}}
+      <button type="button" class="upg-deposit" data-action="deposit" data-actor-id="{{depositActorId}}">
+        {{localize "UPGRADES.Shop.HandIn" amount=depositAmount}}
+      </button>
+      {{/if}}
+    </div>
+  </header>
+
+  {{#if isGM}}
+  <nav class="upg-gm-bar">
+    <button type="button" data-action="showToPlayers"><i class="fa-solid fa-eye"></i> {{localize "UPGRADES.Shop.ShowToPlayers"}}</button>
+    <button type="button" data-action="openEditor"><i class="fa-solid fa-pen-to-square"></i> {{localize "UPGRADES.Shop.Manage"}}</button>
+    <button type="button" data-action="openSettings"><i class="fa-solid fa-sliders"></i> {{localize "UPGRADES.Shop.Setup"}}</button>
+  </nav>
+  {{/if}}
+
+  {{#each groups}}
+  {{#if name}}<h2 class="upg-section-head"><i class="{{icon}}"></i> {{name}}</h2>{{/if}}
+  {{! a tree section scrolls inside itself — the page never scrolls sideways }}
+  <div {{#if isTree}}class="upg-tree-wrap"{{/if}}>
+  <section class="upg-grid{{#if isTree}} upg-tree-grid{{/if}}{{#if treeBackground}} has-art{{/if}}"
+           {{#if isTree}}data-tree-edges="{{treeEdges}}"{{/if}}
+           {{#if treeBackground}}style="background-image: url('{{treeBackground}}')"{{/if}}>
+    {{#each upgrades}}
+    <div class="upg-card {{#if soldOut}}owned{{/if}} {{#if locked}}locked{{/if}} {{#if excluded}}excluded{{/if}} {{#if onPath}}on-path{{/if}} {{#if mystery}}mystery{{/if}} {{#unless affordable}}{{#unless soldOut}}{{#unless mystery}}poor{{/unless}}{{/unless}}{{/unless}} {{#if selected}}active{{/if}}"
+         data-action="selectCard" data-upgrade-id="{{id}}"
+         {{#if treeCell}}style="grid-area: {{treeCell}}" data-tooltip="{{treeTooltip}}"{{/if}}>
+      {{#if soldOut}}<div class="upg-stamp">{{localize "UPGRADES.Common.Owned"}}</div>{{/if}}
+      {{#if ownedCount}}<div class="upg-tally">×{{ownedCount}}</div>{{/if}}
+      {{#if onPath}}<div class="upg-path-link" title="{{localize "UPGRADES.Shop.OnPath"}}"><i class="fa-solid fa-link"></i></div>{{/if}}
+      <div class="upg-art">
+        {{#if displayImg}}<img src="{{displayImg}}" alt="">{{else}}<i class="fa-solid {{#if mystery}}fa-question{{else}}fa-wand-sparkles{{/if}}"></i>{{/if}}
+      </div>
+      <div class="upg-body">
+        <h3>{{displayName}}</h3>
+        {{#if targetLabel}}<div class="upg-for"><i class="fa-solid fa-user"></i> {{targetLabel}}</div>{{/if}}
+        {{#if displayFlavor}}<div class="upg-flavor"><em>{{displayFlavor}}</em></div>{{/if}}
+        {{#if excerpt}}<div class="upg-excerpt">{{excerpt}}</div>{{/if}}
+        {{#if ownedBy}}<div class="upg-owned-by"><i class="fa-solid fa-user-check"></i> {{ownedBy}}</div>{{/if}}
+        {{#if effectLines}}
+        <ul class="upg-effects">
+          {{#each effectLines}}<li>{{this}}</li>{{/each}}
+        </ul>
+        {{/if}}
+        {{#if requiresLabel}}<div class="upg-requires"><i class="fa-solid fa-lock"></i> {{localize "UPGRADES.Shop.Requires" name=requiresLabel}}</div>{{/if}}
+        {{#if tierLabel}}<div class="upg-requires"><i class="fa-solid fa-layer-group"></i> {{tierLabel}}</div>{{/if}}
+        {{#if exclusiveLabel}}<div class="upg-exclusive"><i class="fa-solid fa-code-branch"></i> {{localize "UPGRADES.Shop.ChooseThisOr" names=exclusiveLabel}}</div>{{/if}}
+        {{#if excludedBy}}<div class="upg-excluded"><i class="fa-solid fa-ban"></i> {{localize "UPGRADES.Shop.RuledOutBy" name=excludedBy}}</div>{{/if}}
+        {{#if effectSecret}}<div class="upg-effect-secret">{{localize "UPGRADES.Shop.EffectSecret"}}</div>{{/if}}
+        {{#if effectSecretForGM}}<div class="upg-effect-secret gm">{{localize "UPGRADES.Shop.EffectSecretGM"}}</div>{{/if}}
+        <div class="upg-cost">
+          {{#unless mystery}}
+            {{#each costs}}
+            <span class="upg-price">
+              {{#if isImage}}<img class="upg-currency-img" src="{{icon}}" alt="">
+              {{else}}<i class="{{icon}}"></i>{{/if}}
+              {{amount}}
+            </span>
+            {{/each}}
+          {{else}}—{{/unless}}
+          {{#unless soldOut}}{{#unless mystery}}
+            {{#if affordable}}
+              <button type="button" class="upg-buy" data-action="buy" data-upgrade-id="{{id}}">{{../../vocab.actionVerb}}</button>
+            {{else if excluded}}
+              <button type="button" class="upg-buy disabled" disabled>{{localize "UPGRADES.Shop.RuledOut"}}</button>
+            {{else if locked}}
+              <button type="button" class="upg-buy disabled" disabled>{{localize "UPGRADES.Shop.Locked"}}</button>
+            {{else}}
+              <button type="button" class="upg-buy disabled" disabled>{{localize "UPGRADES.Shop.TooCostly"}}</button>
+            {{/if}}
+          {{/unless}}{{/unless}}
+        </div>
+      </div>
+    </div>
+    {{/each}}
+  </section>
+  </div>
+  {{/each}}
+  {{#unless groups.length}}
+  <p class="upg-empty">{{localize "UPGRADES.Shop.Empty"}}</p>
+  {{/unless}}
+
+  {{#if selected}}
+  <section class="upg-detail">
+    <div class="upg-detail-art">
+      {{#if selected.img}}<img src="{{selected.img}}" alt="">{{else}}<i class="fa-solid fa-wand-sparkles"></i>{{/if}}
+    </div>
+    <div class="upg-detail-text">
+      <h4>{{selected.name}}</h4>
+      {{#if selected.targetLabel}}<div class="upg-for"><i class="fa-solid fa-user"></i> {{selected.targetLabel}}</div>{{/if}}
+      {{#if selected.flavor}}<p class="upg-flavor"><em>{{selected.flavor}}</em></p>{{/if}}
+      {{#if selected.effectLines}}
+      <div class="upg-detail-effects">
+        <span class="upg-effects-label">{{localize "UPGRADES.Shop.WhatItGrants"}}</span>
+        <ul class="upg-effects">
+          {{#each selected.effectLines}}<li>{{this}}</li>{{/each}}
+        </ul>
+      </div>
+      {{/if}}
+      {{#if selected.effectSecret}}
+      <div class="upg-detail-effects">
+        <span class="upg-effects-label">{{localize "UPGRADES.Shop.WhatItGrants"}}</span>
+        <div class="upg-effect-secret">{{localize "UPGRADES.Shop.EffectSecretDetail"}}</div>
+      </div>
+      {{/if}}
+      {{#if selectedDescription}}<div class="upg-desc">{{{selectedDescription}}}</div>{{/if}}
+    </div>
+  </section>
+  {{else}}
+  <footer class="upg-hint">{{localize "UPGRADES.Shop.ClickHint"}}</footer>
+  {{/if}}
+</div>

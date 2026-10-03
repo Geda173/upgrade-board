@@ -1,0 +1,13 @@
+version: 2
+updates:
+  # The workflows pin actions by major version; this keeps those pins moving.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+
+  # Dev-only: handlebars for the template suite. Nothing here ships in the release zip.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: monthly

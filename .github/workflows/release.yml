@@ -1,0 +1,55 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      # A tag is never published past a failing suite. Run here as well as in test.yml, because
+      # a tag can be pushed from a commit that never went through main.
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
+      - name: Test
+        run: |
+          npm install --no-audit --no-fund
+          npm test
+
+      - name: Set download URL for this tag
+        run: |
+          python3 - "$GITHUB_REF_NAME" << 'EOF'
+          import json, sys
+          tag = sys.argv[1]
+          with open("module.json", encoding="utf-8") as f:
+              m = json.load(f)
+          m["version"] = tag.lstrip("v")
+          m["download"] = f"https://github.com/${{ github.repository }}/releases/download/{tag}/upgrade-board.zip"
+          with open("module.json", "w", encoding="utf-8") as f:
+              json.dump(m, f, indent=2, ensure_ascii=False)
+              f.write("\n")
+          EOF
+
+      - name: Build zip
+        run: |
+          zip -r upgrade-board.zip . \
+            -x ".git/*" -x ".github/*" -x "upgrade-board.zip" \
+            -x "tests/*" -x "node_modules/*" -x "package.json" -x "package-lock.json" \
+            -x ".gitignore"
+
+      - name: Create release
+        uses: softprops/action-gh-release@v3
+        with:
+          files: |
+            upgrade-board.zip
+            module.json
+          generate_release_notes: true

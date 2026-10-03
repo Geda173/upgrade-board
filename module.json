@@ -1,0 +1,59 @@
+{
+  "id": "upgrade-board",
+  "title": "Upgrade Board",
+  "description": "A themeable upgrade board. The party spends a shared resource on upgrades the GM writes, with art, flavor text and real mechanical effects in dnd5e and PF2e, for the whole party, one character or a single item.",
+  "version": "0.99.0",
+  "authors": [
+    {
+      "name": "Patrick"
+    }
+  ],
+  "compatibility": {
+    "minimum": "13",
+    "verified": "14"
+  },
+  "esmodules": [
+    "scripts/main.js"
+  ],
+  "styles": [
+    "styles/shop.css"
+  ],
+  "socket": true,
+  "url": "https://github.com/Geda173/upgrade-board",
+  "manifest": "https://github.com/Geda173/upgrade-board/releases/latest/download/module.json",
+  "download": "https://github.com/Geda173/upgrade-board/releases/download/v0.99.0/upgrade-board.zip",
+  "license": "LICENSE",
+  "readme": "README.md",
+  "bugs": "https://github.com/Geda173/upgrade-board/issues",
+  "changelog": "https://github.com/Geda173/upgrade-board/releases",
+  "languages": [
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "lang/en.json"
+    },
+    {
+      "lang": "de",
+      "name": "Deutsch",
+      "path": "lang/de.json"
+    }
+  ],
+  "media": [
+    {
+      "type": "cover",
+      "url": "https://raw.githubusercontent.com/Geda173/upgrade-board/main/media/01-board.jpg"
+    },
+    {
+      "type": "screenshot",
+      "url": "https://raw.githubusercontent.com/Geda173/upgrade-board/main/media/03-setup-themes.jpg"
+    },
+    {
+      "type": "screenshot",
+      "url": "https://raw.githubusercontent.com/Geda173/upgrade-board/main/media/02-gm-console.jpg"
+    },
+    {
+      "type": "screenshot",
+      "url": "https://raw.githubusercontent.com/Geda173/upgrade-board/main/media/04-bonus-builder.jpg"
+    }
+  ]
+}

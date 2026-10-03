@@ -1,0 +1,114 @@
+<div class="upg-editor-body">
+  <section class="upg-ledger">
+    {{#each currencies}}
+    <div class="upg-balance inline upg-purse">
+      {{#if isImage}}<img class="upg-currency-img" src="{{icon}}" alt="">
+      {{else}}<i class="{{icon}}"></i>{{/if}}
+      <strong>{{balance}}</strong> {{name}}
+      <a data-action="adjustBalance" data-currency-id="{{id}}" title="{{localize "UPGRADES.Editor.Adjust" name=name}}"><i class="fa-solid fa-plus-minus"></i></a>
+    </div>
+    {{/each}}
+    <button type="button" data-action="resync" title="{{localize "UPGRADES.Editor.ResyncHint"}}"><i class="fa-solid fa-rotate"></i> {{localize "UPGRADES.Editor.Resync"}}</button>
+    {{#if hasCurrencyItem}}
+    <button type="button" data-action="placeCurrency" title="{{localize "UPGRADES.Editor.PlaceHint"}}"><i class="fa-solid fa-hand-holding-dollar"></i> {{localize "UPGRADES.Editor.Place" currency=vocab.currencyName}}</button>
+    {{/if}}
+    <button type="button" data-action="openSettings"><i class="fa-solid fa-sliders"></i> {{localize "UPGRADES.Shop.Setup"}}</button>
+  </section>
+
+  <section class="upg-categories">
+    <header>
+      <h3>{{localize "UPGRADES.Editor.Sections"}}</h3>
+      <button type="button" data-action="addCategory"><i class="fa-solid fa-plus"></i> {{localize "UPGRADES.Editor.NewSection"}}</button>
+    </header>
+    {{#if hasCategories}}
+    <ul class="upg-category-list">
+      {{#each categories}}
+      <li>
+        <i class="{{icon}}"></i>
+        <span class="upg-category-name">{{name}}</span>
+        {{#if gateWarnRow}}<i class="fa-solid fa-triangle-exclamation upg-gate-warn" title="{{localize "UPGRADES.Editor.GateWarn" row=gateWarnRow}}"></i>{{/if}}
+        <a data-action="moveCategoryUp" data-id="{{id}}" title="{{localize "UPGRADES.Editor.MoveUp"}}"><i class="fa-solid fa-chevron-up"></i></a>
+        <a data-action="moveCategoryDown" data-id="{{id}}" title="{{localize "UPGRADES.Editor.MoveDown"}}"><i class="fa-solid fa-chevron-down"></i></a>
+        {{#if isTree}}<a data-action="arrangeSection" data-id="{{id}}" title="{{localize "UPGRADES.Editor.Arrange"}}"><i class="fa-solid fa-sitemap"></i></a>{{/if}}
+        <a data-action="editCategory" data-id="{{id}}" title="{{localize "UPGRADES.Editor.Rename"}}"><i class="fa-solid fa-pen"></i></a>
+        <a data-action="removeCategory" data-id="{{id}}" title="{{localize "UPGRADES.Editor.Delete"}}"><i class="fa-solid fa-trash"></i></a>
+      </li>
+      {{/each}}
+    </ul>
+    {{else}}
+    <p class="upg-hint">{{localize "UPGRADES.Editor.NoSections"}}</p>
+    {{/if}}
+  </section>
+
+  <section class="upg-list">
+    <header>
+      <h3>{{localize "UPGRADES.Editor.Upgrades"}}</h3>
+      <button type="button" data-action="addUpgrade"><i class="fa-solid fa-plus"></i> {{localize "UPGRADES.Editor.NewUpgrade"}}</button>
+    </header>
+    <table>
+      <thead><tr><th></th><th>{{localize "UPGRADES.Editor.ColName"}}</th><th>{{localize "UPGRADES.Editor.ColAppliesTo"}}</th><th>{{localize "UPGRADES.Editor.ColCost"}}</th><th>{{localize "UPGRADES.Editor.ColStatus"}}</th><th>{{localize "UPGRADES.Editor.ColActions"}}</th></tr></thead>
+      <tbody>
+        {{#each groups}}
+        {{#if name}}
+        <tr class="upg-group-row"><td colspan="6"><i class="{{icon}}"></i> {{name}}</td></tr>
+        {{/if}}
+        {{#each upgrades}}
+        <tr class="{{#if purchased}}owned{{/if}} {{#if hidden}}hidden-row{{/if}}">
+          <td class="upg-thumb">{{#if img}}<img src="{{img}}" alt="">{{else}}<i class="fa-solid fa-wand-sparkles"></i>{{/if}}</td>
+          <td>
+            {{name}}
+            {{#if effectLabel}}<div class="upg-effect-label"><i class="fa-solid fa-bolt"></i> {{effectLabel}}</div>{{/if}}
+            {{#if ownedNames}}<div class="upg-effect-label"><i class="fa-solid fa-user-check"></i> {{ownedNames}}</div>{{/if}}
+            {{#if exclusiveLabel}}<div class="upg-effect-label"><i class="fa-solid fa-code-branch"></i> {{localize "UPGRADES.Editor.NotWith" names=exclusiveLabel}}</div>{{/if}}
+          </td>
+          <td class="upg-target">{{targetLabel}}</td>
+          <td>{{costLabel}}</td>
+          <td>
+            {{#if isRepeatable}}<span class="tag owned">{{localize "UPGRADES.Editor.BoughtTimes" count=ownedCount}}</span>
+            {{else if purchased}}<span class="tag owned">{{localize "UPGRADES.Editor.OwnedBy" name=purchasedBy}}</span>
+            {{else if hidden}}<span class="tag hidden">{{localize "UPGRADES.Editor.Hidden"}}</span>
+            {{else}}<span class="tag">{{localize "UPGRADES.Editor.Available"}}</span>{{/if}}
+            {{#if orphaned}}<span class="tag upg-orphan" title="{{localize "UPGRADES.Editor.OrphanTitle"}}"><i class="fa-solid fa-link-slash"></i> {{localize "UPGRADES.Editor.Orphan"}}</span>{{/if}}
+          </td>
+          <td class="upg-actions">
+            <a data-action="editUpgrade" data-id="{{id}}" title="{{localize "UPGRADES.Editor.Edit"}}"><i class="fa-solid fa-pen"></i></a>
+            <a data-action="toggleHidden" data-id="{{id}}" title="{{localize "UPGRADES.Editor.ToggleHidden"}}"><i class="fa-solid {{#if hidden}}fa-eye{{else}}fa-eye-slash{{/if}}"></i></a>
+            {{#if ownedCount}}<a data-action="refund" data-id="{{id}}" title="{{localize "UPGRADES.Editor.Refund"}}"><i class="fa-solid fa-rotate-left"></i></a>{{/if}}
+            <a data-action="deleteUpgrade" data-id="{{id}}" title="{{localize "UPGRADES.Editor.Delete"}}"><i class="fa-solid fa-trash"></i></a>
+          </td>
+        </tr>
+        {{/each}}
+        {{else}}
+        <tr><td colspan="6" class="upg-empty">{{localize "UPGRADES.Editor.NoUpgrades"}}</td></tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </section>
+
+  <section class="upg-history">
+    <header>
+      <h3>{{localize "UPGRADES.Editor.History"}}</h3>
+      {{#if hasHistory}}
+      <button type="button" data-action="clearHistory"
+              title="{{localize "UPGRADES.Editor.ClearHint"}}"><i class="fa-solid fa-broom"></i> {{localize "UPGRADES.Editor.Clear" count=historyTotal}}</button>
+      {{/if}}
+    </header>
+    <ul>
+      {{#each history}}
+      <li>
+        <span class="when">{{when}}</span> —
+        <span class="upg-history-line">
+          {{#if isPurchase}}<strong>{{name}}</strong> {{localize "UPGRADES.Editor.AcquiredFor" price=price by=by}}
+          {{else}}{{currencyName}} {{deltaStr}} ({{before}} → {{after}}){{#if reason}} — {{reason}}{{/if}}{{/if}}
+        </span>
+        <span class="upg-history-actions">
+          {{#if canReword}}<a data-action="editHistoryEntry" data-id="{{id}}" title="{{localize "UPGRADES.Editor.EditReason"}}"><i class="fa-solid fa-pen"></i></a>{{/if}}
+          <a data-action="removeHistoryEntry" data-id="{{id}}" title="{{localize "UPGRADES.Editor.RemoveLine"}}"><i class="fa-solid fa-trash"></i></a>
+        </span>
+      </li>
+      {{else}}
+      <li class="upg-empty">{{localize "UPGRADES.Editor.NothingYet"}}</li>
+      {{/each}}
+    </ul>
+  </section>
+</div>

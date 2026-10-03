@@ -1,0 +1,399 @@
+<div class="upg-form">
+  <div class="upg-form-body">
+
+  <section class="upg-fieldset">
+    <div class="form-group">
+      <label>{{localize "UPGRADES.UpgradeEditor.Name"}}</label>
+      <input type="text" name="name" value="{{upgrade.name}}" placeholder="{{localize "UPGRADES.UpgradeEditor.NameEg"}}" autofocus>
+    </div>
+
+    <div class="form-group stacked">
+      <label>{{localize "UPGRADES.UpgradeEditor.Cost"}}</label>
+      <div class="upg-cost-rows">
+        {{#each costRows}}
+        <div class="upg-cost-row">
+          <label>
+            {{#if isImage}}<img class="upg-currency-img" src="{{icon}}" alt="">
+            {{else}}<i class="{{icon}}"></i>{{/if}}
+            {{name}}
+          </label>
+          <input type="number" name="cost:{{id}}" value="{{amount}}" min="0" step="1">
+        </div>
+        {{/each}}
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>{{localize "UPGRADES.UpgradeEditor.Art"}}</label>
+      <div class="upg-file">
+        <input type="text" name="img" value="{{upgrade.img}}" placeholder="worlds/mycampaign/art/plant.webp">
+        <button type="button" data-action="pickImage" title="{{localize "UPGRADES.UpgradeEditor.Browse"}}"><i class="fa-solid fa-file-image"></i></button>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>{{localize "UPGRADES.UpgradeEditor.FlavorLine"}}</label>
+      <input type="text" name="flavor" value="{{upgrade.flavor}}" placeholder="{{localize "UPGRADES.UpgradeEditor.FlavorEg"}}">
+    </div>
+
+    <div class="form-group stacked">
+      <label>{{localize "UPGRADES.UpgradeEditor.Description"}}</label>
+      <textarea name="description" rows="4">{{upgrade.description}}</textarea>
+    </div>
+
+    {{#if hasCategories}}
+    <div class="form-group">
+      <label>{{localize "UPGRADES.UpgradeEditor.Section"}}</label>
+      <select name="categoryId">
+        <option value="">{{localize "UPGRADES.UpgradeEditor.OptNone"}}</option>
+        {{#each categories}}
+        <option value="{{id}}" {{#if isSelected}}selected{{/if}}>{{name}}</option>
+        {{/each}}
+      </select>
+    </div>
+    {{/if}}
+
+    <div class="form-group">
+      <label class="checkbox">
+        <input type="checkbox" name="hidden" {{#if upgrade.hidden}}checked{{/if}}> {{localize "UPGRADES.UpgradeEditor.HiddenTeaser"}}
+      </label>
+    </div>
+  </section>
+
+  {{#if hasPrerequisiteCandidates}}
+  <section class="upg-fieldset">
+    <h3>{{localize "UPGRADES.UpgradeEditor.ComesAfter"}}{{#if requiresCount}} <span class="upg-picker-count">{{localize "UPGRADES.UpgradeEditor.Ticked" count=requiresCount}}</span>{{/if}}</h3>
+    <p class="upg-hint">
+      {{localize "UPGRADES.UpgradeEditor.ComesAfterHint"}}
+    </p>
+    <div class="upg-picker upg-prereqs" data-picker="requires">
+      {{#if showRequiresFilter}}
+      <input type="search" class="upg-picker-filter" name="requiresFilter" value="{{requiresFilter}}"
+             placeholder="{{localize "UPGRADES.UpgradeEditor.FilterPicker"}}" autocomplete="off">
+      {{/if}}
+      <div class="upg-picker-list">
+        {{#each prerequisites}}
+        <label class="checkbox" data-search="{{search}}">
+          <input type="checkbox" name="requires" value="{{id}}" {{#if isSelected}}checked{{/if}}>
+          {{name}}{{#if section}} <span class="upg-picker-section">{{section}}</span>{{/if}}
+        </label>
+        {{/each}}
+        <p class="upg-picker-empty upg-hint filtered-out">{{localize "UPGRADES.UpgradeEditor.NoMatches"}}</p>
+      </div>
+    </div>
+  </section>
+  {{/if}}
+
+  {{#if hasExclusionCandidates}}
+  <section class="upg-fieldset">
+    <h3>{{localize "UPGRADES.UpgradeEditor.CannotTakeWith"}}{{#if excludesCount}} <span class="upg-picker-count">{{localize "UPGRADES.UpgradeEditor.Ticked" count=excludesCount}}</span>{{/if}}</h3>
+    <p class="upg-hint">
+      {{localize "UPGRADES.UpgradeEditor.CannotTakeWithHint"}}
+    </p>
+    <div class="upg-picker upg-prereqs" data-picker="excludes">
+      {{#if showExcludesFilter}}
+      <input type="search" class="upg-picker-filter" name="excludesFilter" value="{{excludesFilter}}"
+             placeholder="{{localize "UPGRADES.UpgradeEditor.FilterPicker"}}" autocomplete="off">
+      {{/if}}
+      <div class="upg-picker-list">
+        {{#each exclusions}}
+        <label class="checkbox" data-search="{{search}}">
+          <input type="checkbox" name="excludes" value="{{id}}" data-action="rerender" {{#if isSelected}}checked{{/if}}>
+          {{name}}{{#if section}} <span class="upg-picker-section">{{section}}</span>{{/if}}
+        </label>
+        {{/each}}
+        <p class="upg-picker-empty upg-hint filtered-out">{{localize "UPGRADES.UpgradeEditor.NoMatches"}}</p>
+      </div>
+    </div>
+    {{#if exclusiveNote}}<p class="upg-hint">{{exclusiveNote}}</p>{{/if}}
+  </section>
+  {{/if}}
+
+  <section class="upg-fieldset">
+    <h3>{{localize "UPGRADES.UpgradeEditor.WhoApplies"}}</h3>
+
+    <div class="form-group">
+      <label>{{localize "UPGRADES.UpgradeEditor.Target"}}</label>
+      <select name="target" data-action="rerender">
+        {{#each targetOptions}}
+        <option value="{{value}}" {{#if isSelected}}selected{{/if}}>{{label}}</option>
+        {{/each}}
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label class="checkbox">
+        <input type="checkbox" name="repeatable" {{#if upgrade.repeatable}}checked{{/if}}>
+        {{localize "UPGRADES.UpgradeEditor.Repeatable"}}
+      </label>
+    </div>
+
+    {{#if isBuyerTarget}}
+    <p class="upg-hint">
+      {{localize "UPGRADES.UpgradeEditor.BuyerHint"}}
+    </p>
+    {{/if}}
+
+    {{#if isItemTarget}}
+    <input type="hidden" name="targetItemUuid" value="{{upgrade.targetItemUuid}}">
+    <div class="upg-drop {{#if hasTargetItem}}filled{{/if}}" data-drop="targetItem">
+      {{#if hasTargetItem}}
+        {{#if targetItemImg}}<img src="{{targetItemImg}}" alt="">{{/if}}
+        <div class="upg-drop-text">
+          <strong>{{targetItemName}}</strong>
+          {{#if targetItemOwner}}<span>{{localize "UPGRADES.UpgradeEditor.CarriedBy" owner=targetItemOwner}}</span>{{/if}}
+        </div>
+        <button type="button" data-action="clearTargetItem" title="{{localize "UPGRADES.Common.Clear"}}"><i class="fa-solid fa-xmark"></i></button>
+      {{else}}
+        <i class="fa-solid fa-hand-pointer"></i>
+        <div class="upg-drop-text">
+          <strong>{{localize "UPGRADES.UpgradeEditor.DragItem"}}</strong>
+          <span>{{localize "UPGRADES.UpgradeEditor.DragItemHint"}}</span>
+        </div>
+      {{/if}}
+    </div>
+    {{#if targetItemMissing}}
+    <p class="upg-warn"><i class="fa-solid fa-triangle-exclamation"></i> {{localize "UPGRADES.UpgradeEditor.ItemUnresolved"}}</p>
+    {{/if}}
+    {{#if targetItemUnowned}}
+    <p class="upg-warn"><i class="fa-solid fa-triangle-exclamation"></i> {{localize "UPGRADES.UpgradeEditor.ItemUnowned"}}</p>
+    {{/if}}
+    <p class="upg-hint">{{localize "UPGRADES.UpgradeEditor.ItemTargetHint"}}</p>
+    {{#if choiceEnabled}}
+    <p class="upg-hint">{{localize "UPGRADES.UpgradeEditor.ItemChoiceNote"}}</p>
+    {{/if}}
+    {{else if isActorTarget}}
+    <div class="form-group">
+      <label>{{localize "UPGRADES.UpgradeEditor.Character"}}</label>
+      <select name="targetActorId">
+        <option value="">{{localize "UPGRADES.UpgradeEditor.OptChooseCharacter"}}</option>
+        {{#each actorGroups}}
+        <optgroup label="{{label}}">
+          {{#each actors}}
+          <option value="{{id}}" {{#if isSelected}}selected{{/if}}>{{name}}</option>
+          {{/each}}
+        </optgroup>
+        {{/each}}
+      </select>
+    </div>
+    {{#unless hasTargetActor}}
+    <p class="upg-warn"><i class="fa-solid fa-triangle-exclamation"></i> {{localize "UPGRADES.UpgradeEditor.NoTargetWarn"}}</p>
+    {{/unless}}
+    {{else}}
+    <p class="upg-hint">{{partyNote}}</p>
+    {{/if}}
+  </section>
+
+  <section class="upg-fieldset">
+    <h3>{{localize "UPGRADES.UpgradeEditor.WhatDoes"}}</h3>
+
+    <div class="upg-modes">
+      {{#each effectModeOptions}}
+      <label class="checkbox">
+        <input type="radio" name="effectMode" value="{{value}}" data-action="rerender" {{#if isSelected}}checked{{/if}}> {{label}}
+      </label>
+      {{/each}}
+    </div>
+
+    {{#if isBuild}}
+      {{#unless builderSupported}}
+      <p class="upg-warn">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        {{localize "UPGRADES.UpgradeEditor.BuilderUnsupported" system=systemId}}
+      </p>
+      {{/unless}}
+
+      <div class="upg-rows">
+        {{#each rows}}
+        <div class="upg-row" data-index="{{index}}">
+          {{! A filtered list, not a <select>: both catalogues are long enough that a native
+              dropdown of forty options across seven groups is hard to get around. The value
+              still lives in a field called rowPreset, so nothing downstream changes. }}
+          <div class="upg-preset-picker">
+            <input type="hidden" name="rowPreset" value="{{preset}}">
+            <button type="button" class="upg-preset-current" data-preset-toggle
+                    title="{{localize "UPGRADES.UpgradeEditor.PresetTitle"}}">
+              <span>{{presetLabel}}</span><i class="fa-solid fa-chevron-down"></i>
+            </button>
+            <div class="upg-preset-menu" hidden>
+              <input type="search" class="upg-preset-filter" placeholder="{{localize "UPGRADES.UpgradeEditor.FilterTargets"}}" autocomplete="off">
+              <div class="upg-preset-list">
+                {{#each presetGroups}}
+                <div class="upg-preset-group">{{label}}</div>
+                {{#each presets}}
+                <button type="button" class="upg-preset-option{{#if isSelected}} chosen{{/if}}"
+                        data-preset-pick="{{id}}" data-search="{{search}}">{{label}}</button>
+                {{/each}}
+                {{/each}}
+                <p class="upg-preset-empty filtered-out">{{localize "UPGRADES.UpgradeEditor.NoMatches"}}</p>
+              </div>
+            </div>
+          </div>
+
+          {{#if isCustom}}
+          <input type="text" name="rowKey" value="{{key}}"
+                 placeholder="{{#if isPf2e}}attack, damage{{else}}system.attributes.ac.bonus{{/if}}" class="upg-key">
+          {{#unless isPf2e}}
+          <select name="rowMode" class="upg-mode">
+            {{#each modeChoices}}
+            <option value="{{value}}" {{#if isSelected}}selected{{/if}}>{{label}}</option>
+            {{/each}}
+          </select>
+          {{/unless}}
+          {{/if}}
+
+          {{#if valueIsType}}
+          {{! the type is the whole payload — an immunity, or any dnd5e trait set }}
+          <select name="rowValue" class="upg-resist-type">
+            <option value="">{{localize "UPGRADES.UpgradeEditor.OptChooseType"}}</option>
+            {{#each kinds}}
+            <option value="{{id}}" {{#if isSelected}}selected{{/if}}>{{label}}</option>
+            {{/each}}
+          </select>
+          {{else if hasChoices}}
+          {{! advantage is one of two answers, not an amount }}
+          <select name="rowValue" class="upg-roll-choice">
+            {{#each choices}}
+            <option value="{{id}}" {{#if isSelected}}selected{{/if}}>{{label}}</option>
+            {{/each}}
+          </select>
+          {{else if isToggle}}
+          {{! the preset is the whole statement; the field exists only so #syncDraft has something
+              to read back, and so an empty row is still distinguishable from a filled one }}
+          <input type="hidden" name="rowValue" value="1">
+          {{else}}
+          <input type="text" name="rowValue" value="{{value}}" placeholder="{{placeholder}}" class="upg-value">
+          {{/if}}
+
+          {{#if isPf2e}}{{#unless isIwr}}{{#unless isToggle}}{{#unless hasChoices}}{{#unless isSense}}{{#unless isRune}}
+          {{! a resistance is not a modifier, so it has no bonus type and no stacking rule — and
+              neither is a rune: PF2e derives its bonuses at data prep }}
+          <select name="rowBonusType" class="upg-bonus-type" title="{{localize "UPGRADES.UpgradeEditor.BonusTypeTitle"}}">
+            {{#each bonusTypes}}
+            <option value="{{id}}" {{#if isSelected}}selected{{/if}}>{{label}}</option>
+            {{/each}}
+          </select>
+          {{/unless}}{{/unless}}{{/unless}}{{/unless}}{{/unless}}{{/if}}
+
+          {{#if isDamage}}
+          <select name="rowDamageType" class="upg-damage-type">
+            <option value="">{{localize "UPGRADES.UpgradeEditor.OptUntyped"}}</option>
+            {{#each damageTypes}}
+            <option value="{{id}}" {{#if isSelected}}selected{{/if}}>{{label}}</option>
+            {{/each}}
+          </select>
+          {{/if}}
+
+          {{#if isIwr}}{{#unless valueIsType}}
+          <select name="rowDamageType" class="upg-resist-type">
+            <option value="">{{localize "UPGRADES.UpgradeEditor.OptChooseType"}}</option>
+            {{#each kinds}}
+            <option value="{{id}}" {{#if isSelected}}selected{{/if}}>{{label}}</option>
+            {{/each}}
+          </select>
+          {{/unless}}{{/if}}
+          <button type="button" data-action="removeRow" data-index="{{index}}" title="{{localize "UPGRADES.Settings.Remove"}}"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        {{else}}
+        <p class="upg-empty">{{localize "UPGRADES.UpgradeEditor.NoBonuses"}}</p>
+        {{/each}}
+      </div>
+
+      <button type="button" class="upg-add-row" data-action="addRow"><i class="fa-solid fa-plus"></i> {{localize "UPGRADES.UpgradeEditor.AddBonus"}}</button>
+
+      {{#if isPf2e}}
+      <div class="upg-hint upg-legend">
+        <p>{{{localize "UPGRADES.UpgradeEditor.Pf2eDice"}}}</p>
+        <p>{{{localize "UPGRADES.UpgradeEditor.Pf2eWhyType"}}}</p>
+        <dl>
+          {{#each bonusTypeLegend}}
+          <dt>{{label}}</dt><dd>{{hint}}</dd>
+          {{/each}}
+        </dl>
+        <p>{{{localize "UPGRADES.UpgradeEditor.Pf2eUntyped"}}}</p>
+      </div>
+      {{else}}
+      <p class="upg-hint">
+        {{{localize "UPGRADES.UpgradeEditor.Dnd5eFormula"}}}
+      </p>
+      {{/if}}
+    {{/if}}
+
+    {{#if isLink}}
+      <div class="upg-drop {{#if linkedName}}filled{{/if}}" data-drop="effect">
+        {{#if linkedName}}
+          {{#if linkedImg}}<img src="{{linkedImg}}" alt="">{{/if}}
+          <div class="upg-drop-text">
+            <strong>{{linkedName}}</strong>
+            <span>{{linkedType}}</span>
+          </div>
+          <button type="button" data-action="clearLink" title="{{localize "UPGRADES.Common.Clear"}}"><i class="fa-solid fa-xmark"></i></button>
+        {{else}}
+          <i class="fa-solid fa-hand-pointer"></i>
+          <div class="upg-drop-text">
+            <strong>{{localize "UPGRADES.UpgradeEditor.DragEffect"}}</strong>
+            <span>{{localize "UPGRADES.UpgradeEditor.DragEffectHint"}}</span>
+          </div>
+        {{/if}}
+      </div>
+      <div class="form-group">
+        <label>{{localize "UPGRADES.UpgradeEditor.Uuid"}}</label>
+        <input type="text" name="effectUuid" value="{{upgrade.effectUuid}}" placeholder="{{localize "UPGRADES.UpgradeEditor.UuidEg"}}">
+      </div>
+      {{#if linkMissing}}
+      <p class="upg-warn"><i class="fa-solid fa-triangle-exclamation"></i> {{localize "UPGRADES.UpgradeEditor.UuidUnresolved"}}</p>
+      {{/if}}
+    {{/if}}
+
+    {{#if showsGrantNote}}
+    {{#unless isItemTarget}}
+    {{! On an item the payload always sits on the item itself — there is no wrapper feat and no
+        effects-bar choice to make, so offering the checkbox would promise something it cannot do. }}
+    <div class="form-group">
+      <label class="checkbox">
+        <input type="checkbox" name="showInEffectsBar" data-action="rerender" {{#if upgrade.showInEffectsBar}}checked{{/if}}>
+        {{localize "UPGRADES.UpgradeEditor.ShowInEffectsBar"}}
+      </label>
+    </div>
+    {{/unless}}
+    <div class="form-group">
+      <label class="checkbox">
+        <input type="checkbox" name="hideEffect" {{#if upgrade.hideEffect}}checked{{/if}}>
+        {{localize "UPGRADES.UpgradeEditor.KeepSecret"}}
+      </label>
+    </div>
+    <p class="upg-hint">{{grantNote}}</p>
+    {{/if}}
+  </section>
+
+  </div>
+
+  <section class="upg-fieldset">
+    <h3>{{localize "UPGRADES.UpgradeEditor.AskBuyer"}}</h3>
+    <div class="form-group">
+      <label class="checkbox">
+        <input type="checkbox" name="choiceEnabled" data-action="rerender" {{#if upgrade.choiceEnabled}}checked{{/if}}>
+        {{localize "UPGRADES.UpgradeEditor.Nominate"}}
+      </label>
+    </div>
+    {{#if choiceEnabled}}
+    <div class="form-group">
+      <label>{{localize "UPGRADES.UpgradeEditor.Question"}}</label>
+      <input type="text" name="choiceLabel" value="{{upgrade.choiceLabel}}" placeholder="{{localize "UPGRADES.UpgradeEditor.QuestionEg"}}">
+    </div>
+    <div class="form-group stacked">
+      <label>{{localize "UPGRADES.UpgradeEditor.Guidance"}}</label>
+      <input type="text" name="choiceHint" value="{{upgrade.choiceHint}}"
+             placeholder="{{localize "UPGRADES.UpgradeEditor.GuidanceEg"}}">
+    </div>
+    <p class="upg-hint">
+      {{localize "UPGRADES.UpgradeEditor.ChoiceHint"}}
+    </p>
+    {{/if}}
+  </section>
+
+  <footer class="upg-form-footer">
+    <button type="submit"><i class="fa-solid fa-floppy-disk"></i> {{saveLabel}}</button>
+    <button type="button" data-action="cancel"><i class="fa-solid fa-ban"></i> {{localize "UPGRADES.Common.Cancel"}}</button>
+  </footer>
+</div>

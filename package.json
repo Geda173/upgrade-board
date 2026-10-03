@@ -1,0 +1,12 @@
+{
+  "name": "upgrades",
+  "private": true,
+  "type": "module",
+  "description": "Dev-only manifest. Foundry loads this module via module.json; nothing here ships to users.",
+  "scripts": {
+    "test": "node tests/run.mjs"
+  },
+  "devDependencies": {
+    "handlebars": "^4.7.9"
+  }
+}
