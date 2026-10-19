@@ -23,8 +23,19 @@
  * `base-activity.mjs#_processDamagePart` — same array, same signed-formula shape, so the inline
  * `[cold]` flavour is typed by exactly the code that already types weapon bonuses.
  *
+ * Healing is not damage, and a bonus bought as damage never reaches it. A Cure Wounds is a spell
+ * item like any other, so without the check below "+1d6 cold to all spells" healed for an extra
+ * 1d6 — seen at the table, not in a test. dnd5e keeps its own bonuses off healing the same way:
+ * a Heal activity reports no attack action type, so `system.rolls.damage.${actionType}.bonus`
+ * never matches, and 6.0's `_processDamagePart` skips the base-damage fallback for the
+ * `healing` rule category. Two tests, because either can be true alone: the activity is a Heal
+ * (`type: "heal"`), or the roll it would land on is typed as healing (`options.type` is a key of
+ * `CONFIG.DND5E.healingTypes` — healing, temphp, maximum). Verified against release-5.3.3 and
+ * release-6.0.5.
+ *
  * PF2e needs none of this. `spell-damage` is a real domain there, so its preset is an ordinary
- * DamageDice rule element and the system applies it.
+ * DamageDice rule element and the system applies it. Its domains are built from the spell's
+ * damage kinds, so a spell that only heals rolls under `spell-healing` and never sees the bonus.
  *
  * One rule the handler must never break: `basic-roll.mjs` fires the hook through `Hooks.call`
  * and treats an explicit `false` as "cancel the roll" (`=== false ) return []`). So the registered
@@ -50,6 +61,16 @@ export function spellDamageBonus(actor) {
 }
 
 /**
+ * Whether a roll's damage type is one of dnd5e's healing types. Read live, like the damage
+ * types, so a system update that adds one is covered; outside Foundry there is no CONFIG.
+ */
+function isHealingType(type) {
+  if (!type) return false;
+  const healing = globalThis.CONFIG?.DND5E?.healingTypes ?? {};
+  return Object.hasOwn(healing, type);
+}
+
+/**
  * Append the bought formula to a pending damage roll, if the roll is a spell's.
  * Exported separately from the hook so it can be exercised without a Foundry.
  * @returns {boolean} whether anything was added, which is what the tests assert on.
@@ -59,6 +80,9 @@ export function applySpellDamageBonus(config) {
   // Only spells, and only ever the actor's own roll.
   if (activity?.item?.type !== "spell") return false;
 
+  // Never a healing roll. See the comment at the top of this file.
+  if (activity.type === "heal") return false;
+
   const bonus = spellDamageBonus(activity.actor);
   if (!bonus) return false;
 
@@ -66,6 +90,7 @@ export function applySpellDamageBonus(config) {
   // 10d8 lightning ends up rolling "10d8 + +1d6[cold]" exactly as a weapon would.
   const first = config.rolls?.[0];
   if (!first) return false;
+  if (isHealingType(first.options?.type)) return false;
   if (first[`${MODULE_ID}-applied`]) return false;
 
   first.parts = [...(first.parts ?? []), bonus];

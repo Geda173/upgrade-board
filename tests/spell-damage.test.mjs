@@ -81,6 +81,42 @@ applySpellDamageBonus(twice);
 t('a second pass over the same roll adds nothing', applySpellDamageBonus(twice) === false);
 t('and the formula is not doubled', twice.rolls[0].parts.length === 2);
 
+/* ---------- healing is not damage ---------- */
+// Galadon cast a healing spell with "+1d6 cold to all spells" bought, and the cold die landed on
+// the healing roll. A Heal activity is a spell item like any other, so the item-type check alone
+// let it through. Both signals are checked: the activity type, and the type of the roll part.
+// The three keys are CONFIG.DND5E.healingTypes at release-5.3.3 and release-6.0.5 alike.
+const HEALING_TYPES = ['healing', 'temphp', 'maximum'];
+const heal = (activityType, rollType, flagValue = '+1d6[cold]') => ({
+  subject: { type: activityType, item: { type: 'spell' }, actor: withFlag(flagValue) },
+  rolls: [{ parts: ['2d8'], options: { type: rollType } }]
+});
+
+// With no CONFIG at all, the activity check must still hold and nothing may throw.
+const bare = heal('heal', 'healing');
+t('a heal activity is skipped even without CONFIG', applySpellDamageBonus(bare) === false);
+t('and its roll is untouched', JSON.stringify(bare.rolls[0].parts) === JSON.stringify(['2d8']));
+t('a damage-typed roll without CONFIG still gets the bonus',
+  applySpellDamageBonus(heal('save', 'cold')) === true);
+
+globalThis.CONFIG = { DND5E: { healingTypes: Object.fromEntries(HEALING_TYPES.map(k => [k, {}])) } };
+for (const type of HEALING_TYPES) {
+  t(`a heal activity rolling ${type} is skipped`, applySpellDamageBonus(heal('heal', type)) === false);
+  const typed = heal('damage', type);
+  t(`a damage activity whose first part is ${type} is skipped`,
+    applySpellDamageBonus(typed) === false && typed.rolls[0].parts.length === 1);
+}
+t('a heal activity is skipped whatever its roll claims to be',
+  applySpellDamageBonus(heal('heal', 'cold')) === false);
+const fireball = heal('save', 'fire');
+t('a save spell still gets the bonus with healing types configured',
+  applySpellDamageBonus(fireball) === true
+  && JSON.stringify(fireball.rolls[0].parts) === JSON.stringify(['2d8', '+1d6[cold]']));
+t('an untyped damage part still gets the bonus',
+  applySpellDamageBonus(heal('attack', undefined)) === true);
+// A damage type that happens to share a prototype key with the lookup object is not healing.
+t('the healing lookup is an own-key test', applySpellDamageBonus(heal('save', 'toString')) === true);
+
 /* ---------- the preset that feeds it ---------- */
 const preset = getPreset('spell.damage.all');
 t('the dnd5e preset exists', !!preset);
@@ -132,7 +168,9 @@ for (const [label, cfg] of [
   ['a spell that gets the bonus', roll('spell', '+1d6[cold]')],
   ['a roll with no parts', { subject: { item: { type: 'spell' }, actor: withFlag('+1d6[cold]') }, rolls: [] }],
   ['a malformed config', {}],
-  ['an empty config', undefined]
+  ['an empty config', undefined],
+  ['a healing spell', heal('heal', 'healing')],
+  ['a healing-typed damage part', heal('damage', 'temphp')]
 ]) {
   t(`${label} is never cancelled by the registered handler`, handler(cfg) !== false);
 }

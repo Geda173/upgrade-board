@@ -95,7 +95,8 @@ const RAW_DND5E = [
   // Every spell, including the ones resolved by a saving throw — which is to say the ones the
   // preset above cannot reach. There is no system field for it, so this writes to the module's
   // own flag and `systems/dnd5e-damage.js` appends it to the roll. Read the comment at the top
-  // of that file before touching either half; they are one feature.
+  // of that file before touching either half; they are one feature. Healing spells are spells
+  // too, so the hook skips Heal activities and healing-typed rolls: it is a damage bonus.
   { group: "Spellcasting", id: "spell.damage.all", damage: true, placeholder: "+1d6",
     moduleFlag: true, keys: [`flags.${MODULE_ID}.spellDamage`] },
 
@@ -333,6 +334,10 @@ const RAW_PF2E = [
   // whether it is an attack or a save, so this is an ordinary DamageDice rule element. The
   // dnd5e side of the same concept has to be granted through a roll hook, because that system
   // has no equivalent field. Verified against SpellPF2e#getDamageContext at pf2e-8.3.0.
+  // The domains come from the spell's damage kinds, so a spell that only heals rolls under
+  // `spell-healing` and is left alone. Heal itself carries both kinds (it also harms undead, and
+  // any spell with a save gains `damage`), so its single roll does take the die — a genuine
+  // system difference, and excluding it would need a predicate, which the builder lacks.
   { group: "Spellcasting", id: "spell.damage.all", selectors: ["spell-damage"],
     damage: true, placeholder: "1d6" },
   { group: "Spellcasting", id: "class.dc", selectors: ["class-dc"], placeholder: "1" },
