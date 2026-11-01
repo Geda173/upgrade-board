@@ -7,6 +7,6 @@
     "test": "node tests/run.mjs"
   },
   "devDependencies": {
-    "handlebars": "^4.7.9"
+    "handlebars": "^4.7.10"
   }
 }
